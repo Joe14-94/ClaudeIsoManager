@@ -1,0 +1,5 @@
+{
+  "name": "ISO 27002 Activity Manager",
+  "description": "An application to manage cybersecurity activities with a multi-dimensional view on ISO 27002 compliance, strategic alignment, and business objectives.",
+  "requestFramePermissions": []
+}
