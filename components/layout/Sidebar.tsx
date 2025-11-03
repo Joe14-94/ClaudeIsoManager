@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, ListChecks, Network, ShieldCheck, Target, TrendingUp, Users, Database, FileUp, FileDown, Workflow, GitMerge } from 'lucide-react';
+import { LayoutDashboard, ListChecks, Network, ShieldCheck, Target, TrendingUp, Users, Database, FileUp, FileDown, Workflow, GitMerge, ClipboardCheck } from 'lucide-react';
 
 const Sidebar: React.FC = () => {
   const navItemClasses = "flex items-center px-4 py-2.5 text-sm font-medium rounded-lg transition-colors";
@@ -57,6 +57,10 @@ const Sidebar: React.FC = () => {
                 <NavLink to="/chantiers" className={getNavLinkClass}>
                     <Workflow size={18} className="mr-3" />
                     Chantiers
+                </NavLink>
+                <NavLink to="/processes" className={getNavLinkClass}>
+                    <ClipboardCheck size={18} className="mr-3" />
+                    Processus
                 </NavLink>
                  <NavLink to="/resources" className={getNavLinkClass}>
                     <Users size={18} className="mr-3" />

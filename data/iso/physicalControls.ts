@@ -1,243 +1,256 @@
 import { IsoChapter, IsoMeasure } from '../../types';
 
 export const physicalControls: Omit<IsoMeasure, 'id'>[] = [
-  // PHYSICAL CONTROLS (7.x)
   {
     code: '7.1',
     title: 'Périmètres de sécurité physique',
     chapter: IsoChapter.PHYSICAL,
-    description: "Définir et utiliser des périmètres de sécurité pour protéger les zones contenant des informations sensibles.",
+    description: 'Il convient que les périmètres de sécurité soient définis et utilisés pour protéger les zones qui contiennent les informations et autres actifs associés.',
     details: {
-      type: ['Préventive'],
-      properties: ['Confidentialité', 'Intégrité', 'Disponibilité'],
-      concepts: ['Protéger'],
-      capabilities: ['Sécurité_physique'],
-      domains: ['Protection'],
-      measure: "Il convient de définir et d'utiliser des périmètres de sécurité pour protéger les zones qui contiennent des informations et autres actifs associés sensibles ou critiques.",
-      objective: "Empêcher l'accès physique non autorisé, les dommages et l'interférence avec les informations et autres actifs associés de l'organisation.",
-      recommendations: `<p>Il convient de prendre en compte les lignes directrices suivantes lors de la conception et de la mise en œuvre de périmètres de sécurité physique:</p><ul><li>La force et le type de chaque périmètre doivent être déterminés en fonction des exigences de sécurité des actifs à l'intérieur du périmètre et des résultats de l'appréciation du risque.</li><li>Un périmètre peut être un mur et une porte verrouillable, ou il peut être constitué d'un ensemble de mesures de sécurité.</li><li>Les périmètres doivent être clairement définis, et l'emplacement et la force de chaque périmètre dépendent des risques que l'on souhaite prévenir.</li><li>Plusieurs périmètres peuvent être mis en œuvre pour fournir des couches de protection supplémentaires.</li><li>La protection physique peut être obtenue en créant des barrières physiques autour des locaux de l'organisation et en utilisant des systèmes de contrôle d'entrée électronique.</li><li>Des mesures doivent être mises en œuvre sur le périmètre pour empêcher l'observation non autorisée des informations sensibles.</li></ul>`,
-      extraInfo: `<p>Le concept de périmètres de sécurité s'applique non seulement aux bâtiments mais aussi aux actifs spécifiques à l'intérieur d'un bâtiment.</p><p>Par exemple, une salle de serveurs est un périmètre de sécurité physique à l'intérieur d'un bâtiment qui est lui-même un périmètre de sécurité physique.</p>`
+        type: ["Préventive"],
+        properties: ["Confidentialité","Intégrité","Disponibilité"],
+        concepts: ["Protéger"],
+        processes: ["Sécurité_physique"],
+        functionalProcess: "6. Sécurité physique et environnementale",
+        domains: ["Protection"],
+        measure: 'Il convient que les périmètres de sécurité soient définis et utilisés pour protéger les zones qui contiennent les informations et autres actifs associés.',
+        objective: 'Empêcher l\'accès physique non autorisé, les dommages ou interférences portant sur les informations et autres actifs associés de l\'organisation.',
+        recommendations: `<p>Il convient que les lignes directrices suivantes soient prises en considération et mises en œuvre pour les périmètres de sécurité physique, lorsque cela est jugé approprié:</p><ol type="a"><li>définir les périmètres de sécurité et l'emplacement et la résistance de chacun des périmètres selon les exigences de sécurité de l'information relatives aux actifs situés dans le périmètre;</li><li>disposer de périmètres solides physiquement pour un bâtiment ou un site contenant des moyens de traitement de l'information (c'est-à-dire, il convient que le périmètre ou les zones ne présentent pas de failles susceptibles de faciliter une effraction). Il convient que les toits extérieurs, les murs, les plafonds et le sol du site soient construits de manière solide et que toutes les portes extérieures soient protégées de manière adéquate contre les accès non autorisés avec des mécanismes de contrôle (par exemple, barres, alarmes, verrous). Il convient que les portes et les fenêtres soient verrouillées lorsque les lieux sont sans surveillance, et il convient d'envisager une protection extérieure pour les fenêtres, en particulier au rez-de-chaussée; il convient d'envisager également des points d'aération;</li><li>équiper d'une alarme, surveiller et tester toutes les portes coupe-feu dans un périmètre de sécurité en même temps que les murs, pour établir le niveau de résistance requis conformément aux normes appropriées. Il convient qu'elles fonctionnent de manière infaillible.</li></ol>`,
+        extraInfo: `<p>La protection physique peut être réalisée en créant une ou plusieurs barrières physiques autour des locaux et des moyens de traitement de l'information de l'organisation.</p><p>Une zone sécurisée peut être un bureau fermant à clé ou plusieurs salles entourées d'une barrière de sécurité physique interne continue.</p><p>Des barrières et des périmètres supplémentaires pour contrôler l'accès physique peuvent être nécessaires entre des zones ayant des exigences de sécurité différentes à l'intérieur d'un périmètre de sécurité.</p><p>Il convient que l'organisation envisage d'avoir des mesures de sécurité physique qui peuvent être renforcées pendant des situations d'augmentation des menaces.</p>`
     }
-  },
+},
   {
     code: '7.2',
-    title: 'Entrée physique',
+    title: 'Les entrées physiques',
     chapter: IsoChapter.PHYSICAL,
-    description: "Sécuriser les entrées physiques et contrôler l'accès aux zones sécurisées.",
+    description: 'Il convient de protéger les zones sécurisées par des mesures de sécurité des accès et des points d\'accès appropriées.',
     details: {
-      type: ['Préventive'],
-      properties: ['Confidentialité', 'Intégrité', 'Disponibilité'],
-      concepts: ['Protéger'],
-      capabilities: ['Sécurité_physique'],
-      domains: ['Protection'],
-      measure: "Il convient de sécuriser les zones sécurisées avec des contrôles d'entrée et des points d'accès appropriés.",
-      objective: "Assurer que seul le personnel autorisé a accès aux locaux, bâtiments, salles, et aux informations et autres actifs associés de l'organisation.",
-      recommendations: `<p>Les lignes directrices suivantes doivent être prises en compte:</p><ul><li>Les visiteurs des zones sécurisées doivent être supervisés ou autorisés avant l'accès. Leur heure d'arrivée et de départ doit être enregistrée.</li><li>L'accès aux zones contenant des informations et autres actifs associés sensibles ou critiques doit être limité aux personnes autorisées uniquement.</li><li>Les droits d'accès physique doivent être gérés par un processus formel (voir 5.18).</li><li>Tous les membres du personnel et les autres parties intéressées doivent être informés des procédures de contrôle d'entrée physique.</li><li>Un contact physique ou visuel doit être maintenu avec les visiteurs.</li><li>Le personnel des services d'urgence (par exemple, pompiers, police) doit se voir accorder l'accès lorsque nécessaire en cas d'urgence.</li></ul>`,
-      extraInfo: `<p>L'utilisation de systèmes de contrôle d'accès physique peut fournir un moyen efficace de contrôle et de surveillance, permettant la collecte de données d'audit.</p>`
+        type: ["Préventive"],
+        properties: ["Confidentialité","Intégrité","Disponibilité"],
+        concepts: ["Protéger"],
+        processes: ["Sécurité_physique","Gestion_des_identités_et_des_accès"],
+        functionalProcess: "6. Sécurité physique et environnementale",
+        domains: ["Protection"],
+        measure: 'Il convient de protéger les zones sécurisées par des mesures de sécurité des accès et des points d\'accès appropriées.',
+        objective: 'Assurer que seul l\'accès physique autorisé aux informations et autres actifs associés de l\'organisation soit possible.',
+        recommendations: `<strong>Généralités</strong><p>Il convient que les points d'accès tels que les zones de livraison et de chargement et d'autres points par lesquels des personnes non autorisées peuvent pénétrer dans les locaux soient surveillés et, si possible, isolés des moyens de traitement de l'information, afin d'éviter les accès non autorisés.</p><p>Il convient de prendre en considération les lignes directrices suivantes:</p><ol type="a"><li>limiter l'accès aux sites et aux bâtiments au personnel autorisé seulement. Il convient que le processus de gestion des droits d'accès aux zones physiques inclue la fourniture, la révision périodique, la mise à jour et la révocation des autorisations (voir 5.18);</li><li>conserver de manière sécurisée et contrôler régulièrement un journal physique ou un journal d'audit électronique de tous les accès, et protéger l'ensemble des journaux (voir 5.33) et des informations d'authentification sensibles;</li><li>établir et mettre en œuvre un processus et des mécanismes techniques pour la gestion des accès aux zones où les informations sont traitées ou stockées. Les mécanismes d'authentification incluent l'utilisation de cartes d'accès, la biométrie ou l'authentification à deux facteurs, tels qu'une carte d'accès et un code PIN secret. Il convient d'envisager l'utilisation de sas de sécurité pour l'accès aux zones sensibles;</li><li>mettre en place une zone de réception surveillée par du personnel, ou d'autres moyens pour contrôler l'accès physique au site ou au bâtiment;</li><li>inspecter et examiner les effets personnels du personnel et des parties intéressées à l'entrée et à la sortie;<p><strong>NOTE :</strong> Une législation lois et des réglementations locales peuvent exister concernant la possibilité d'inspecter les effets personnels.</p></li><li>exiger de l'ensemble du personnel et des parties intéressées le port d'un moyen d'identification visible, et notifier immédiatement le personnel de sécurité s'ils rencontrent des visiteurs non accompagnés ou quiconque ne portant pas d'identification visible. Il convient d'envisager le port de badges faciles à distinguer pour mieux identifier les employés permanents, les fournisseurs et les visiteurs;</li><li>attribuer au personnel des fournisseurs un accès limité aux zones sécurisées ou aux moyens de traitement de l'information seulement si c'est nécessaire. Il convient que cet accès soit autorisé et surveillé;</li><li>porter une attention particulière à la sécurité des accès physiques dans le cas des bâtiments contenant les actifs de plusieurs organisations à;</li><li>concevoir des mesures de sécurité physique de manière à ce qu'elles puissent être renforcées lorsque la probabilité d'incidents physiques augmente;</li><li>sécuriser d'autres points d'entrée, tels que les sorties de secours, des accès non autorisé;</li><li>mettre en place un processus de gestion des clés pour assurer la gestion des clés physiques ou des informations d'authentification (par exemple, codes de verrouillage, serrures à combinaison des bureaux, salles et équipements tels que des armoires verrouillables) et pour assurer la tenue d'un journal ou d'un audit annuel des clés et que l'accès aux clés physiques ou aux informations d'authentification est contrôlé (voir 5.17 pour des recommandations supplémentaires sur les informations d'authentification).</li></ol><strong>Visiteurs</strong><p>Il convient de prendre en considération les lignes directrices suivantes:</p><ol type="a"><li>authentifier l'identité des visiteurs par un moyen approprié;</li><li>consigner la date et l'heure d'arrivée et de départ des visiteurs;</li><li>attribuer l'accès aux visiteurs uniquement à des fins spécifiques ayant fait l'objet d'une autorisation, accompagné des instructions sur les exigences de sécurité de la zone et sur les procédures d'urgence;</li><li>surveiller tous les visiteurs, sauf si une exception explicite leur a été accordée.</li></ol><strong>Zones de livraison et de chargement et réception de matériel</strong><p>Il convient de prendre en considération les lignes directrices suivantes:</p><ol type="a"><li>limiter l'accès aux zones de livraison et de chargement depuis l'extérieur du bâtiment au personnel identifié et autorisé;</li><li>concevoir les zones de livraison et de chargement de sorte que les livraisons puissent être chargées et déchargées sans que le personnel chargé de la livraison n'ait accès sans autorisation aux autres parties du bâtiment;</li><li>sécuriser les portes extérieures des zones de livraison et de chargement lorsque les portes menant aux zones restreintes sont ouvertes;</li><li>inspecter et examiner les livraisons entrantes pour vérifier la présence éventuelle d'explosifs, de produits chimiques ou autres substances dangereuses, avant qu'elles ne quittent les zones de livraison et de chargement;</li><li>enregistrer les livraisons entrantes conformément aux procédures de gestion des actifs (voir 5.9 et 7.10) dès leur arrivée sur le site;</li><li>séparer physiquement les expéditions entrantes et sortantes, si possible;</li><li>inspecter les livraisons entrantes pour vérifier la présence d'éventuelles altérations survenues lors de l'acheminement. Si une altération est identifiée, il convient de la déclarer immédiatement au personnel de sécurité.</li></ol>`,
+        extraInfo: ``
     }
-  },
+},
   {
     code: '7.3',
     title: 'Sécurisation des bureaux, des salles et des installations',
     chapter: IsoChapter.PHYSICAL,
-    description: "Concevoir et mettre en œuvre la sécurité physique des bureaux, salles et installations.",
+    description: 'Il convient de concevoir et de mettre en œuvre des mesures de sécurité physique pour les bureaux, les salles et les installations.',
     details: {
-      type: ['Préventive'],
-      properties: ['Confidentialité', 'Intégrité', 'Disponibilité'],
-      concepts: ['Protéger'],
-      capabilities: ['Sécurité_physique'],
-      domains: ['Protection'],
-      measure: "Il convient de concevoir et de mettre en œuvre la sécurité physique des bureaux, des salles et des installations.",
-      objective: "Empêcher l'accès physique non autorisé, les dommages et l'interférence avec les informations et autres actifs associés de l'organisation dans les bureaux, les salles et les installations.",
-      recommendations: `<p>Les lignes directrices suivantes doivent être prises en compte pour la sécurisation des bureaux, des salles et des installations:</p><ul><li>Les installations clés doivent être situées de manière à éviter l'accès par le public.</li><li>Les bâtiments doivent être discrets et donner le minimum d'indication sur leur fonction.</li><li>Les répertoires et les panneaux d'information internes identifiant les zones sensibles ne doivent pas être visibles depuis les zones accessibles au public.</li><li>Les installations de traitement d'informations sensibles doivent être positionnées pour réduire les risques d'être surveillées depuis l'extérieur du périmètre.</li><li>Les portes et fenêtres des salles doivent être verrouillées lorsqu'elles sont sans surveillance et une protection renforcée (par exemple, des barreaux) doit être envisagée pour les fenêtres et les portes, en particulier au rez-de-chaussée.</li></ul>`,
-      extraInfo: `<p>Les mesures de sécurité physique peuvent également être requises par les compagnies d'assurance.</p>`
+        type: ["Préventive"],
+        properties: ["Confidentialité","Intégrité","Disponibilité"],
+        concepts: ["Protéger"],
+        processes: ["Sécurité_physique","Gestion_des_actifs"],
+        functionalProcess: "6. Sécurité physique et environnementale",
+        domains: ["Protection"],
+        measure: 'Il convient de concevoir et de mettre en œuvre des mesures de sécurité physique pour les bureaux, les salles et les installations.',
+        objective: 'Empêcher l\'accès physique non autorisé, les dommages et les interférences impactant les informations et autres actifs associés de l\'organisation dans les bureaux, salles et installations.',
+        recommendations: `<p>Il convient de prendre en considération les lignes directrices suivantes pour sécuriser les bureaux, les salles et les installations:</p><ol type="a"><li>implanter les installations critiques de manière à éviter l'accès au public;</li><li>dans la mesure du possible, s'assurer que les bâtiments sont discrets et donnent le minimum d'indications sur leur finalité, sans signe manifeste, à l'extérieur ou à l'intérieur du bâtiment, qui permette d'identifier la présence d'activités de traitement de l'information;</li><li>configurer les installations afin d'empêcher que les informations ou les activités confidentielles soient visibles et audibles depuis l'extérieur. Si nécessaire, il convient d'envisager la mise en place d'un blindage électromagnétique;</li><li>ne pas rendre les répertoires, les annuaires téléphoniques internes et les plans accessibles en ligne identifiant l'emplacement des moyens de traitement des informations confidentielles facilement accessibles à toute personne non autorisée.</li></ol>`,
+        extraInfo: ``
     }
-  },
+},
   {
     code: '7.4',
     title: 'Surveillance de la sécurité physique',
     chapter: IsoChapter.PHYSICAL,
-    description: "Surveiller en permanence les locaux pour détecter les accès physiques non autorisés.",
+    description: 'Il convient que les locaux soient continuellement surveillés pour empêcher l\'accès physique non autorisé.',
     details: {
-      type: ['Détective', 'Corrective'],
-      properties: ['Confidentialité', 'Intégrité', 'Disponibilité'],
-      concepts: ['Détecter', 'Répondre'],
-      capabilities: ['Sécurité_physique'],
-      domains: ['Défense'],
-      measure: "Il convient de surveiller en permanence les locaux pour détecter les accès physiques non autorisés.",
-      objective: "Détecter et dissuader les accès physiques non autorisés.",
-      recommendations: `<p>Il convient que les locaux soient surveillés pour détecter les activités non autorisées. La surveillance peut être réalisée par des patrouilles de gardes ou des systèmes de surveillance et d'alarme.</p><p>Les systèmes de surveillance, tels que les caméras de télévision en circuit fermé (CCTV) et les systèmes de détection d'intrusion, doivent être installés de manière à ce que la couverture de surveillance soit complète, sans angle mort, et que la surveillance soit enregistrée et stockée pendant une période définie.</p><p>Il convient que les systèmes de surveillance et d'alarme soient protégés contre les altérations et les dysfonctionnements.</p><p>Il convient que les alarmes soient transmises à un point de surveillance qui est constamment surveillé et où des procédures sont en place pour répondre aux alarmes.</p>`,
-      extraInfo: `<p>La date, l'heure et l'identité des personnes entrant ou sortant des zones protégées doivent être enregistrées.</p><p>Ces informations doivent être conservées et protégées conformément aux exigences légales et de protection de la vie privée (voir 5.31, 5.34).</p>`
+        type: ["Préventive","Détective"],
+        properties: ["Confidentialité","Intégrité","Disponibilité"],
+        concepts: ["Protéger","Détecter"],
+        processes: ["Sécurité_physique"],
+        functionalProcess: "6. Sécurité physique et environnementale",
+        domains: ["Protection","Défense"],
+        measure: 'Il convient que les locaux soient continuellement surveillés pour empêcher l\'accès physique non autorisé.',
+        objective: 'Détecter et dissuader l\'accès physique non autorisé.',
+        recommendations: `<p>Il convient que les locaux physiques soient contrôlés à l'aide de systèmes de surveillance, qui peuvent inclure des vigiles, des alarmes anti-intrusion ou des systèmes de vidéosurveillance tels que les télévisions en circuit fermé et les logiciels de gestion des informations de sécurité physique qui soient gérés en interne ou par un fournisseur de services de surveillance.</p><p>Il convient que l'accès aux bâtiments qui hébergent des systèmes critiques soient continuellement surveillés afin de détecter les accès non autorisés ou les comportements suspects au moyen de:</p><ol type="a"><li>l'installation de systèmes de vidéosurveillance tels que des télévisions en circuit fermé permettant de visionner et d'enregistrer l'accès aux zones sensibles à l'intérieur et à l'extérieur des locaux de l'organisation;</li><li>l'installation, conformément aux normes applicables pertinentes, et le test périodique de détecteurs de contact, de son ou de mouvement permettant de déclencher une alarme anti-intrusion, par exemple: <ol><li>l'installation de détecteurs de contact qui déclenchent une alarme lorsqu'un contact est établi ou rompu à tout endroit où un contact peut être établi ou rompu (tel que les fenêtres, les portes et sous les objets) en vue de servir d'alarme panique;</li><li>les détecteurs de mouvements basés sur la technologie infrarouge qui déclenchent une alarme lorsqu'un objet passe dans leur champ de vision;</li><li>l'installation de capteurs sensibles au son du bris de verre qui peuvent être utilisés pour déclencher une alarme afin d'alerter le personnel de sécurité;</li></ol></li><li>l'utilisation de ces alarmes pour couvrir toutes les portes extérieures et les fenêtres accessibles. Il convient que les zones inoccupées soient équipées d'alarmes activées en permanence. Il convient également de couvrir d'autres zones (par exemple, les salles informatiques ou de télécommunications).</li></ol><p>Il convient que la conception des systèmes de surveillance soit gardée confidentielle car une divulgation peut faciliter les effractions non détectées.</p><p>Il convient que les systèmes de surveillance soient protégés des accès non autorisés afin d'empêcher que des personnes non autorisées aient accès aux informations de surveillance, telles que les enregistrements vidéo, ou que les systèmes soient désactivés à distance.</p><p>Il convient de placer le tableau de commande du système d'alarme dans une zone équipée d'une alarme et, dans le cas des alarmes de sûreté, dans un endroit offrant une issue de sortie facile pour la personne qui active l'alarme.</p><p>Il convient que le tableau de commande et les détecteurs soient équipés de mécanismes inviolables.</p><p>Il convient de tester régulièrement le système pour s'assurer qu'il fonctionne comme prévu, en particulier si ses composants sont alimentés par batterie.</p><p>Il convient d'utiliser tout système de surveillance et de enregistrement en tenant compte des lois et réglementations locales, y compris la législation relative à la protection des données et des DCP, en particulier en ce qui concerne la surveillance du personnel et les durées de conservation des enregistrements vidéo.</p>`,
+        extraInfo: ``
     }
-  },
+},
   {
     code: '7.5',
     title: 'Protection contre les menaces physiques et environnementales',
     chapter: IsoChapter.PHYSICAL,
-    description: "Concevoir et mettre en œuvre une protection contre les menaces physiques et environnementales.",
+    description: 'Il convient de concevoir et de mettre en œuvre une protection contre les menaces physiques et environnementales telles que les catastrophes naturelles et autres menaces physiques, intentionnelles ou non intentionnelles, impactant l\'infrastructure.',
     details: {
-      type: ['Préventive'],
-      properties: ['Disponibilité'],
-      concepts: ['Protéger'],
-      capabilities: ['Sécurité_physique'],
-      domains: ['Résilience'],
-      measure: "Il convient de concevoir et de mettre en œuvre une protection contre les menaces physiques et environnementales, telles que les catastrophes naturelles et autres menaces physiques intentionnelles ou non intentionnelles pour l'infrastructure.",
-      objective: "Empêcher ou réduire l'impact des événements physiques et environnementaux.",
-      recommendations: `<p>Une appréciation du risque doit être menée pour identifier les menaces des catastrophes naturelles (par exemple, inondation, foudre, tremblement de terre) et autres menaces physiques et environnementales (par exemple, incendie, explosion, troubles civils, rayonnement, contamination chimique).</p><p>Des mesures de sécurité appropriées doivent être mises en œuvre pour protéger contre les menaces identifiées.</p><p>L'avis de spécialistes sur la protection contre ces menaces doit être obtenu pour s'assurer que les mesures de sécurité sont adéquates et efficaces.</p>`,
-      extraInfo: `<p>Cette mesure de sécurité concerne la protection des personnes, des informations et des installations critiques de l'organisation.</p>`
+        type: ["Préventive"],
+        properties: ["Confidentialité","Intégrité","Disponibilité"],
+        concepts: ["Protéger"],
+        processes: ["Sécurité_physique"],
+        functionalProcess: "6. Sécurité physique et environnementale",
+        domains: ["Protection"],
+        measure: 'Il convient de concevoir et de mettre en œuvre une protection contre les menaces physiques et environnementales telles que les catastrophes naturelles et autres menaces physiques, intentionnelles ou non intentionnelles, impactant l\'infrastructure.',
+        objective: 'Prévenir ou réduire les conséquences des événements issus des menaces physiques ou environnementales.',
+        recommendations: `<p>Il convient de réaliser des appréciations du risque afin d'identifier les conséquences potentielles des menaces physiques et environnementales avant de commencer des opérations critiques sur un site physique, et ce à intervalles réguliers.</p><p>Il convient de mettre en œuvre les protections nécessaires et de surveiller les changements des menaces.</p><p>Il convient de solliciter les conseils de spécialistes sur la manière de gérer les risques provenant des menaces physiques et environnementales, telles que les incendies, les inondations, les tremblements de terre, les explosions, les troubles sociaux, les déchets toxiques, les émissions polluantes et autres formes de catastrophes naturelles ou de désastres d'origine humaine.</p><p>Il convient que l'emplacement et la construction des locaux physiques tiennent compte de:</p><ol type="a"><li>la topographie locale, telle que l'élévation appropriée, les plans d'eau et les failles tectoniques;</li><li>les menaces urbaines, telles que les lieux ayant une forte probabilité d'attirer de l'agitation politique, des activités criminelles ou des attaques terroristes.</li></ol><p>Sur la base des résultats des appréciations des risques, il convient que les menaces physiques et environnementales pertinentes soient identifiées et que les mesures de sécurité appropriées soient envisagées par exemple dans les contextes suivants:</p><ol type="a"><li>incendie: installer et configurer des systèmes capables de détecter les incendies à leur tout début pour envoyer des alarmes ou déclencher des systèmes d'extinction d'incendie afin de prévenir les dommages du feu sur les supports de stockage et sur les systèmes de traitement de l'information associés. Il convient de procéder à l'extinction de l'incendie avec la substance la plus appropriée par rapport au milieu environnant (par exemple, le gaz dans les espaces confinés);</li><li>inondation: installer des systèmes capables de détecter les inondations à leur tout début, sous le sol des zones contenant des supports de stockage ou des systèmes de traitement de l'information. Il convient que des pompes à eau ou des moyens équivalents soient rapidement accessibles en cas d'inondation;</li><li>surtensions électriques: adopter des systèmes capables de protéger les systèmes d'information client aussi bien que serveur contre les surtensions électriques ou des événements similaires afin de minimiser les conséquences de tels événements;</li><li>explosifs et armes: procéder à des inspections aléatoires pour s'assurer de l'absence d'explosifs ou d'armes sur le personnel, dans les véhicules ou dans les marchandises entrant dans des installations de traitement d'informations sensibles.</li></ol>`,
+        extraInfo: `<p>Les coffres forts ou d'autres formes de moyens de stockage sécurisés peuvent protéger les informations qui y sont stockées contre les sinistres tels que les incendies, les tremblements de terre, les inondations ou les explosions.</p><p>Les organisations peuvent examiner les concepts de prévention de la criminalité à travers la conception environnementale lors de la conception des mesures de sécurité permettant de sécuriser leur environnement et de réduire les menaces urbaines.</p><p>Par exemple, au lieu d'utiliser des bornes, des statues ou des pièces d'eau peuvent servir à la fois d'aménagement et de barrière physique.</p>`
     }
-  },
-  {
+},
+{
     code: '7.6',
-    title: 'Travail dans des zones sécurisées',
+    title: 'Travail dans les zones sécurisées',
     chapter: IsoChapter.PHYSICAL,
-    description: "Établir et mettre en œuvre des procédures pour le travail dans des zones sécurisées.",
+    description: 'Il convient que des mesures de sécurité pour le travail dans les zones sécurisées soient conçues et mises en œuvre.',
     details: {
-      type: ['Préventive'],
-      properties: ['Confidentialité', 'Intégrité', 'Disponibilité'],
-      concepts: ['Protéger'],
-      capabilities: ['Sécurité_physique'],
-      domains: ['Protection'],
-      measure: "Il convient d'établir et de mettre en œuvre des procédures pour le travail dans des zones sécurisées.",
-      objective: "Empêcher les dommages, le vol, la compromission ou l'accès non autorisé aux informations et autres actifs associés.",
-      recommendations: `<p>Les lignes directrices suivantes doivent être prises en compte:</p><ul><li>Le personnel ne doit être informé de l'existence et de l'objet d'une zone sécurisée que sur la base du besoin d'en connaître.</li><li>Le travail sans surveillance dans les zones sécurisées doit être évité si possible pour des raisons de sécurité et pour empêcher les activités malveillantes.</li><li>Les zones sécurisées vacantes doivent être physiquement verrouillées et périodiquement vérifiées.</li><li>Le personnel de support des tiers ne doit avoir accès aux zones sécurisées que lorsque cela est nécessaire et autorisé. Cet accès doit être surveillé.</li><li>Les activités de maintenance et de réparation dans les zones sécurisées doivent être contrôlées.</li></ul>`,
-      extraInfo: `<p>Des zones de livraison et de chargement et d'autres points où des personnes ou des objets non autorisés peuvent entrer dans les locaux doivent être contrôlés et, si possible, isolés des installations de traitement de l'information pour éviter les accès non autorisés.</p>`
+        type: ["Préventive"],
+        properties: ["Confidentialité","Intégrité","Disponibilité"],
+        concepts: ["Protéger"],
+        processes: ["Sécurité_physique"],
+        functionalProcess: "6. Sécurité physique et environnementale",
+        domains: ["Protection"],
+        measure: 'Il convient que des mesures de sécurité pour le travail dans les zones sécurisées soient conçues et mises en œuvre.',
+        objective: 'Protéger les informations et autres actifs associés dans les zones sécurisées contre tout dommage et contre toutes interférences non autorisées par le personnel travaillant dans ces zones.',
+        recommendations: `<p>Il convient que les mesures de sécurité relatives au travail dans les zones sécurisées s'appliquent à tout le personnel et qu'elles couvrent toutes les activités se déroulant dans la zone sécurisée.</p><p>Il convient de prendre en considération les lignes directrices suivantes:</p><ol type="a"><li>informer le personnel de l'existence de zones sécurisées ou des activités qui s'y pratiquent, seulement sur la base du besoin d'en connaître;</li><li>éviter le travail non supervisé/encadré dans les zones sécurisées, à la fois pour des raisons de sûreté et pour réduire les possibilités d'activités malveillantes;</li><li>verrouiller physiquement et inspecter périodiquement les zones sécurisées inoccupées;</li><li>interdire les matériels photographiques, vidéo, audio ou autres matériels d'enregistrement, tels que les appareils photo intégrés aux terminaux finaux des utilisateurs, sauf s'ils sont autorisés;</li><li>superviser de manière appropriée le transport et l'utilisation des terminaux finaux des utilisateurs dans les zones sécurisées;</li><li>afficher les procédures d'urgence de manière à ce qu'elles soient facilement visibles ou accessibles.</li></ol>`,
+        extraInfo: ``
     }
-  },
-  {
+},
+{
     code: '7.7',
-    title: 'Bureau propre et écran propre',
+    title: 'Bureau vide et écran vide',
     chapter: IsoChapter.PHYSICAL,
-    description: "Établir et appliquer des règles de bureau propre pour les papiers et les supports amovibles, et des règles d'écran propre pour les équipements.",
+    description: 'Il convient que des règles du bureau vide, dégagé des documents papier et des supports de stockage amovibles, et des règles de l\'écran vide pour les moyens de traitement de l\'information soient définies et appliquées de manière appropriée.',
     details: {
-      type: ['Préventive'],
-      properties: ['Confidentialité'],
-      concepts: ['Protéger'],
-      capabilities: ['Protection_des_informations'],
-      domains: ['Protection'],
-      measure: "Il convient d'établir et d'appliquer des règles de bureau propre pour les papiers et les supports de stockage amovibles, et des règles d'écran propre pour les moyens de traitement de l'information.",
-      objective: "Réduire les risques d'accès non autorisé, de perte et de dommage aux informations et autres actifs associés.",
-      recommendations: `<p>Les lignes directrices suivantes doivent être prises en compte pour une politique de bureau propre et d'écran propre:</p><ul><li>Les informations sensibles ou critiques, sur papier ou sur support de stockage électronique, doivent être verrouillées (idéalement dans un coffre-fort ou une armoire ignifugée) lorsqu'elles ne sont pas utilisées.</li><li>Les ordinateurs et les terminaux doivent être configurés pour se verrouiller après une période d'inactivité.</li><li>Les informations sensibles ne doivent pas être laissées visibles sur les écrans sans surveillance.</li><li>Les photocopieurs et les imprimantes doivent être sécurisés.</li><li>Les documents imprimés contenant des informations sensibles doivent être retirés de l'imprimante immédiatement.</li></ul>`,
-      extraInfo: `<p>Une politique de bureau propre et d'écran propre peut réduire le risque de vol, de fraude et de violation de la sécurité de l'information par des personnes non autorisées ayant accès aux installations en dehors des heures de bureau.</p>`
+        type: ["Préventive"],
+        properties: ["Confidentialité"],
+        concepts: ["Protéger"],
+        processes: ["Sécurité_physique"],
+        functionalProcess: "6. Sécurité physique et environnementale",
+        domains: ["Protection"],
+        measure: 'Il convient que des règles du bureau vide, dégagé des documents papier et des supports de stockage amovibles, et des règles de l\'écran vide pour les moyens de traitement de l\'information soient définies et appliquées de manière appropriée.',
+        objective: 'Réduire les risques d\'accès non autorisé, de perte et d\'endommagement des informations sur les bureaux, les écrans et dans d\'autres emplacements accessibles pendant et en dehors des heures normales de travail.',
+        recommendations: `<p>Il convient que l'organisation établisse et communique à toutes les parties intéressées pertinentes une politique spécifique à la thématique du bureau vide et de l'écran vide.</p><p>Il convient de prendre en considération les lignes directrices suivantes:</p><ol type="a"><li>mettre sous clé les informations métier sensibles ou critiques (par exemple, au format papier ou sur un support de stockage électronique) (de préférence dans un coffre-fort, une armoire ou une autre forme de mobilier de sécurité) lorsqu'elles ne sont pas utilisée, en particulier lorsque les locaux sont vides;</li><li>protéger les terminaux finaux des utilisateurs par des serrures à clé ou d'autres moyens de sûreté lorsqu'ils ne sont pas utilisés ou sont laissés sans surveillance;</li><li>déconnecter les terminaux finaux des utilisateurs ou les protéger avec un verrouillage de l'écran et du clavier contrôlé par un mécanisme d'authentification de l'utilisateur lorsqu'ils sont laissés sans surveillance. Il convient de configurer tous les ordinateurs et systèmes avec une fonction de temporisation ou de déconnexion automatique;</li><li>faire en sorte que l'initiateur récupère les sorties d'imprimantes ou de terminaux multifonction immédiatement. L'utilisation d'imprimantes dotées d'une fonction d'authentification, de sorte que seuls les initiateurs puissent récupérer leurs impressions, et uniquement lorsqu'ils se trouvent devant l'imprimante;</li><li>stocker de façon sécurisée les documents et les supports de stockage amovibles contenant des informations sensibles et, lorsqu'ils ne sont plus requis, les éliminer à l'aide de mécanismes de destruction sécurisés;</li><li>établir et communiquer des règles et recommandations pour la configuration des fenêtres contextuelles (pop-ups) sur les écrans (par exemple, désactiver les fenêtres contextuelles de notification de réception d'un nouveau courrier électronique et de messagerie, si possible, pendant les présentations, le partage d'écran ou dans un lieu public);</li><li>effacer les informations sensibles ou critiques sur les tableaux blancs et autres types d'affichage lorsqu'elles ne sont plus nécessaires.</li></ol><p>Il convient que l'organisation dispose de procédures en place lorsque le personnel quitte les locaux, notamment la réalisation d'une dernière inspection avant de partir pour s'assurer de ne pas laisser d'actifs de l'organisation (par exemple, des documents tombés derrière des tiroirs ou un meuble).</p>`,
+        extraInfo: ``
     }
-  },
-  {
+},
+{
     code: '7.8',
-    title: 'Emplacement et protection des équipements',
+    title: 'Emplacement et protection du matériel',
     chapter: IsoChapter.PHYSICAL,
-    description: "Placer et protéger les équipements pour réduire les risques liés aux menaces et dangers environnementaux.",
+    description: 'Il convient de choisir un emplacement sécurisé pour le matériel et de le protéger.',
     details: {
-      type: ['Préventive'],
-      properties: ['Confidentialité', 'Intégrité', 'Disponibilité'],
-      concepts: ['Protéger'],
-      capabilities: ['Sécurité_physique'],
-      domains: ['Protection', 'Résilience'],
-      measure: "Il convient que les équipements soient placés et protégés de manière à réduire les risques liés aux menaces et dangers environnementaux, et aux possibilités d'accès non autorisé.",
-      objective: "Empêcher la perte, les dommages, le vol ou la compromission des équipements et l'interruption des activités de l'organisation.",
-      recommendations: `<p>Les lignes directrices suivantes doivent être prises en compte pour protéger les équipements:</p><ul><li>Les équipements doivent être positionnés de manière à minimiser les accès non nécessaires.</li><li>Les éléments nécessitant une protection spéciale (par exemple, les serveurs) doivent être isolés pour réduire le niveau général de protection requis.</li><li>Les zones de traitement de l'information doivent être protégées contre le tabagisme, la nourriture et les boissons.</li><li>Les conditions environnementales, telles que la température et l'humidité, doivent être surveillées pour s'assurer qu'elles n'affectent pas le fonctionnement des équipements.</li><li>La protection contre la foudre doit être mise en œuvre pour tous les bâtiments et les lignes d'alimentation et de communication.</li></ul>`,
-      extraInfo: `<p>La protection des équipements est un élément important de la continuité d'activité. La co-implantation d'équipements détenus par différentes organisations peut nécessiter une considération supplémentaire pour la sécurité des équipements et pour s'assurer qu'il n'y a pas d'interférence entre les équipements.</p>`
+        type: ["Préventive"],
+        properties: ["Confidentialité","Intégrité","Disponibilité"],
+        concepts: ["Protéger"],
+        processes: ["Sécurité_physique", "Gestion_des_actifs"],
+        functionalProcess: "6. Sécurité physique et environnementale",
+        domains: ["Protection"],
+        measure: 'Il convient de choisir un emplacement sécurisé pour le matériel et de le protéger.',
+        objective: 'Réduire les risques liés à des menaces physiques et environnementales, et à des accès non autorisés et à des dommages.',
+        recommendations: `<p>Il convient de prendre en considération les lignes directrices suivantes pour protéger le matériel:</p><ol type="a"><li>choisir un emplacement pour le matériel permettant de minimiser les accès inutiles aux zones de travail et d'empêcher les accès non autorisés;</li><li>positionner attentivement les moyens de traitement de l'information manipulant des données sensibles, afin de réduire le risque que ces informations soient vues par des personnes non autorisées pendant leur utilisation;</li><li>adopter des mesures de sécurité pour minimiser les risques de menaces physiques et environnementales potentielles [par exemple, vol, incendie, explosions, fumée, fuites d'eau (ou rupture de l'alimentation en eau), poussière, vibrations, effets chimiques, interférences sur la fourniture d'électricité, interférences sur les communications, rayonnements électromagnétiques et vandalisme];</li><li>définir des lignes directrices sur le fait de manger, boire et fumer à proximité des moyens de traitement de l'information;</li><li>surveiller les conditions environnementales, telles que la température et l'humidité, pour détecter les conditions pouvant nuire au fonctionnement des moyens de traitement de l'information;</li><li>équiper l'ensemble des bâtiments d'un paratonnerre et équiper toutes les lignes électriques et de télécommunication entrantes de parafoudres;</li><li>envisager l'utilisation de méthodes de protection spécifiques, telles que les claviers à membrane, pour le matériel des environnements industriels;</li><li>protéger le matériel traitant des informations confidentielles pour minimiser le risque de fuite d'informations due au rayonnement électromagnétique;</li><li>séparer physiquement les moyens de traitement de l'information gérés par l'organisation de ceux qu'elle ne gère pas.</li></ol>`,
+        extraInfo: ``
     }
-  },
-  {
+},
+{
     code: '7.9',
     title: 'Sécurité des actifs hors des locaux',
     chapter: IsoChapter.PHYSICAL,
-    description: "Protéger les actifs situés en dehors des locaux de l'organisation.",
+    description: 'Il convient de protéger les actifs hors du site.',
     details: {
-      type: ['Préventive'],
-      properties: ['Confidentialité', 'Intégrité', 'Disponibilité'],
-      concepts: ['Protéger'],
-      capabilities: ['Sécurité_physique', 'Gestion_des_actifs'],
-      domains: ['Protection'],
-      measure: "Il convient de protéger les actifs hors des locaux de l'organisation.",
-      objective: "Empêcher la perte, les dommages, le vol ou la compromission des actifs hors des locaux de l'organisation.",
-      recommendations: `<p>L'utilisation d'actifs hors des locaux de l'organisation doit être autorisée par la direction.</p><p>Les risques de travailler avec des actifs hors des locaux doivent être identifiés et des mesures de sécurité appropriées doivent être mises en œuvre.</p><p>Il convient de tenir compte des lignes directrices suivantes:</p><ul><li>Les équipements et les supports de stockage ne doivent pas être laissés sans surveillance dans des lieux publics.</li><li>Les informations de l'organisation doivent être stockées et traitées conformément à la politique de classification de l'information (voir 5.12).</li><li>Les sauvegardes des informations et des logiciels doivent être effectuées régulièrement.</li><li>Les lois et réglementations sur la protection des données, les droits de propriété intellectuelle et les licences logicielles doivent être respectées.</li></ul>`,
-      extraInfo: `<p>Les actifs hors des locaux peuvent inclure des équipements et des supports de stockage utilisés pour le télétravail ou transportés hors des locaux.</p>`
+        type: ["Préventive"],
+        properties: ["Confidentialité","Intégrité","Disponibilité"],
+        concepts: ["Protéger"],
+        processes: ["Sécurité_physique", "Gestion_des_actifs"],
+        functionalProcess: "6. Sécurité physique et environnementale",
+        domains: ["Protection"],
+        measure: 'Il convient de protéger les actifs hors du site.',
+        objective: 'Empêcher la perte, l\'endommagement, le vol ou la compromission des terminaux hors du site et l\'interruption des activités de l\'organisation.',
+        recommendations: `<p>Tout terminal utilisé en dehors des locaux de l'organisation qui stocke ou traite des informations (par exemple, terminal mobile), y compris les terminaux appartenant à l'organisation ou les terminaux privés utilisés pour le compte de l'organisation [Bring your own device (BYOB)], a besoin de protection.</p><p>Il convient que l'utilisation de ces terminaux soit autorisée par la direction.</p><p>Il convient de prendre en considération les lignes directrices suivantes pour la protection des terminaux qui stockent ou à traitent des informations en dehors des locaux de l'organisation:</p><ol type="a"><li>ne pas laisser le matériel et les supports de stockage sortis des locaux sans surveillance dans les lieux publics et non sécurisés;</li><li>respecter les instructions du fabricant pour la protection du matériel à tout moment (par exemple, protection contre l'exposition aux champs électromagnétiques forts, l'eau, la chaleur, l'humidité, la poussière);</li><li>lorsque du matériel circule hors des locaux de l'organisation entre différentes personnes ou parties intéressées, tenir à jour un journal qui décrit la chaîne de traçabilité du matériel et inclut au moins les noms et les organisations des personnes responsables du matériel. Il convient que les informations qu'il n'est pas nécessaire de transférer avec l'actif soient supprimées de façon sécurisée avant le transfert;</li><li>lorsque nécessaire et possible, demander une autorisation pour le matériel et les supports à sortir des locaux de l'organisation et garder un enregistrement concernant ces retraits afin de maintenir un système de traçabilité (voir 5.14);</li><li>protéger contre la consultation d'informations sur un terminal (par exemple, mobile ou ordinateur portable) dans les transports publics, et contre les risques associés à la "lecture par-dessus l'épaule";</li><li>mettre en œuvre la géolocalisation et la fonction d'effacement à distance des données des terminaux.</li></ol><p>L'installation d'équipements en dehors des locaux de l'organisation [tels que les antennes et les guichets automatiques de banque (GAB)] peut faire l'objet d'un risque plus élevé de dommage, de vol ou d'interception. Ces risques peuvent varier de façon considérable selon les lieux et il convient de les prendre en compte pour déterminer les mesures les mieux appropriées. Il convient de prendre en considération les lignes directrices suivantes lors de l'installation de ces équipements en dehors des locaux de l'organisation:</p><ol type="a"><li>surveillance de la sécurité physique (voir 7.4);</li><li>protection contre les menaces physiques et environnementales (voir 7.5);</li><li>mesures de sécurité pour l'accès physique et l'inviolabilité;</li><li>contrôles d'accès logique.</li></ol>`,
+        extraInfo: `<p>Plus d'informations sur d'autres aspects de la protection des équipements de stockage et de traitement des informations et des terminaux finaux des utilisateurs sont disponibles en 8.1 et 6.7.</p>`
     }
-  },
-  {
+},
+{
     code: '7.10',
     title: 'Supports de stockage',
     chapter: IsoChapter.PHYSICAL,
-    description: "Gérer les supports de stockage pour prévenir la divulgation, la modification, la suppression ou la destruction non autorisée d'informations.",
+    description: 'Il convient de gérer les supports de stockage tout au long de leur cycle de vie d\'acquisition, d\'utilisation, de transport et de mise au rebut conformément au schéma de classification et aux exigences de traitement de l\'organisation.',
     details: {
-      type: ['Préventive'],
-      properties: ['Confidentialité', 'Intégrité', 'Disponibilité'],
-      concepts: ['Protéger'],
-      capabilities: ['Gestion_des_actifs'],
-      domains: ['Protection'],
-      measure: "Il convient de gérer les supports de stockage pour prévenir la divulgation, la modification, la suppression ou la destruction non autorisée d'informations.",
-      objective: "Assurer la sécurité des informations sur les supports de stockage.",
-      recommendations: `<p>Des procédures doivent être mises en œuvre pour la gestion des supports amovibles, notamment:</p><ul><li>Les supports contenant des informations sensibles doivent être stockés dans un environnement sécurisé.</li><li>Un système de journalisation doit être maintenu pour enregistrer la manipulation des supports.</li><li>Les supports amovibles doivent être marqués physiquement avec leur classification de sécurité.</li><li>Tous les supports doivent être vérifiés pour les logiciels malveillants avant utilisation.</li><li>La mise au rebut sécurisée des supports amovibles qui ne sont plus nécessaires doit être effectuée.</li></ul><p>Les supports endommagés contenant des informations sensibles doivent être évalués pour déterminer s'ils peuvent être réparés ou s'ils doivent être détruits de manière sécurisée.</p>`,
-      extraInfo: `<p>Les supports de stockage incluent les disques durs, les disques SSD, les bandes, les CD, les DVD, les clés USB et autres dispositifs de stockage amovibles.</p>`
+        type: ["Préventive"],
+        properties: ["Confidentialité","Intégrité","Disponibilité"],
+        concepts: ["Protéger"],
+        processes: ["Sécurité_physique", "Gestion_des_actifs"],
+        functionalProcess: "6. Sécurité physique et environnementale",
+        domains: ["Protection"],
+        measure: 'Il convient de gérer les supports de stockage tout au long de leur cycle de vie d\'acquisition, d\'utilisation, de transport et de mise au rebut conformément au schéma de classification et aux exigences de traitement de l\'organisation.',
+        objective: 'Assurer que seuls la divulgation, la modification, le retrait ou la destruction autorisés des informations de l\'organisation sur des supports de stockage sont effectués.',
+        recommendations: `<strong>Supports de stockage amovibles</strong><p>Il convient de prendre en considération les lignes directrices suivantes pour la gestion des supports de stockage amovibles:</p><ol type="a"><li>établir une politique spécifique à la thématique de la gestion des supports de stockage amovibles et communiquer la politique spécifique à cette thématique à toute personne qui utilise ou manipule des supports de stockage amovibles;</li><li>lorsque nécessaire et possible, demander une autorisation pour les supports de stockage à sortir de l'organisation et garder un enregistrement concernant ces retraits afin de maintenir un système de traçabilité;</li><li>stocker tous les supports de stockage dans un environnement sûr et sécurisé selon la classification de leurs informations, et les protéger des menaces environnementales (telles que la chaleur, l'humidité, les champs électromagnétiques ou le vieillissement) conformément aux spécifications du fabricant;</li><li>si la confidentialité ou l'intégrité de l'information représentent des facteurs importants, utiliser des techniques cryptographiques pour protéger les informations qui se trouvent dans les supports de stockage amovibles;</li><li>pour atténuer les risques de dégradation des supports de stockage lorsque les informations stockées sont toujours utilisées, transférer ces informations sur un support de stockage neuf, avant qu'elles ne deviennent illisibles;</li><li>stocker plusieurs copies des informations importantes sur des supports de stockage séparés pour réduire davantage les risques d'endommagement ou de perte fortuits des informations;</li><li>envisager de tenir un registre des supports de stockage amovibles pour limiter les risques de perte d'informations;</li><li>activer les ports de supports de stockage amovibles (par exemple, les emplacements pour cartes SD ou les ports bus USB) seulement si l'organisation a une raison de les utiliser;</li><li>lorsqu'il y a un besoin d'utiliser des supports de stockage amovibles, contrôler le transfert des informations sur ces supports de stockage;</li><li>les information peuvent être vulnérables aux accès non autorisés, aux utilisations frauduleuse ou aux altérations pendant le transport physique, par exemple lors de l'envoi de supports de stockage par courrier postal ou par transporteur.</li></ol><p>Cette mesure de sécurité "Supports de stockage" inclut les documents papier. Lors du transfert de supports de stockage physiques, appliquer les mesures de sécurité de 5.14.</p><strong>Réutilisation ou élimination sécurisée</strong><p>Il convient que des procédures de réutilisation ou d'élimination sécurisées des supports de stockage soient définies pour minimiser le risque de fuite d'informations confidentielles à des personnes non autorisées. Il convient que les procédures de réutilisation ou d'élimination sécurisées des supports de stockage contenant des informations confidentielles soient proportionnelles à la sensibilité de ces informations. Il convient de prendre en considération les éléments suivants:</p><ol type="a"><li>s'il y a un besoin dans l'organisation de réutiliser des supports de stockage contenant des informations confidentielles, effacer les données de manière sécurisée ou formater le support de stockage avant de le réutiliser (voir 8.10);</li><li>éliminer les supports de stockage contenant des informations confidentielles de manière sécurisée lorsqu'ils ne sont plus nécessaires (par exemple, par destruction, broyage ou suppression sécurisés du contenu);</li><li>disposer de procédures en place pour identifier les éléments qui peuvent nécessiter une élimination sécurisée;</li><li>plusieurs organisations proposent des services de collecte et d'élimination pour les supports de stockage. Il convient de sélectionner avec soin le fournisseur tiers externe approprié disposant des mesures de sécurité et d'une expérience adéquates;</li><li>journaliser l'élimination des éléments sensibles afin de maintenir un système de traçabilité;</li><li>lorsque des supports de stockage sont accumulés pour être éliminés, prendre en compte l'effet d'agrégation qui peut faire qu'une grande quantité d'informations non sensibles deviennent sensibles.</li></ol><p>Il convient de réaliser une appréciation du risque sur les terminaux endommagés contenant des données sensibles afin de déterminer s'il convient que les éléments soient détruits physiquement plutôt qu'envoyés en réparation ou mis au rebut (voir 7.14).</p>`,
+        extraInfo: `<p>Lorsque les supports de stockage contiennent des informations confidentielles non chiffrées, il convient d'envisager une protection physique supplémentaire du support de stockage.</p>`
     }
-  },
-  {
+},
+{
     code: '7.11',
-    title: 'Utilitaires',
+    title: 'Services supports',
     chapter: IsoChapter.PHYSICAL,
-    description: "Protéger les installations de traitement de l'information contre les pannes de courant et autres interruptions causées par des défaillances des utilitaires.",
+    description: 'Il convient que les moyens de traitement de l\'information soient protégés contre les coupures de courant et autres perturbations causées par des défaillances des services supports.',
     details: {
-      type: ['Préventive'],
-      properties: ['Disponibilité'],
-      concepts: ['Protéger'],
-      capabilities: ['Sécurité_physique'],
-      domains: ['Résilience'],
-      measure: "Il convient que les installations de traitement de l'information soient protégées contre les pannes de courant et autres interruptions causées par des défaillances des utilitaires de support.",
-      objective: "Empêcher la perte, les dommages ou la compromission des informations et autres actifs associés et l'interruption des activités de l'organisation en raison de défaillances des utilitaires de support.",
-      recommendations: `<p>Les utilitaires de support tels que l'électricité, l'approvisionnement en eau, les égouts, le chauffage, la ventilation et la climatisation doivent être adéquats pour les systèmes qu'ils desservent.</p><p>Les utilitaires doivent être inspectés régulièrement pour s'assurer de leur bon fonctionnement.</p><p>Une alimentation électrique sans coupure (UPS) et un générateur de secours doivent être disponibles pour les systèmes essentiels.</p><p>Les plans d'urgence doivent être en place pour faire face aux pannes des utilitaires de support.</p>`,
-      extraInfo: `<p>Les utilitaires de support sont des éléments essentiels de l'infrastructure d'une organisation. Leur défaillance peut causer des interruptions significatives des activités.</p>`
+        type: ["Préventive", "Détective"],
+        properties: ["Intégrité", "Disponibilité"],
+        concepts: ["Protéger", "Détecter"],
+        processes: ["Sécurité_physique"],
+        functionalProcess: "6. Sécurité physique et environnementale",
+        domains: ["Protection"],
+        measure: 'Il convient que les moyens de traitement de l\'information soient protégés contre les coupures de courant et autres perturbations causées par des défaillances des services supports.',
+        objective: 'Empêcher la perte, l\'endommagement ou la compromission des informations et autres actifs associés, ou l\'interruption des activités de l\'organisation, causés par les défaillances et les perturbations des services supports.',
+        recommendations: `<p>Les organisations dépendent des services supports (par exemple, l'électricité, les télécommunications, l'approvisionnement en eau, le gaz, l'assainissement, la ventilation et la climatisation) pour permettre le fonctionnement de leurs moyens de traitement de l'information. Par conséquent, il convient que l'organisation:</p><ol type="a"><li>s'assure que les équipements supports des services sont configurés, exploités et maintenus conformément aux spécifications du fabricant pertinentes;</li><li>s'assure que les services supports sont évalués régulièrement en ce qui concerne leur capacité à répondre à l'augmentation des activités de l'organisation et des interactions avec d'autres services supports;</li><li>s'assure que les équipements supports des services sont inspectés et testés régulièrement pour s'assurer de leur bon fonctionnement;</li><li>si nécessaire, déclenche des alarmes pour détecter les dysfonctionnements des services supports;</li><li>si nécessaire, assure que les services supports disposent d'alimentations multiples sur des itinéraires physiques d'acheminement différents;</li><li>s'assure que les équipements supports des services sont connectés à un réseau distinct de celui des moyens de traitement de l'information, s'ils sont connectés à un réseau;</li><li>s'assure que les équipements supports des services sont connectés à Internet uniquement en cas de besoin et uniquement de façon sécurisée.</li></ol><p>Il convient que des systèmes d'éclairage et de communication d'urgence soient disponibles.</p><p>Il convient que les interrupteurs et les vannes de secours permettant de couper le courant, l'eau, le gaz ou autres services soient placés près des sorties de secours ou des salles contenant les équipements.</p><p>Il convient que les coordonnées des personnes à contacter en cas d'urgence soient consignées et mises à disposition du personnel en cas de panne.</p>`,
+        extraInfo: `<p>Une redondance supplémentaire de la connectivité réseau peut être assurée au moyen d'itinéraires d'acheminement multiples provenant de plusieurs fournisseurs de service.</p>`
     }
-  },
-  {
+},
+{
     code: '7.12',
     title: 'Sécurité du câblage',
     chapter: IsoChapter.PHYSICAL,
-    description: "Protéger le câblage d'alimentation et de télécommunication contre l'interception, l'interférence ou les dommages.",
+    description: 'Il convient que les câbles électriques, transportant des données ou supportant les services d\'information soient protégés contre des interceptions, interférences ou dommages.',
     details: {
-      type: ['Préventive'],
-      properties: ['Confidentialité', 'Intégrité', 'Disponibilité'],
-      concepts: ['Protéger'],
-      capabilities: ['Sécurité_physique'],
-      domains: ['Protection'],
-      measure: "Il convient que le câblage d'alimentation et de télécommunication transportant des données ou prenant en charge des services d'information importants soit protégé contre l'interception, l'interférence ou les dommages.",
-      objective: "Empêcher l'interception, l'interférence ou les dommages au câblage et l'interruption des activités de l'organisation.",
-      recommendations: `<p>Les lignes directrices suivantes doivent être prises en compte pour la sécurité du câblage:</p><ul><li>Les câbles d'alimentation et de télécommunication doivent être protégés contre les dommages.</li><li>Les câbles doivent être installés conformément aux spécifications du fabricant.</li><li>Le câblage réseau doit être protégé contre l'accès non autorisé.</li><li>Le câblage doit être étiqueté pour indiquer son objectif et sa destination.</li><li>La séparation du câblage d'alimentation et de communication doit être maintenue pour éviter les interférences.</li><li>Les câbles transportant des données sensibles ou critiques doivent être protégés physiquement (par exemple, par des conduits) ou par l'utilisation de fibres optiques.</li></ul>`,
-      extraInfo: `<p>Le câblage est un élément critique de l'infrastructure de communication. Les dommages ou l'interception du câblage peuvent entraîner une perte de disponibilité et de confidentialité de l'information.</p>`
+        type: ["Préventive"],
+        properties: ["Confidentialité", "Disponibilité"],
+        concepts: ["Protéger"],
+        processes: ["Sécurité_physique"],
+        functionalProcess: "6. Sécurité physique et environnementale",
+        domains: ["Protection"],
+        measure: 'Il convient que les câbles électriques, transportant des données ou supportant les services d\'information soient protégés contre des interceptions, interférences ou dommages.',
+        objective: 'Empêcher la perte, l\'endommagement, le vol ou la compromission des informations et autres actifs associés et l\'interruption des activités de l\'organisation liés au câblage électrique et de communications.',
+        recommendations: `<p>Il convient de prendre en considération les lignes directrices suivantes sur la sécurité du câblage:</p><ol type="a"><li>enterrer les lignes électriques et les lignes de télécommunication branchées aux moyens de traitement de l'information lorsque c'est possible, ou les soumettre à un moyen de protection alternatif adéquat, tel que les protecteurs de câbles au sol et les poteaux électriques; si les câbles sont enterrés, les protéger des coupures accidentelles (par exemple, en utilisant des conduits blindés ou des signaux de présence);</li><li>séparer les câbles électriques des câbles de communications pour éviter les interférences;</li><li>pour les systèmes sensibles ou critiques, des mesures de sécurité supplémentaires à prendre en considération incluent: <ol><li>l'installation d'un conduit de câbles blindés et de locaux ou d'armoires verrouillés et d'alarmes aux points d'inspection et de terminaison;</li><li>l'utilisation d'un blindage électromagnétique pour protéger les câbles;</li><li>des balayages techniques et des inspections physiques périodiques pour détecter les terminaux non autorisés raccordés aux câbles;</li><li>l'accès contrôlé aux panneaux de raccordement et aux locaux des câbles (par exemple, avec des clés mécaniques ou des codes PIN);</li><li>l'utilisation de câbles à fibre optique;</li></ol></li><li>l'étiquetage des câbles à chaque extrémité avec suffisamment de détails sur la source et la destination pour permettre l'identification physique et l'inspection du câble.</li></ol><p>Il convient de solliciter les conseils de spécialistes sur la manière de gérer les risques provenant d'incidents de câblages ou de dysfonctionnements.</p>`,
+        extraInfo: `<p>Parfois, les câblages électriques et de télécommunications sont des ressources partagées par plusieurs organisations occupant les mêmes locaux.</p>`
     }
-  },
-  {
+},
+{
     code: '7.13',
-    title: 'Maintenance des équipements',
+    title: 'Maintenance du matériel',
     chapter: IsoChapter.PHYSICAL,
-    description: "Effectuer la maintenance des équipements correctement pour assurer leur disponibilité et leur intégrité continues.",
+    description: 'Il convient d\'entretenir le matériel correctement pour assurer la disponibilité, l\'intégrité et la confidentialité de l\'information.',
     details: {
-      type: ['Préventive'],
-      properties: ['Confidentialité', 'Intégrité', 'Disponibilité'],
-      concepts: ['Protéger'],
-      capabilities: ['Gestion_des_actifs'],
-      domains: ['Protection', 'Résilience'],
-      measure: "Il convient que les équipements soient correctement entretenus pour assurer leur disponibilité et leur intégrité continues.",
-      objective: "Assurer le fonctionnement correct et sécurisé des équipements.",
-      recommendations: `<p>Les lignes directrices suivantes doivent être prises en compte pour la maintenance des équipements:</p><ul><li>La maintenance des équipements doit être effectuée conformément aux spécifications du fabricant.</li><li>Seul le personnel de maintenance autorisé doit effectuer les réparations et l'entretien des équipements.</li><li>Les enregistrements de toutes les maintenances, qu'elles soient préventives ou correctives, doivent être tenus à jour.</li><li>Les exigences de sécurité de l'information doivent être respectées lors des activités de maintenance.</li><li>Les équipements envoyés pour maintenance doivent être évalués pour les risques de sécurité et des mesures de sécurité appropriées doivent être appliquées.</li></ul>`,
-      extraInfo: `<p>Une maintenance inadéquate peut entraîner des défaillances des équipements, des interruptions de service et des violations de la sécurité. Les exigences de maintenance doivent être définies dans les contrats avec les fournisseurs de maintenance.</p>`
+        type: ["Préventive"],
+        properties: ["Confidentialité", "Intégrité", "Disponibilité"],
+        concepts: ["Protéger"],
+        processes: ["Sécurité_physique", "Gestion_des_actifs"],
+        functionalProcess: "6. Sécurité physique et environnementale",
+        domains: ["Protection", "Résilience"],
+        measure: 'Il convient d\'entretenir le matériel correctement pour assurer la disponibilité, l\'intégrité et la confidentialité de l\'information.',
+        objective: 'Empêcher la perte, l\'endommagement, le vol ou la compromission des informations et autres actifs associés et l\'interruption des activités de l\'organisation causés par un manque de maintenance.',
+        recommendations: `<p>Il convient de prendre en considération les lignes directrices suivantes sur la maintenance du matériel:</p><ol type="a"><li>entretenir le matériel selon les spécifications et la périodicité recommandées par le fournisseur;</li><li>mettre en œuvre un programme de maintenance et assurer sa supervision par l'organisation;</li><li>faire réaliser les réparations et la maintenance du matériel seulement par le personnel de maintenance autorisé;</li><li>consigner toutes les défaillances suspectées ou avérées et toutes les tâches de maintenance préventives ou correctives;</li><li>mettre en œuvre des mesures de sécurité appropriées lorsque la maintenance d'un matériel est programmée, en prenant en compte le fait que cette maintenance soit effectuée par du personnel sur site ou externe à l'organisation; soumettre le personnel de maintenance à un accord de confidentialité approprié;</li><li>surveiller le personnel de maintenance lors de la réalisation de la maintenance sur site;</li><li>autoriser et contrôler les accès pour la maintenance à distance;</li><li>appliquer les mesures de sécurité relatives aux actifs hors des locaux (voir 7.9) si du matériel contenant des informations est sorti des locaux pour maintenance;</li><li>se conformer à toutes les exigences de maintenance imposées par l'assurance;</li><li>avant de remettre le matériel en service après sa maintenance, l'inspecter pour s'assurer qu'il n'a pas été altéré et qu'il fonctionne correctement;</li><li>appliquer les mesures relatives à l'élimination ou au recyclage sécurisé(e) du matériel (voir 7.14) s'il est décidé que ce matériel doit être éliminé.</li></ol>`,
+        extraInfo: `<p>Le matériel inclut les composants techniques des moyens de traitement de l'information, les systèmes d'alimentation sans interruption (UPS) et les batteries, les groupes électrogènes, les alternateurs et les convertisseurs de puissance, les systèmes de détection d'intrusions physiques et les alarmes, les détecteurs de fumée, les extincteurs, la climatisation et les ascenseurs.</p>`
     }
-  },
-  {
+},
+{
     code: '7.14',
-    title: 'Élimination sécurisée ou réutilisation des équipements',
+    title: 'Élimination ou recyclage sécurisé(e) du matériel',
     chapter: IsoChapter.PHYSICAL,
-    description: "Vérifier que tous les équipements contenant des supports de stockage sont effacés ou détruits de manière sécurisée avant leur élimination ou réutilisation.",
+    description: 'Il convient de vérifier les éléments du matériel contenant des supports de stockage pour s\'assurer que toute donnée sensible et que tout logiciel sous licence ont été supprimés ou écrasés de façon sécurisée, avant son élimination ou sa réutilisation.',
     details: {
-      type: ['Préventive'],
-      properties: ['Confidentialité'],
-      concepts: ['Protéger'],
-      capabilities: ['Gestion_des_actifs'],
-      domains: ['Protection'],
-      measure: "Il convient que les équipements contenant des supports de stockage soient vérifiés pour s'assurer que toutes les données sensibles et les logiciels sous licence ont été supprimés ou écrasés de manière sécurisée avant leur élimination ou leur réutilisation.",
-      objective: "Empêcher la divulgation d'informations sensibles à partir d'équipements mis au rebut ou réutilisés.",
-      recommendations: `<p>Des procédures doivent être mises en œuvre pour assurer l'élimination ou la réutilisation sécurisée des équipements. Ces procédures doivent prendre en compte la sensibilité des informations sur les supports de stockage.</p><p>Les supports de stockage contenant des informations sensibles doivent être physiquement détruits ou effacés de manière sécurisée à l'aide de techniques qui rendent la récupération des données impossible.</p><p>Un enregistrement des équipements mis au rebut doit être conservé.</p><p>Le processus d'élimination doit être effectué par du personnel autorisé.</p>`,
-      extraInfo: `<p>La suppression simple des fichiers ne supprime pas de manière permanente les données. Des outils spécialisés sont nécessaires pour effacer de manière sécurisée les données des supports de stockage. Des informations supplémentaires sur la désinfection des supports sont disponibles dans la publication spéciale NIST 800-88.</p>`
+        type: ["Préventive"],
+        properties: ["Confidentialité"],
+        concepts: ["Protéger"],
+        processes: ["Sécurité_physique", "Gestion_des_actifs"],
+        functionalProcess: "6. Sécurité physique et environnementale",
+        domains: ["Protection"],
+        measure: 'Il convient de vérifier les éléments du matériel contenant des supports de stockage pour s\'assurer que toute donnée sensible et que tout logiciel sous licence ont été supprimés ou écrasés de façon sécurisée, avant son élimination ou sa réutilisation.',
+        objective: 'Éviter la fuite d\'informations à partir de matériel à éliminer ou à réutiliser.',
+        recommendations: `<p>Il convient de vérifier le matériel pour s'assurer s'il contient ou non des supports de stockage avant son élimination ou sa réutilisation.</p><p>Il convient que les supports de stockage contenant des informations confidentielles ou protégées par le droit d'auteur soient détruits physiquement, ou que les informations soient détruites, supprimées ou écrasées en utilisant des techniques rendant l'information d'origine irrécupérable plutôt qu'en utilisant la fonction de suppression standard.</p><p>Voir 7.10 pour des recommandations détaillées sur l'élimination sécurisée des supports de stockage et 8.10 pour des recommandations sur la suppression des informations.</p><p>Il convient de retirer les étiquettes et marquages identifiant l'organisation ou indiquant la classification, le propriétaire, le système ou le réseau avant l'élimination, y compris en cas de revente ou de don à une organisation caritatif.</p><p>Il convient que l'organisation pense à retirer les mesures de sécurité telles que les contrôles d'accès ou les équipements de surveillance à la fin du bail ou lorsqu'elle déménage. Cela dépend de facteurs tels que:</p><ol type="a"><li>son contrat de location stipulant la remise de l'installation dans son état d'origine;</li><li>la minimisation du risque de laisser des systèmes contenant des informations sensibles aux mains du prochain locataire (par exemple, listes d'accès des utilisateurs, fichiers vidéo ou fichiers images);</li><li>la possibilité de réutiliser les mesures de sécurité dans l'installation suivante.</li></ol>`,
+        extraInfo: `<p>Le matériel endommagé contenant des supports de stockage peuvent nécessiter une appréciation du risque pour déterminer s'il convient de détruire physiquement les éléments plutôt que de les faire réparer ou de les éliminer.</p><p>Les informations peuvent être compromises à cause de l'élimination ou de la réutilisation imprudentes du matériel.</p><p>En plus de sécuriser l'effacement des disques, le chiffrement intégral des disques réduit le risque de divulgation des informations confidentielles lorsque le matériel est éliminé ou réutilisé, pourvu que:</p><ol type="a"><li>le processus de chiffrement soit suffisamment robuste et couvre l'intégralité du disque (y compris les espaces libres et les fichiers swap);</li><li>les clés cryptographiques soient suffisamment longues pour résister aux attaques par force brute;</li><li>les clés cryptographiques soient elles-mêmes tenues confidentielles (par exemple, elles ne sont jamais stockées sur le même disque).</li></ol><p>Pour des conseils supplémentaires sur la cryptographie, voir 8.24.</p><p>Les techniques d'écrasement sécurisé des supports de stockage diffèrent en fonction de la technologie du support de stockage et du niveau de classification des informations sur le support de stockage. Il convient d'examiner les outils d'écrasement pour s'assurer qu'ils sont adaptés à la technologie du support de stockage.</p><p>Voir l'ISO/IEC 27040 pour plus d'informations sur les méthodes de nettoyage des supports de stockage.</p>`
     }
-  },
+}
 ];

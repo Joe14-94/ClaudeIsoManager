@@ -3,7 +3,7 @@ import Card, { CardContent, CardHeader, CardTitle } from '../components/ui/Card'
 import Tooltip from '../components/ui/Tooltip';
 import { Activity, BarChart, FileText, CheckCircle, Target, ShieldCheck } from 'lucide-react';
 import { ISO_MEASURES_DATA } from '../constants';
-import { IsoChapter, ActivityStatus } from '../types';
+import { IsoChapter, ActivityStatus, IsoMeasure } from '../types';
 import { useData } from '../contexts/DataContext';
 
 const StatCard: React.FC<{ title: string; value: string | number; icon: React.ReactNode; trend?: string; }> = ({ title, value, icon, trend }) => (
@@ -59,13 +59,14 @@ const Dashboard: React.FC = () => {
     }, [activities]);
 
     const measuresByChapter = useMemo(() => {
-        return ISO_MEASURES_DATA.reduce((acc, measure) => {
+        // Fix: Explicitly type the accumulator with the generic on `reduce` to ensure correct type inference.
+        return ISO_MEASURES_DATA.reduce<Record<string, Omit<IsoMeasure, 'id'>[]>>((acc, measure) => {
             if (!acc[measure.chapter]) {
                 acc[measure.chapter] = [];
             }
             acc[measure.chapter].push(measure);
             return acc;
-        }, {} as Record<IsoChapter, typeof ISO_MEASURES_DATA>);
+        }, {});
     }, []);
 
     const getCoverageColor = (measureCode: string): string => {

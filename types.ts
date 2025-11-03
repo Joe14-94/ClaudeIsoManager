@@ -8,11 +8,18 @@ export enum IsoChapter {
   TECHNOLOGICAL = "Contrôles technologiques"
 }
 
+export interface SecurityProcess {
+  id: string;
+  name: string;
+  description: string;
+}
+
 export interface IsoMeasureDetails {
     type: string[];
     properties: string[];
     concepts: string[];
-    capabilities: string[];
+    processes: string[]; // Capacités Opérationnelles
+    functionalProcess: string; // Processus Fonctionnels (12)
     domains: string[];
     measure: string;
     objective: string;
@@ -146,6 +153,7 @@ export interface Activity {
   endDatePlanned?: DateTime;
   createdAt: DateTime;
   updatedAt: DateTime;
+  functionalProcessId: string;
 }
 
 export interface Resource {

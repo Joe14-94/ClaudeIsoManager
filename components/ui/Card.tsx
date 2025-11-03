@@ -1,9 +1,9 @@
 import React from 'react';
 
 interface CardProps {
-  children: React.ReactNode;
+  // Fix: Make children optional to allow card components to be used without content.
+  children?: React.ReactNode;
   className?: string;
-  // Fix: Add optional onClick prop to CardProps to allow it to be clickable.
   onClick?: (event: React.MouseEvent<HTMLDivElement>) => void;
 }
 

@@ -3,23 +3,16 @@ import { useData } from '../contexts/DataContext';
 import { Objective, StrategicOrientation } from '../types';
 import Card, { CardContent } from '../components/ui/Card';
 import Modal from '../components/ui/Modal';
-import { PlusCircle } from 'lucide-react';
+import { PlusCircle, Trash2 } from 'lucide-react';
 
 const ObjectiveDetails: React.FC<{
   objective: Objective;
-  onEdit: () => void;
-  onDelete: () => void;
   orientations: StrategicOrientation[];
-}> = ({ objective, onEdit, onDelete, orientations }) => {
+}> = ({ objective, orientations }) => {
   const orientationsMap = new Map<string, StrategicOrientation>(orientations.map(o => [o.id, o]));
   
   return (
     <div className="space-y-4 text-slate-700">
-      <div>
-        <h3 className="text-lg font-bold text-slate-800 mb-2">Description</h3>
-        <p>{objective.description || 'Aucune description fournie.'}</p>
-      </div>
-      
       <div className="grid grid-cols-2 gap-4 pt-4 border-t">
           <div>
               <h4 className="font-semibold text-sm text-slate-600">Date cible</h4>
@@ -39,46 +32,21 @@ const ObjectiveDetails: React.FC<{
           </div>
       </div>
 
-      <div>
-          <h4 className="font-semibold text-sm text-slate-600 mt-4 mb-2">Orientations stratégiques liées</h4>
-          <div className="flex flex-wrap gap-2">
-              {objective.strategicOrientations.map(soId => {
-                  const orientation = orientationsMap.get(soId);
-                  if (!orientation) return null;
-                  return (
-                      <span
-                        key={soId}
-                        className="px-2 py-1 text-xs font-normal rounded-full border"
-                        style={{ 
-                          backgroundColor: `${orientation.color || '#D1D5DB'}40`,
-                          borderColor: orientation.color || '#D1D5DB',
-                          color: '#1e293b'
-                        }}
-                      >
-                        {orientation.code}
-                      </span>
-                  );
-              })}
-          </div>
-      </div>
-
       {objective.mesures_iso && objective.mesures_iso.length > 0 && (
           <div>
-              <h4 className="font-semibold text-sm text-slate-600 mt-4 mb-2">Mesures ISO 27002 liées</h4>
-              <div className="flex flex-wrap gap-2">
+              <h4 className="font-semibold text-sm text-slate-600 mt-4 mb-2">Mesures ISO 27002 liées (lecture seule)</h4>
+              <div className="max-h-48 overflow-y-auto space-y-2 pr-2">
                   {objective.mesures_iso.map((mesure, index) => (
-                      <span key={`${mesure.numero_mesure}-${index}`} className="px-2 py-1 text-xs font-mono bg-slate-100 text-slate-700 rounded-md">
-                          {mesure.numero_mesure}
-                      </span>
+                      <div key={`${mesure.numero_mesure}-${index}`} className="p-2 bg-slate-50 border rounded-md">
+                        <span className="px-2 py-1 text-xs font-mono bg-slate-200 text-slate-700 rounded-md">
+                            {mesure.numero_mesure}
+                        </span>
+                        <p className="text-xs text-slate-600 mt-1">{mesure.description}</p>
+                      </div>
                   ))}
               </div>
           </div>
       )}
-
-      <div className="flex justify-end gap-2 pt-4 mt-6 border-t border-slate-200">
-        <button onClick={onDelete} className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md shadow-sm hover:bg-red-700">Supprimer</button>
-        <button onClick={onEdit} className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700">Modifier</button>
-      </div>
     </div>
   );
 };
@@ -87,97 +55,84 @@ const Objectives: React.FC = () => {
   const { objectives, setObjectives, orientations } = useData();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentItem, setCurrentItem] = useState<Partial<Objective> | null>(null);
-  const [modalMode, setModalMode] = useState<'add' | 'edit' | 'view'>('view');
-
-  const handleOpenModal = (objective: Objective | null, mode: 'add' | 'edit' | 'view') => {
-    if (mode === 'add') {
-      setCurrentItem({ code: '', label: '', description: '', strategicOrientations: [] });
-    } else {
-      setCurrentItem(objective);
-    }
-    setModalMode(mode);
+  
+  const handleOpenModal = (item?: Objective) => {
+    setCurrentItem(item || { code: '', label: '', description: '', strategicOrientations: [] });
     setIsModalOpen(true);
   };
-  
+
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setCurrentItem(null);
   };
 
-  const switchToEditMode = () => {
-    if (currentItem) {
-        setModalMode('edit');
-    }
-  };
-
-  const handleSave = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!currentItem) return;
-
-    const objectiveToSave = {
-        ...currentItem,
-        targetDate: currentItem.targetDate ? new Date(currentItem.targetDate).toISOString() : undefined,
-    };
-
-    if (objectiveToSave.id) {
-      setObjectives(prevObjectives => prevObjectives.map(o => o.id === objectiveToSave.id ? objectiveToSave as Objective : o));
-    } else {
-      const newObjective: Objective = {
-        ...objectiveToSave,
-        id: `obj-${Date.now()}`,
-        createdAt: new Date().toISOString(),
-      } as Objective;
-      setObjectives(prevObjectives => [...prevObjectives, newObjective]);
-    }
-    handleCloseModal();
-  };
-
-  const handleDelete = (id: string) => {
-      setObjectives(prevObjectives => prevObjectives.filter(o => o.id !== id));
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     if (currentItem) {
       setCurrentItem({ ...currentItem, [e.target.name]: e.target.value });
     }
   };
 
-  const handleOrientationChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleMultiSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     if (currentItem) {
-      const selectedIds = Array.from(e.target.selectedOptions, option => option.value);
-      setCurrentItem({ ...currentItem, strategicOrientations: selectedIds });
+      const { name, options } = e.target;
+      const value: string[] = [];
+      for (let i = 0, l = options.length; i < l; i++) {
+        if (options[i].selected) {
+          value.push(options[i].value);
+        }
+      }
+      setCurrentItem({ ...currentItem, [name]: value });
     }
   };
 
-  const getModalTitle = () => {
-    switch (modalMode) {
-      case 'add':
-        return "Ajouter un objectif";
-      case 'edit':
-        return "Modifier l'objectif";
-      case 'view':
-        return `${currentItem?.code} - ${currentItem?.label}`;
-      default:
-        return "Objectif";
+  const handleSave = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentItem || !currentItem.code || !currentItem.label) {
+      alert("Le code et le libellé sont obligatoires.");
+      return;
+    }
+
+    if (currentItem.id) { // Edit
+      setObjectives(prev => prev.map(o => o.id === currentItem.id ? { ...o, ...currentItem } as Objective : o));
+    } else { // Add
+      const newObjective: Objective = {
+        id: `obj-${Date.now()}`,
+        createdAt: new Date().toISOString(),
+        mesures_iso: [],
+        ...currentItem
+      } as Objective;
+      setObjectives(prev => [newObjective, ...prev]);
+    }
+    handleCloseModal();
+  };
+
+  const handleDelete = (id: string) => {
+    if (window.confirm("Êtes-vous sûr de vouloir supprimer cet objectif ?")) {
+      setObjectives(prev => prev.filter(o => o.id !== id));
+      handleCloseModal();
     }
   };
+
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold text-slate-800">Objectifs</h1>
-        <button onClick={() => handleOpenModal(null, 'add')} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+        <button onClick={() => handleOpenModal()} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
           <PlusCircle size={20} />
           <span>Nouvel objectif</span>
         </button>
       </div>
+       <p className="text-slate-600">
+        Les objectifs de la stratégie cybersécurité. Cliquez sur une carte pour la modifier.
+      </p>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {objectives.map((objective) => (
           <Card 
             key={objective.id} 
             className="cursor-pointer hover:shadow-md transition-shadow duration-200"
-            onClick={() => handleOpenModal(objective, 'view')}
+            onClick={() => handleOpenModal(objective)}
           >
             <CardContent>
               <div className="font-semibold text-slate-800">
@@ -193,50 +148,50 @@ const Objectives: React.FC = () => {
         <Modal 
           isOpen={isModalOpen} 
           onClose={handleCloseModal}
-          title={getModalTitle()}
+          title={currentItem.id ? "Modifier l'objectif" : "Nouvel objectif"}
         >
-          {modalMode === 'view' ? (
-             <ObjectiveDetails
-                objective={currentItem as Objective}
-                onEdit={switchToEditMode}
-                onDelete={() => {
-                    if (window.confirm("Êtes-vous sûr de vouloir supprimer cet objectif ?")) {
-                        handleDelete(currentItem.id!);
-                        handleCloseModal();
-                    }
-                }}
-                orientations={orientations}
-            />
-          ) : (
-            <form onSubmit={handleSave} className="space-y-4">
-              <div>
-                <label htmlFor="code" className="block text-sm font-medium text-slate-700">Code</label>
-                <input type="text" name="code" id="code" value={currentItem.code || ''} onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" required />
-              </div>
-              <div>
-                <label htmlFor="label" className="block text-sm font-medium text-slate-700">Libellé</label>
-                <input type="text" name="label" id="label" value={currentItem.label || ''} onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" required />
-              </div>
-              <div>
-                <label htmlFor="targetDate" className="block text-sm font-medium text-slate-700">Date cible</label>
-                <input type="date" name="targetDate" id="targetDate" value={currentItem.targetDate?.split('T')[0] || ''} onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" />
-              </div>
-               <div>
-                <label htmlFor="strategicOrientations" className="block text-sm font-medium text-slate-700">Orientations stratégiques</label>
-                <select name="strategicOrientations" id="strategicOrientations" multiple value={currentItem.strategicOrientations || []} onChange={handleOrientationChange} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm h-32" required>
-                  {orientations.map(o => <option key={o.id} value={o.id}>{o.code} - {o.label}</option>)}
-                </select>
-              </div>
-              <div>
-                <label htmlFor="description" className="block text-sm font-medium text-slate-700">Description</label>
-                <textarea name="description" id="description" value={currentItem.description || ''} onChange={handleChange} rows={3} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" />
-              </div>
-              <div className="flex justify-end gap-2 pt-4">
-                <button type="button" onClick={handleCloseModal} className="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 border border-transparent rounded-md hover:bg-slate-200">Annuler</button>
-                <button type="submit" className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700">Enregistrer</button>
-              </div>
-            </form>
-          )}
+          <form onSubmit={handleSave} className="space-y-4">
+            <div>
+              <label htmlFor="code" className="block text-sm font-medium text-slate-700">Code</label>
+              <input type="text" name="code" id="code" value={currentItem.code || ''} onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" required />
+            </div>
+            <div>
+              <label htmlFor="label" className="block text-sm font-medium text-slate-700">Libellé</label>
+              <input type="text" name="label" id="label" value={currentItem.label || ''} onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" required />
+            </div>
+            <div>
+              <label htmlFor="description" className="block text-sm font-medium text-slate-700">Description</label>
+              <textarea name="description" id="description" value={currentItem.description || ''} onChange={handleChange} rows={3} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" />
+            </div>
+            <div>
+              <label htmlFor="targetDate" className="block text-sm font-medium text-slate-700">Date Cible</label>
+              <input type="date" name="targetDate" id="targetDate" value={currentItem.targetDate ? currentItem.targetDate.split('T')[0] : ''} onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" />
+            </div>
+            <div>
+              <label htmlFor="strategicOrientations" className="block text-sm font-medium text-slate-700">Orientations stratégiques (maintenez Ctrl/Cmd pour sélectionner)</label>
+              <select name="strategicOrientations" id="strategicOrientations" multiple value={currentItem.strategicOrientations || []} onChange={handleMultiSelectChange} className="mt-1 block w-full h-24 px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm">
+                {orientations.map(o => <option key={o.id} value={o.id}>{o.code} - {o.label}</option>)}
+              </select>
+            </div>
+            
+            {currentItem.id && (
+                <ObjectiveDetails objective={currentItem as Objective} orientations={orientations} />
+            )}
+
+            <div className="flex justify-between items-center gap-2 pt-4 border-t mt-6">
+                <div>
+                    {currentItem.id && (
+                        <button type="button" onClick={() => handleDelete(currentItem.id!)} className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700">
+                            <Trash2 size={16} /> Supprimer
+                        </button>
+                    )}
+                </div>
+                <div className="flex gap-2">
+                    <button type="button" onClick={handleCloseModal} className="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 rounded-md hover:bg-slate-200">Annuler</button>
+                    <button type="submit" className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700">Enregistrer</button>
+                </div>
+            </div>
+          </form>
         </Modal>
       )}
     </div>

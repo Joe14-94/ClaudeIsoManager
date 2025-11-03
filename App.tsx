@@ -12,6 +12,7 @@ import Resources from './pages/Resources';
 import DataManagement from './pages/DataManagement';
 import Chantiers from './pages/Chantiers';
 import D3GraphView from './pages/D3GraphView';
+import Processes from './pages/Processes';
 import { DataProvider } from './contexts/DataContext';
 
 const App: React.FC = () => {
@@ -31,6 +32,7 @@ const App: React.FC = () => {
               <Route path="/orientations" element={<Orientations />} />
               <Route path="/objectives" element={<Objectives />} />
               <Route path="/chantiers" element={<Chantiers />} />
+              <Route path="/processes" element={<Processes />} />
               <Route path="/resources" element={<Resources />} />
               <Route path="/data-management" element={<DataManagement />} />
             </Routes>

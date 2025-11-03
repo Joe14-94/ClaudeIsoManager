@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { ISO_MEASURES_DATA, CHAPTER_COLORS } from '../constants';
 import { IsoChapter, IsoMeasure, IsoMeasureDetails } from '../types';
@@ -12,24 +13,28 @@ const MeasureDetails: React.FC<{ measure: IsoMeasure }> = ({ measure }) => {
 
     const { details } = measure;
 
-    const renderTags = (title: string, tags: string[]) => (
-        <div className="mb-2">
-            <h4 className="font-semibold text-sm text-slate-600">{title}</h4>
-            <div className="flex flex-wrap gap-2 mt-1">
-                {tags.map(tag => (
-                    <span key={tag} className="px-2 py-1 text-xs bg-slate-100 text-slate-700 rounded-md">{tag.replace(/_/g, ' ')}</span>
-                ))}
+    const renderTags = (title: string, tags: string[] | string) => {
+        const tagArray = Array.isArray(tags) ? tags : [tags];
+        return (
+            <div className="mb-2">
+                <h4 className="font-semibold text-sm text-slate-600">{title}</h4>
+                <div className="flex flex-wrap gap-2 mt-1">
+                    {tagArray.map(tag => (
+                        <span key={tag} className="px-2 py-1 text-xs bg-slate-100 text-slate-700 rounded-md">{tag.replace(/_/g, ' ')}</span>
+                    ))}
+                </div>
             </div>
-        </div>
-    );
+        );
+    }
 
     return (
         <div className="space-y-4 text-slate-700">
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 p-4 bg-slate-50 rounded-lg border border-slate-200">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4 bg-slate-50 rounded-lg border border-slate-200">
                 {renderTags('Type', details.type)}
                 {renderTags('Propriétés', details.properties)}
                 {renderTags('Concepts', details.concepts)}
-                {renderTags('Capacités', details.capabilities)}
+                {renderTags('Capacités Op.', details.processes)}
+                {details.functionalProcess && renderTags('Processus Fonc.', details.functionalProcess)}
                 {renderTags('Domaines', details.domains)}
             </div>
 
@@ -63,12 +68,13 @@ const Iso27002: React.FC = () => {
   const allMeasures: IsoMeasure[] = useMemo(() => ISO_MEASURES_DATA.map(m => ({ ...m, id: m.code, details: (m as any).details })), []);
 
   const filterOptions = useMemo(() => {
-    const options: Record<string, Set<string>> = {
-        type: new Set(),
-        properties: new Set(),
-        concepts: new Set(),
-        capabilities: new Set(),
-        domains: new Set(),
+    const options = {
+        type: new Set<string>(),
+        properties: new Set<string>(),
+        concepts: new Set<string>(),
+        processes: new Set<string>(),
+        functionalProcess: new Set<string>(),
+        domains: new Set<string>(),
     };
 
     allMeasures.forEach(measure => {
@@ -76,7 +82,10 @@ const Iso27002: React.FC = () => {
             measure.details.type.forEach(val => options.type.add(val));
             measure.details.properties.forEach(val => options.properties.add(val));
             measure.details.concepts.forEach(val => options.concepts.add(val));
-            measure.details.capabilities.forEach(val => options.capabilities.add(val));
+            measure.details.processes.forEach(val => options.processes.add(val));
+            if(measure.details.functionalProcess) {
+              options.functionalProcess.add(measure.details.functionalProcess);
+            }
             measure.details.domains.forEach(val => options.domains.add(val));
         }
     });
@@ -85,58 +94,69 @@ const Iso27002: React.FC = () => {
         type: Array.from(options.type).sort(),
         properties: Array.from(options.properties).sort(),
         concepts: Array.from(options.concepts).sort(),
-        capabilities: Array.from(options.capabilities).sort(),
+        processes: Array.from(options.processes).sort(),
+        functionalProcess: Array.from(options.functionalProcess).sort(),
         domains: Array.from(options.domains).sort(),
     };
   }, [allMeasures]);
 
-  const [activeFilters, setActiveFilters] = useState<Record<string, string[]>>({
+  type FilterableDetailKey = keyof typeof filterOptions;
+
+  const [activeFilters, setActiveFilters] = useState<Record<FilterableDetailKey, string[]>>({
     type: [],
     properties: [],
     concepts: [],
-    capabilities: [],
+    processes: [],
+    functionalProcess: [],
     domains: [],
   });
 
   const filterCounts = useMemo(() => {
     const counts: Record<string, Record<string, number>> = {};
 
-    Object.keys(filterOptions).forEach(category => {
+    (Object.keys(filterOptions) as FilterableDetailKey[]).forEach(category => {
       counts[category] = {};
 
       const relevantMeasures = allMeasures.filter(measure => {
         if (!measure.details) return false;
         
-        return (Object.keys(activeFilters) as Array<keyof typeof activeFilters>).every(cat => {
+        return (Object.keys(activeFilters) as FilterableDetailKey[]).every(cat => {
           if (cat === category) return true;
           
           const selectedValues = activeFilters[cat];
           if (selectedValues.length === 0) return true;
 
           const measureValues = measure.details?.[cat as keyof IsoMeasureDetails];
-          if (!Array.isArray(measureValues)) return false;
+          if (!measureValues) return false;
 
-          return measureValues.some(measureValue => selectedValues.includes(measureValue));
+          if (Array.isArray(measureValues)) {
+            return measureValues.some(measureValue => selectedValues.includes(measureValue));
+          }
+          return selectedValues.includes(measureValues as string);
         });
       });
 
-      const options = filterOptions[category as keyof typeof filterOptions];
+      const options = filterOptions[category];
       options.forEach(value => {
-        counts[category][value] = relevantMeasures.filter(measure => 
-          measure.details?.[category as keyof IsoMeasureDetails]?.includes(value)
-        ).length;
+        counts[category][value] = relevantMeasures.filter(measure => {
+            const prop = measure.details?.[category as keyof IsoMeasureDetails];
+            if (Array.isArray(prop)) {
+              return prop.includes(value);
+            }
+            return prop === value;
+        }).length;
       });
     });
 
     return counts;
   }, [allMeasures, activeFilters, filterOptions]);
 
-  const handleFilterChange = (category: string, value: string) => {
+  const handleFilterChange = (category: FilterableDetailKey, value: string) => {
     setActiveFilters(prev => {
         const currentCategoryFilters = prev[category] || [];
         const newCategoryFilters = currentCategoryFilters.includes(value)
-            ? currentCategoryFilters.filter(item => item !== value) // uncheck
-            : [...currentCategoryFilters, value]; // check
+            ? currentCategoryFilters.filter(item => item !== value)
+            : [...currentCategoryFilters, value];
         return {
             ...prev,
             [category]: newCategoryFilters,
@@ -149,7 +169,8 @@ const Iso27002: React.FC = () => {
         type: [],
         properties: [],
         concepts: [],
-        capabilities: [],
+        processes: [],
+        functionalProcess: [],
         domains: [],
       });
   };
@@ -163,28 +184,31 @@ const Iso27002: React.FC = () => {
     return allMeasures.filter(measure => {
         if (!measure.details) return false;
 
-        return (Object.keys(activeFilters) as Array<keyof typeof activeFilters>).every(category => {
+        return (Object.keys(activeFilters) as FilterableDetailKey[]).every(category => {
             const selectedValues = activeFilters[category];
             if (selectedValues.length === 0) {
                 return true;
             }
-
+            
             const measureValues = measure.details?.[category as keyof IsoMeasureDetails];
-            if (!Array.isArray(measureValues)) return false;
+            if (!measureValues) return false;
 
-            return measureValues.some(measureValue => selectedValues.includes(measureValue));
+            if (Array.isArray(measureValues)) {
+                return measureValues.some(measureValue => selectedValues.includes(measureValue));
+            }
+            return selectedValues.includes(measureValues as string);
         });
     });
   }, [allMeasures, activeFilters]);
 
   const measuresByChapter = useMemo(() => {
-    return filteredMeasures.reduce((acc, measure) => {
+    return filteredMeasures.reduce<Record<string, IsoMeasure[]>>((acc, measure) => {
       if (!acc[measure.chapter]) {
         acc[measure.chapter] = [];
       }
       acc[measure.chapter].push(measure);
       return acc;
-    }, {} as Record<IsoChapter, typeof filteredMeasures>);
+    }, {});
   }, [filteredMeasures]);
 
   const totalFilteredMeasures = filteredMeasures.length;
@@ -193,7 +217,8 @@ const Iso27002: React.FC = () => {
     type: 'Type de mesure',
     properties: 'Propriétés',
     concepts: 'Concepts de cybersécurité',
-    capabilities: 'Capacités opérationnelles',
+    processes: 'Capacités Opérationnelles',
+    functionalProcess: 'Processus Fonctionnels',
     domains: 'Domaines de sécurité'
   };
 
@@ -222,11 +247,11 @@ const Iso27002: React.FC = () => {
             </CardHeader>
             <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
-                    {Object.keys(filterOptions).map((category) => (
+                    {(Object.keys(filterOptions) as FilterableDetailKey[]).map((category) => (
                         <div key={category}>
                             <h4 className="font-semibold text-slate-700 mb-2">{filterLabels[category]}</h4>
                             <div className="space-y-1 max-h-48 overflow-y-auto pr-2">
-                                {(filterOptions[category as keyof typeof filterOptions]).map(value => (
+                                {(filterOptions[category]).map(value => (
                                     <div key={value} className="flex items-center justify-between">
                                         <label className="flex items-center cursor-pointer select-none" htmlFor={`${category}-${value}`}>
                                             <input

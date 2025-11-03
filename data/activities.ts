@@ -1,3 +1,4 @@
+
 import { Activity, ActivityStatus, Priority, ActivityType, SecurityDomain } from '../types';
 
 export const activities: Activity[] = [
@@ -18,6 +19,7 @@ export const activities: Activity[] = [
     endDatePlanned: '2024-09-30T00:00:00Z',
     createdAt: '2024-01-20T00:00:00Z',
     updatedAt: '2024-05-15T00:00:00Z',
+    functionalProcessId: 'identites-acces',
   },
   {
     id: 'act-2',
@@ -36,6 +38,7 @@ export const activities: Activity[] = [
     endDatePlanned: '2024-04-30T00:00:00Z',
     createdAt: '2024-02-10T00:00:00Z',
     updatedAt: '2024-05-01T00:00:00Z',
+    functionalProcessId: 'ressources-humaines',
   },
   {
     id: 'act-3',
@@ -53,6 +56,7 @@ export const activities: Activity[] = [
     startDate: '2024-01-01T00:00:00Z',
     createdAt: '2024-01-01T00:00:00Z',
     updatedAt: '2024-04-01T00:00:00Z',
+    functionalProcessId: 'identites-acces',
   },
   {
     id: 'act-4',
@@ -71,6 +75,7 @@ export const activities: Activity[] = [
     endDatePlanned: '2024-12-31T00:00:00Z',
     createdAt: '2024-05-10T00:00:00Z',
     updatedAt: '2024-05-10T00:00:00Z',
+    functionalProcessId: 'incidents-continuite',
   },
   {
     id: 'act-5',
@@ -89,6 +94,7 @@ export const activities: Activity[] = [
     endDatePlanned: '2024-08-31T00:00:00Z',
     createdAt: '2023-10-15T00:00:00Z',
     updatedAt: '2024-05-20T00:00:00Z',
+    functionalProcessId: 'operations-communications',
   },
   {
     id: 'act-6',
@@ -107,6 +113,7 @@ export const activities: Activity[] = [
     endDatePlanned: '2024-07-31T00:00:00Z',
     createdAt: '2024-04-15T00:00:00Z',
     updatedAt: '2024-05-25T00:00:00Z',
+    functionalProcessId: 'fournisseurs-tiers',
   },
   {
     id: 'act-7',
@@ -124,6 +131,7 @@ export const activities: Activity[] = [
     startDate: '2023-01-01T00:00:00Z',
     createdAt: '2023-01-01T00:00:00Z',
     updatedAt: '2024-05-28T00:00:00Z',
+    functionalProcessId: 'operations-communications',
   },
   {
     id: 'act-8',
@@ -142,6 +150,7 @@ export const activities: Activity[] = [
     endDatePlanned: '2024-03-15T00:00:00Z',
     createdAt: '2023-12-01T00:00:00Z',
     updatedAt: '2024-03-20T00:00:00Z',
+    functionalProcessId: 'developpement-maintenance',
   },
   {
     id: 'act-9',
@@ -160,6 +169,7 @@ export const activities: Activity[] = [
     endDatePlanned: '2025-01-31T00:00:00Z',
     createdAt: '2024-02-20T00:00:00Z',
     updatedAt: '2024-05-18T00:00:00Z',
+    functionalProcessId: 'surveillance-journalisation',
   },
   {
     id: 'act-10',
@@ -178,5 +188,6 @@ export const activities: Activity[] = [
     endDatePlanned: '2024-02-29T00:00:00Z',
     createdAt: '2023-08-01T00:00:00Z',
     updatedAt: '2024-03-05T00:00:00Z',
+    functionalProcessId: 'operations-communications',
   },
 ];

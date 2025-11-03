@@ -1,10 +1,11 @@
+
 import React, { useState, useMemo } from 'react';
 import { useData } from '../contexts/DataContext';
 import { Activity, ActivityStatus, Priority, SecurityDomain, ActivityType } from '../types';
 import { DOMAIN_COLORS, STATUS_COLORS, PRIORITY_COLORS, ISO_MEASURES_DATA } from '../constants';
 import Card, { CardContent, CardHeader } from '../components/ui/Card';
 import Modal from '../components/ui/Modal';
-import { Search, PlusCircle } from 'lucide-react';
+import { Search, PlusCircle, Edit } from 'lucide-react';
 
 const ActivityFilter: React.FC<{
   setDomainFilter: (domain: string) => void;
@@ -49,14 +50,17 @@ const ActivityFilter: React.FC<{
 };
 
 const Activities: React.FC = () => {
-  const { activities, setActivities, objectives, orientations, resources } = useData();
+  const { activities, setActivities, objectives, orientations, resources, securityProcesses } = useData();
   const [domainFilter, setDomainFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [priorityFilter, setPriorityFilter] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [isEditMode, setIsEditMode] = useState(false);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentActivity, setCurrentActivity] = useState<Partial<Activity> | null>(null);
+
+  const processMap = useMemo(() => new Map(securityProcesses.map(p => [p.id, p.name])), [securityProcesses]);
 
   const filteredActivities = useMemo(() => {
     return activities.filter(activity => {
@@ -69,26 +73,34 @@ const Activities: React.FC = () => {
     });
   }, [activities, domainFilter, statusFilter, priorityFilter, searchTerm]);
 
-  const handleOpenModal = () => {
-    setCurrentActivity({
-      activityId: `ACT-${String(activities.length + 1).padStart(3, '0')}`,
-      title: '',
-      description: '',
-      status: ActivityStatus.NOT_STARTED,
-      priority: Priority.MEDIUM,
-      activityType: ActivityType.PONCTUAL,
-      securityDomain: SecurityDomain.GOUVERNANCE,
-      isoMeasures: [],
-      strategicOrientations: [],
-      objectives: [],
-      owner: resources[0]?.id || ''
-    });
+  const handleOpenModal = (activityToEdit?: Activity) => {
+    if (activityToEdit) {
+      setCurrentActivity(activityToEdit);
+      setIsEditMode(true);
+    } else {
+      setCurrentActivity({
+        activityId: `ACT-${String(activities.length + 1).padStart(3, '0')}`,
+        title: '',
+        description: '',
+        status: ActivityStatus.NOT_STARTED,
+        priority: Priority.MEDIUM,
+        activityType: ActivityType.PONCTUAL,
+        securityDomain: SecurityDomain.GOUVERNANCE,
+        isoMeasures: [],
+        strategicOrientations: [],
+        objectives: [],
+        owner: resources[0]?.id || '',
+        functionalProcessId: securityProcesses[0]?.id || ''
+      });
+      setIsEditMode(false);
+    }
     setIsModalOpen(true);
   };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setCurrentActivity(null);
+    setIsEditMode(false);
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -119,15 +131,23 @@ const Activities: React.FC = () => {
       alert("L'ID d'activité et le titre sont obligatoires.");
       return;
     }
-
-    const newActivity: Activity = {
-        id: `act-${Date.now()}`,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        ...currentActivity,
-    } as Activity;
     
-    setActivities(prev => [newActivity, ...prev]);
+    if (isEditMode && currentActivity.id) {
+        const updatedActivity: Activity = {
+            ...currentActivity,
+            updatedAt: new Date().toISOString(),
+        } as Activity;
+        setActivities(prev => prev.map(act => act.id === updatedActivity.id ? updatedActivity : act));
+    } else {
+        const newActivity: Activity = {
+            id: `act-${Date.now()}`,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            ...currentActivity,
+        } as Activity;
+        
+        setActivities(prev => [newActivity, ...prev]);
+    }
     handleCloseModal();
   };
 
@@ -136,7 +156,7 @@ const Activities: React.FC = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold text-slate-800">Activités</h1>
-        <button onClick={handleOpenModal} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+        <button onClick={() => handleOpenModal()} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
           <PlusCircle size={20} />
           <span>Nouvelle activité</span>
         </button>
@@ -161,7 +181,9 @@ const Activities: React.FC = () => {
                   <th scope="col" className="px-6 py-3">Domaine</th>
                   <th scope="col" className="px-6 py-3">Statut</th>
                   <th scope="col" className="px-6 py-3">Priorité</th>
+                  <th scope="col" className="px-6 py-3">Processus</th>
                   <th scope="col" className="px-6 py-3">Mesures ISO</th>
+                  <th scope="col" className="px-6 py-3"><span className="sr-only">Actions</span></th>
                 </tr>
               </thead>
               <tbody>
@@ -186,6 +208,9 @@ const Activities: React.FC = () => {
                         {activity.priority}
                       </span>
                     </td>
+                     <td className="px-6 py-4 max-w-xs">
+                        <span className="text-xs truncate">{processMap.get(activity.functionalProcessId) || 'N/A'}</span>
+                    </td>
                     <td className="px-6 py-4">
                       <div className="flex flex-wrap gap-1">
                         {activity.isoMeasures.map(code => (
@@ -194,6 +219,11 @@ const Activities: React.FC = () => {
                           </span>
                         ))}
                       </div>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <button onClick={() => handleOpenModal(activity)} className="p-1 text-slate-500 rounded-md hover:bg-slate-100 hover:text-blue-600">
+                        <Edit size={18} />
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -212,7 +242,7 @@ const Activities: React.FC = () => {
         <Modal 
           isOpen={isModalOpen} 
           onClose={handleCloseModal}
-          title="Nouvelle activité"
+          title={isEditMode ? "Modifier l'activité" : "Nouvelle activité"}
         >
           <form onSubmit={handleSave} className="space-y-4">
             <div>
@@ -253,6 +283,13 @@ const Activities: React.FC = () => {
                   {Object.values(SecurityDomain).map(d => <option key={d} value={d}>{d}</option>)}
                 </select>
               </div>
+            </div>
+            
+            <div>
+              <label htmlFor="functionalProcessId" className="block text-sm font-medium text-slate-700">Processus Fonctionnel</label>
+              <select name="functionalProcessId" id="functionalProcessId" value={currentActivity.functionalProcessId} onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm">
+                {securityProcesses.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+              </select>
             </div>
 
             <div>

@@ -1,7 +1,9 @@
+
 import React from 'react';
 import Card, { CardContent, CardHeader, CardTitle } from '../components/ui/Card';
-import { Download, Upload, HelpCircle, DatabaseBackup } from 'lucide-react';
+import { Upload, HelpCircle, DatabaseBackup, Info } from 'lucide-react';
 import { useData } from '../contexts/DataContext';
+import Tooltip from '../components/ui/Tooltip';
 
 const DataManagement: React.FC = () => {
   const { 
@@ -90,8 +92,11 @@ const DataManagement: React.FC = () => {
       </p>
 
       <Card>
-        <CardHeader>
+        <CardHeader className="flex items-center justify-between">
           <CardTitle>Sauvegarde et restauration</CardTitle>
+           <Tooltip text="La sauvegarde complète inclut : Activités, Objectifs, Orientations, Chantiers, et Ressources.">
+            <Info size={18} className="text-slate-500 cursor-help" />
+          </Tooltip>
         </CardHeader>
         <CardContent className="flex flex-col sm:flex-row gap-4">
           <button

@@ -278,7 +278,8 @@ const GraphView: React.FC = () => {
 
             const relatedChantiers = new Map<string, Chantier>();
             const relatedOrientations = new Map<string, StrategicOrientation>();
-            const chantierCodeMap = new Map(chantiers.map(ch => [ch.code, ch]));
+            // Fix: Explicitly type the 'ch' parameter to ensure correct type inference for the map.
+            const chantierCodeMap = new Map(chantiers.map((ch: Chantier) => [ch.code, ch]));
 
             relatedObjectives.forEach(o => {
                 const objCodeParts = o.code.split('.');
@@ -299,7 +300,8 @@ const GraphView: React.FC = () => {
                 });
             });
             
-            relatedChantiers.forEach(c => {
+            // Fix: Explicitly type the forEach parameter `c` to resolve type inference issues.
+            relatedChantiers.forEach((c: Chantier) => {
                  allNodes.push({ id: `ch-${c.id}`, data: { label: `${c.code} - ${c.label}`, ...c }, position: { x: columnX.chantiers, y: yCounters.chantiers }, ...nodeDefaults, style: { ...nodeDefaults.style, ...nodeStyles.chantiers }, type: 'chantiers' });
                  yCounters.chantiers += ySpacing.chantiers;
                  const orientation = orientations.find(o => o.id === c.strategicOrientationId);
