@@ -4,12 +4,13 @@ import { X } from 'lucide-react';
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
-  title: string;
+  title: React.ReactNode;
   children: React.ReactNode;
+  headerActions?: React.ReactNode;
   position?: 'center' | 'right';
 }
 
-const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, position = 'center' }) => {
+const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, headerActions, position = 'center' }) => {
   useEffect(() => {
     const handleEsc = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
@@ -46,13 +47,16 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, positio
       >
         <header className="flex items-center justify-between p-4 border-b border-slate-200 sticky top-0 bg-white z-10">
           <h2 id="modal-title" className="text-xl font-bold text-slate-800">{title}</h2>
-          <button 
-            onClick={onClose} 
-            className="text-slate-500 hover:text-slate-800 transition-colors"
-            aria-label="Fermer"
-          >
-            <X size={24} />
-          </button>
+          <div className="flex items-center gap-2 ml-4 flex-shrink-0">
+            {headerActions}
+            <button 
+              onClick={onClose} 
+              className="p-1 rounded-md hover:bg-slate-200 text-slate-600 hover:text-slate-900 transition-colors"
+              aria-label="Fermer"
+            >
+              <X size={24} />
+            </button>
+          </div>
         </header>
         <main className="p-6 overflow-y-auto">
           {children}

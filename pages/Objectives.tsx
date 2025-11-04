@@ -3,7 +3,7 @@ import { useData } from '../contexts/DataContext';
 import { Objective, StrategicOrientation } from '../types';
 import Card, { CardContent } from '../components/ui/Card';
 import Modal from '../components/ui/Modal';
-import { PlusCircle, Trash2 } from 'lucide-react';
+import { PlusCircle, Trash2, Edit } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 const ObjectiveDetails: React.FC<{
@@ -58,15 +58,34 @@ const Objectives: React.FC = () => {
   const isReadOnly = userRole === 'readonly';
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentItem, setCurrentItem] = useState<Partial<Objective> | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
   
   const handleOpenModal = (item?: Objective) => {
-    setCurrentItem(item || { code: '', label: '', description: '', strategicOrientations: [] });
+    if (item) { // View/edit existing
+      setCurrentItem(item);
+      setIsEditing(false);
+    } else { // New item
+      if (isReadOnly) return;
+      setCurrentItem({ code: '', label: '', description: '', strategicOrientations: [] });
+      setIsEditing(true);
+    }
     setIsModalOpen(true);
   };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setCurrentItem(null);
+    setIsEditing(false);
+  };
+  
+  const handleCancel = () => {
+    if (currentItem && !currentItem.id) {
+        handleCloseModal();
+    } else {
+        const originalItem = objectives.find(o => o.id === currentItem?.id);
+        setCurrentItem(originalItem || null);
+        setIsEditing(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -155,27 +174,38 @@ const Objectives: React.FC = () => {
           isOpen={isModalOpen} 
           onClose={handleCloseModal}
           title={currentItem.id ? "Détails de l'objectif" : "Nouvel objectif"}
+          headerActions={
+            !isReadOnly && currentItem.id && !isEditing && (
+              <button
+                onClick={() => setIsEditing(true)}
+                className="p-1 rounded-md hover:bg-slate-200 text-slate-600 hover:text-slate-900 transition-colors"
+                aria-label="Modifier"
+              >
+                <Edit size={20} />
+              </button>
+            )
+          }
         >
           <form onSubmit={handleSave} className="space-y-4">
             <div>
               <label htmlFor="code" className="block text-sm font-medium text-slate-700">Code</label>
-              <input type="text" name="code" id="code" value={currentItem.code || ''} onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" required readOnly={isReadOnly}/>
+              <input type="text" name="code" id="code" value={currentItem.code || ''} onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" required readOnly={isReadOnly || !isEditing}/>
             </div>
             <div>
               <label htmlFor="label" className="block text-sm font-medium text-slate-700">Libellé</label>
-              <input type="text" name="label" id="label" value={currentItem.label || ''} onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" required readOnly={isReadOnly}/>
+              <input type="text" name="label" id="label" value={currentItem.label || ''} onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" required readOnly={isReadOnly || !isEditing}/>
             </div>
             <div>
               <label htmlFor="description" className="block text-sm font-medium text-slate-700">Description</label>
-              <textarea name="description" id="description" value={currentItem.description || ''} onChange={handleChange} rows={3} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" readOnly={isReadOnly}/>
+              <textarea name="description" id="description" value={currentItem.description || ''} onChange={handleChange} rows={3} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" readOnly={isReadOnly || !isEditing}/>
             </div>
             <div>
               <label htmlFor="targetDate" className="block text-sm font-medium text-slate-700">Date Cible</label>
-              <input type="date" name="targetDate" id="targetDate" value={currentItem.targetDate ? currentItem.targetDate.split('T')[0] : ''} onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" readOnly={isReadOnly}/>
+              <input type="date" name="targetDate" id="targetDate" value={currentItem.targetDate ? currentItem.targetDate.split('T')[0] : ''} onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" readOnly={isReadOnly || !isEditing}/>
             </div>
             <div>
               <label htmlFor="strategicOrientations" className="block text-sm font-medium text-slate-700">Orientations stratégiques (maintenez Ctrl/Cmd pour sélectionner)</label>
-              <select name="strategicOrientations" id="strategicOrientations" multiple value={currentItem.strategicOrientations || []} onChange={handleMultiSelectChange} className="mt-1 block w-full h-24 px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" disabled={isReadOnly}>
+              <select name="strategicOrientations" id="strategicOrientations" multiple value={currentItem.strategicOrientations || []} onChange={handleMultiSelectChange} className="mt-1 block w-full h-24 px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" disabled={isReadOnly || !isEditing}>
                 {orientations.map(o => <option key={o.id} value={o.id}>{o.code} - {o.label}</option>)}
               </select>
             </div>
@@ -186,16 +216,20 @@ const Objectives: React.FC = () => {
 
             <div className="flex justify-between items-center gap-2 pt-4 border-t mt-6">
                 <div>
-                    {!isReadOnly && currentItem.id && (
+                    {!isReadOnly && currentItem.id && isEditing && (
                         <button type="button" onClick={() => handleDelete(currentItem.id!)} className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700">
                             <Trash2 size={16} /> Supprimer
                         </button>
                     )}
                 </div>
                 <div className="flex gap-2">
-                    <button type="button" onClick={handleCloseModal} className="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 rounded-md hover:bg-slate-200">{isReadOnly ? 'Fermer' : 'Annuler'}</button>
-                    {!isReadOnly && (
-                      <button type="submit" className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700">Enregistrer</button>
+                    {isReadOnly || !isEditing ? (
+                        <button type="button" onClick={handleCloseModal} className="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 rounded-md hover:bg-slate-200">Fermer</button>
+                    ) : (
+                      <>
+                        <button type="button" onClick={handleCancel} className="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 rounded-md hover:bg-slate-200">Annuler</button>
+                        <button type="submit" className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700">Enregistrer</button>
+                      </>
                     )}
                 </div>
             </div>

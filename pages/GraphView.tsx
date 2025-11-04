@@ -253,7 +253,7 @@ const GraphView: React.FC = () => {
                 yCounters.activities += ySpacing.activities;
                 a.isoMeasures.forEach(isoCode => {
                      if(visibleMeasureCodes.has(isoCode)) {
-                         allEdges.push({ id: `e-act-${a.id}-iso-${isoCode}`, source: `iso-${isoCode}`, target: `act-${a.id}`, type: 'smoothstep', sourceHandle: 'right', targetHandle: 'left' });
+                         allEdges.push({ id: `e-iso-${isoCode}-act-${a.id}`, source: `iso-${isoCode}`, target: `act-${a.id}`, type: 'smoothstep' });
                      }
                 });
             });
@@ -262,178 +262,252 @@ const GraphView: React.FC = () => {
             relatedActivities.forEach(a => {
                 a.objectives.forEach(objId => {
                     const obj = objectives.find(o => o.id === objId);
-                    if (obj) relatedObjectives.set(objId, obj);
-                });
-            });
-
-            relatedObjectives.forEach(o => {
-                allNodes.push({ id: `obj-${o.id}`, data: { label: `${o.code} - ${o.label}`, ...o }, position: { x: columnX.objectives, y: yCounters.objectives }, ...nodeDefaults, style: { ...nodeDefaults.style, ...nodeStyles.objectives }, type: 'objectives' });
-                yCounters.objectives += ySpacing.objectives;
-                activities.forEach(a => {
-                    if (a.objectives.includes(o.id) && relatedActivities.has(a.id)) {
-                        allEdges.push({ id: `e-obj-${o.id}-act-${a.id}`, source: `obj-${o.id}`, target: `act-${a.id}`, type: 'smoothstep' });
+                    if (obj && !relatedObjectives.has(obj.id)) {
+                        relatedObjectives.set(obj.id, obj);
                     }
                 });
             });
+            
+            relatedObjectives.forEach(o => {
+                 allNodes.push({ id: `obj-${o.id}`, data: { label: `${o.code} - ${o.label}`, ...o }, position: { x: columnX.objectives, y: yCounters.objectives }, ...nodeDefaults, style: { ...nodeDefaults.style, ...nodeStyles.objectives }, type: 'objectives' });
+                yCounters.objectives += ySpacing.objectives;
+            });
 
+            relatedActivities.forEach(a => {
+                a.objectives.forEach(objId => {
+                    if (relatedObjectives.has(objId)) {
+                        allEdges.push({ id: `e-act-${a.id}-obj-${objId}`, source: `act-${a.id}`, target: `obj-${objId}`, type: 'smoothstep' });
+                    }
+                });
+            });
+            
             const relatedChantiers = new Map<string, Chantier>();
+            const chantierCodeMap = new Map(chantiers.map(ch => [ch.code, ch.id]));
             const relatedOrientations = new Map<string, StrategicOrientation>();
-            // Fix: Explicitly type the 'ch' parameter to ensure correct type inference for the map.
-            const chantierCodeMap = new Map(chantiers.map((ch: Chantier) => [ch.code, ch]));
 
             relatedObjectives.forEach(o => {
                 const objCodeParts = o.code.split('.');
                 if (objCodeParts.length >= 3) {
                     const chantierCodeGuess = `${objCodeParts[0]}.${parseInt(objCodeParts[1])}.${parseInt(objCodeParts[2])}`;
-                    const chantier = chantierCodeMap.get(chantierCodeGuess);
-                    if(chantier) {
-                         relatedChantiers.set(chantier.id, chantier);
-                         allEdges.push({ id: `e-ch-${chantier.id}-obj-${o.id}`, source: `ch-${chantier.id}`, target: `obj-${o.id}`, type: 'smoothstep' });
+                    if (chantierCodeMap.has(chantierCodeGuess)) {
+                        const chantierId = chantierCodeMap.get(chantierCodeGuess)!;
+                        const chantier = chantiers.find(c => c.id === chantierId);
+                        if (chantier && !relatedChantiers.has(chantier.id)) {
+                            relatedChantiers.set(chantier.id, chantier);
+                        }
                     }
                 }
                 o.strategicOrientations.forEach(soId => {
-                    const orientation = orientations.find(o => o.id === soId);
-                    if (orientation) {
-                        relatedOrientations.set(soId, orientation);
-                        allEdges.push({ id: `e-so-${soId}-obj-${o.id}`, source: `so-${soId}`, target: `obj-${o.id}`, type: 'smoothstep' });
+                    const orientation = orientations.find(or => or.id === soId);
+                    if (orientation && !relatedOrientations.has(orientation.id)) {
+                        relatedOrientations.set(orientation.id, orientation);
                     }
                 });
             });
+
+            relatedChantiers.forEach(c => {
+                allNodes.push({ id: `ch-${c.id}`, data: { label: `${c.code} - ${c.label}`, ...c }, position: { x: columnX.chantiers, y: yCounters.chantiers }, ...nodeDefaults, style: { ...nodeDefaults.style, ...nodeStyles.chantiers }, type: 'chantiers' });
+                yCounters.chantiers += ySpacing.chantiers;
+            });
             
-            // Fix: Explicitly type the forEach parameter `c` to resolve type inference issues.
-            relatedChantiers.forEach((c: Chantier) => {
-                 allNodes.push({ id: `ch-${c.id}`, data: { label: `${c.code} - ${c.label}`, ...c }, position: { x: columnX.chantiers, y: yCounters.chantiers }, ...nodeDefaults, style: { ...nodeDefaults.style, ...nodeStyles.chantiers }, type: 'chantiers' });
-                 yCounters.chantiers += ySpacing.chantiers;
-                 const orientation = orientations.find(o => o.id === c.strategicOrientationId);
-                 if (orientation) {
-                    relatedOrientations.set(orientation.id, orientation);
-                    allEdges.push({ id: `e-so-${orientation.id}-ch-${c.id}`, source: `so-${orientation.id}`, target: `ch-${c.id}`, type: 'smoothstep' });
-                 }
+            relatedObjectives.forEach(o => {
+                const objCodeParts = o.code.split('.');
+                if (objCodeParts.length >= 3) {
+                    const chantierCodeGuess = `${objCodeParts[0]}.${parseInt(objCodeParts[1])}.${parseInt(objCodeParts[2])}`;
+                    if (chantierCodeMap.has(chantierCodeGuess)) {
+                        const chantierId = chantierCodeMap.get(chantierCodeGuess)!;
+                        if(relatedChantiers.has(chantierId)) {
+                             allEdges.push({ id: `e-obj-${o.id}-ch-${chantierId}`, source: `obj-${o.id}`, target: `ch-${chantierId}`, type: 'smoothstep' });
+                        }
+                    }
+                }
             });
 
-             relatedOrientations.forEach(o => {
+            relatedOrientations.forEach(o => {
                 allNodes.push({ id: `so-${o.id}`, data: { label: `${o.code} - ${o.label}`, ...o }, position: { x: columnX.orientations, y: yCounters.orientations }, ...nodeDefaults, style: { ...nodeDefaults.style, ...nodeStyles.orientations }, type: 'orientations' });
                 yCounters.orientations += ySpacing.orientations;
             });
+
+            relatedObjectives.forEach(o => {
+                o.strategicOrientations.forEach(soId => {
+                    if (relatedOrientations.has(soId)) {
+                        allEdges.push({ id: `e-obj-${o.id}-so-${soId}`, source: `obj-${o.id}`, target: `so-${soId}`, type: 'smoothstep' });
+                    }
+                });
+            });
+             relatedChantiers.forEach(c => {
+                if (relatedOrientations.has(c.strategicOrientationId)) {
+                     allEdges.push({ id: `e-ch-${c.id}-so-${c.strategicOrientationId}`, source: `ch-${c.id}`, target: `so-${c.strategicOrientationId}`, type: 'smoothstep' });
+                }
+            });
+        }
+        
+        const filteredNodes = allNodes.filter(n => nodeVisibility[n.type as keyof typeof nodeVisibility]);
+        const nodeIds = new Set(filteredNodes.map(n => n.id));
+        const filteredEdges = allEdges.filter(e => nodeIds.has(e.source) && nodeIds.has(e.target));
+        
+        return { nodes: filteredNodes, edges: filteredEdges };
+
+    }, [viewMode, nodeVisibility, orientationVisibility, isoMeasureVisibility, activities, objectives, orientations, chantiers]);
+
+    const getModalTitle = (node: Node | null): string => {
+        // FIX: Explicitly cast `node.data` properties to string to resolve 'unknown' type errors.
+        if (!node || !node.type || node.type === 'root') return (node?.data.label as string) || 'Détails';
+        
+        const typeLabel = nodeTypeLabels[node.type as string] || 'Élément';
+        const code = (node.data.code as string) || (node.data.activityId as string) || '';
+        let title: string = (node.data.label as string) || (node.data.title as string) || '';
+        
+        if (title.startsWith(`${code} - `)) {
+            title = title.substring(code.length + 3);
         }
 
-        const uniqueEdges = [...new Map(allEdges.map(item => [item.id, item])).values()];
-        const visibleNodes = allNodes.filter(node => nodeVisibility[node.type as keyof typeof nodeVisibility]);
-        const visibleNodeIds = new Set(visibleNodes.map(n => n.id));
-        const visibleEdges = uniqueEdges.filter(edge => visibleNodeIds.has(edge.source) && visibleNodeIds.has(edge.target));
-        
-        return { nodes: visibleNodes, edges: visibleEdges };
-    }, [viewMode, nodeVisibility, orientationVisibility, isoMeasureVisibility, activities, objectives, orientations, chantiers]);
-    
-    const getModalTitle = (node: Node | null): string => {
-        if (!node) return '';
-        let typeLabel = nodeTypeLabels[node.type as string] || 'Élément';
-        return `${typeLabel} : ${node.data.label}`;
-    };
+        return `${typeLabel} : ${code} - ${title}`;
+    }
 
-  return (
-    <div className="h-[calc(100vh-4rem)] w-full flex flex-col">
-       <div className="mb-4">
+    return (
+        <div className="h-[calc(100vh-6rem)] w-full flex flex-col relative">
             <h1 className="text-3xl font-bold text-slate-800">Vue arborescente</h1>
-            <p className="text-slate-600">Explorez les relations hiérarchiques. Cliquez sur un élément pour voir les détails.</p>
-       </div>
-        <div className="absolute top-20 right-4 z-10 flex items-center gap-2">
-            <button
-                onClick={() => setViewMode(prev => prev === 'strategic' ? 'iso' : 'strategic')}
-                className="px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm text-sm font-medium text-slate-700 hover:bg-slate-50 flex items-center"
-                title="Changer de vue"
-            >
-                <ArrowLeftRight size={16} className="mr-2" />
-                {viewMode === 'strategic' ? 'Vue par mesure ISO' : 'Vue stratégique'}
-            </button>
-
-            {viewMode === 'strategic' ? (
-                 <div className="relative">
-                    <button onClick={() => setIsOrientationFilterOpen(!isOrientationFilterOpen)} className="px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm text-sm font-medium text-slate-700 hover:bg-slate-50 flex items-center">
-                        Filtrer les orientations {isOrientationFilterOpen ? <ChevronDown size={16} className="ml-1" /> : <ChevronRight size={16} className="ml-1" />}
-                    </button>
-                    {isOrientationFilterOpen && (
-                         <div className="absolute top-full right-0 mt-2 w-80 bg-white/90 backdrop-blur-sm p-4 rounded-lg shadow-lg border border-slate-200">
-                            <h4 className="font-semibold text-sm mb-2 text-slate-700">Afficher les orientations</h4>
-                            <div className="max-h-60 overflow-y-auto pr-2">
-                                {orientations.map(o => (
-                                    <div key={o.id} className="flex items-center space-x-2 my-1">
-                                        <input type="checkbox" id={`vis-so-${o.id}`} checked={orientationVisibility[o.id] ?? false} onChange={() => setOrientationVisibility(p => ({...p, [o.id]: !p[o.id]}))} className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
-                                        <label htmlFor={`vis-so-${o.id}`} className="text-sm text-slate-600 select-none">{o.code} - {o.label}</label>
-                                    </div>
-                                ))}
-                            </div>
-                         </div>
-                    )}
-                 </div>
-            ): (
-                 <div className="relative">
-                    <button onClick={() => setIsIsoFilterOpen(!isIsoFilterOpen)} className="px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm text-sm font-medium text-slate-700 hover:bg-slate-50 flex items-center">
-                        Filtrer les mesures ISO {isIsoFilterOpen ? <ChevronDown size={16} className="ml-1" /> : <ChevronRight size={16} className="ml-1" />}
-                    </button>
-                    {isIsoFilterOpen && (
-                         <div className="absolute top-full right-0 mt-2 w-96 bg-white/90 backdrop-blur-sm p-4 rounded-lg shadow-lg border border-slate-200">
-                            <h4 className="font-semibold text-sm mb-2 text-slate-700">Afficher les mesures ISO</h4>
-                            <div className="max-h-60 overflow-y-auto pr-2">
-                                {ISO_MEASURES_DATA.map(m => (
-                                    <div key={m.code} className="flex items-center space-x-2 my-1">
-                                        <input type="checkbox" id={`vis-iso-${m.code}`} checked={isoMeasureVisibility[m.code] ?? false} onChange={() => setIsoMeasureVisibility(p => ({...p, [m.code]: !p[m.code]}))} className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
-                                        <label htmlFor={`vis-iso-${m.code}`} className="text-sm text-slate-600 select-none">{m.code} - {m.title}</label>
-                                    </div>
-                                ))}
-                            </div>
-                         </div>
-                    )}
-                 </div>
-            )}
-
-            <div className="relative">
-                <button onClick={() => setIsNodeTypeFilterOpen(!isNodeTypeFilterOpen)} className="px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm text-sm font-medium text-slate-700 hover:bg-slate-50 flex items-center">
-                    Afficher les objets {isNodeTypeFilterOpen ? <ChevronDown size={16} className="ml-1" /> : <ChevronRight size={16} className="ml-1" />}
+            <p className="text-slate-600 mb-4">Explorez les relations entre les différents éléments, des orientations stratégiques aux mesures ISO.</p>
+            
+            <div className="absolute top-16 right-4 z-10 flex items-center gap-2">
+                 <button
+                    onClick={() => setViewMode(prev => prev === 'strategic' ? 'iso' : 'strategic')}
+                    className="px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm text-sm font-medium text-slate-700 hover:bg-slate-50 flex items-center"
+                    title="Changer de vue"
+                >
+                    <ArrowLeftRight size={16} className="mr-2" />
+                    {viewMode === 'strategic' ? 'Vue par mesure ISO' : 'Vue stratégique'}
                 </button>
-                {isNodeTypeFilterOpen && (
-                    <div className="absolute top-full right-0 mt-2 w-48 bg-white/80 backdrop-blur-sm p-3 rounded-lg shadow-lg border border-slate-200">
-                        {Object.entries(nodeTypeLabels).map(([type, label]) => (
-                            <div key={type} className="flex items-center space-x-2 my-1">
-                            <input
-                                type="checkbox"
-                                id={`vis-${type}`}
-                                checked={nodeVisibility[type as keyof typeof nodeVisibility]}
-                                onChange={() => handleVisibilityChange(type)}
-                                className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
-                            />
-                            <label htmlFor={`vis-${type}`} className="text-sm text-slate-600 pr-2 cursor-pointer select-none">
-                                {label}
-                            </label>
+                <div className='relative'>
+                    <button
+                        onClick={() => setIsNodeTypeFilterOpen(!isNodeTypeFilterOpen)}
+                        className="px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm text-sm font-medium text-slate-700 hover:bg-slate-50 flex items-center"
+                    >
+                        Filtrer les types
+                        {isNodeTypeFilterOpen ? <ChevronDown size={16} className="ml-2" /> : <ChevronRight size={16} className="ml-2" />}
+                    </button>
+                    {isNodeTypeFilterOpen && (
+                        <div className="absolute top-full right-0 mt-2 w-56 bg-white/90 backdrop-blur-sm p-4 rounded-lg shadow-lg border border-slate-200">
+                             <h4 className="font-semibold text-sm mb-2 text-slate-700">Afficher les types</h4>
+                             <div className='space-y-2'>
+                                {Object.keys(nodeVisibility).map(type => (
+                                    <div key={type} className="flex items-center">
+                                        <input
+                                            type="checkbox"
+                                            id={`vis-type-${type}`}
+                                            checked={nodeVisibility[type as keyof typeof nodeVisibility]}
+                                            onChange={() => handleVisibilityChange(type)}
+                                            className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                                        />
+                                        <label htmlFor={`vis-type-${type}`} className="ml-2 text-sm text-slate-600 cursor-pointer select-none">
+                                            {nodeTypeLabels[type] || type}
+                                        </label>
+                                    </div>
+                                ))}
                             </div>
-                        ))}
+                        </div>
+                    )}
+                </div>
+
+                {viewMode === 'strategic' ? (
+                    <div className='relative'>
+                        <button
+                            onClick={() => setIsOrientationFilterOpen(!isOrientationFilterOpen)}
+                            className="px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm text-sm font-medium text-slate-700 hover:bg-slate-50 flex items-center"
+                        >
+                            Filtrer les orientations
+                            {isOrientationFilterOpen ? <ChevronDown size={16} className="ml-2" /> : <ChevronRight size={16} className="ml-2" />}
+                        </button>
+                        {isOrientationFilterOpen && (
+                            <div className="absolute top-full right-0 mt-2 w-72 bg-white/90 backdrop-blur-sm p-4 rounded-lg shadow-lg border border-slate-200">
+                                <h4 className="font-semibold text-sm mb-2 text-slate-700">Afficher les orientations</h4>
+                                <div className="max-h-60 overflow-y-auto pr-2">
+                                    {orientations.map(o => (
+                                        <div key={o.id} className="flex items-center space-x-2 my-1">
+                                            <input
+                                                type="checkbox"
+                                                id={`vis-${o.id}`}
+                                                checked={orientationVisibility[o.id] ?? false}
+                                                onChange={() => setOrientationVisibility(prev => ({ ...prev, [o.id]: !prev[o.id] }))}
+                                                className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                                            />
+                                            <label htmlFor={`vis-${o.id}`} className="text-sm text-slate-600 pr-2 cursor-pointer select-none">
+                                                {o.code} - {o.label}
+                                            </label>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="flex justify-between items-center mt-3 pt-3 border-t border-slate-200">
+                                    <button onClick={() => setOrientationVisibility(orientations.reduce((acc, o) => ({ ...acc, [o.id]: true }), {}))} className="text-xs font-medium text-blue-600 hover:underline">Tout cocher</button>
+                                    <button onClick={() => setOrientationVisibility(orientations.reduce((acc, o) => ({ ...acc, [o.id]: false }), {}))} className="text-xs font-medium text-blue-600 hover:underline">Tout décocher</button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                ) : (
+                    <div className='relative'>
+                        <button
+                            onClick={() => setIsIsoFilterOpen(!isIsoFilterOpen)}
+                            className="px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm text-sm font-medium text-slate-700 hover:bg-slate-50 flex items-center"
+                        >
+                            Filtrer les mesures ISO
+                            {isIsoFilterOpen ? <ChevronDown size={16} className="ml-2" /> : <ChevronRight size={16} className="ml-2" />}
+                        </button>
+                        {isIsoFilterOpen && (
+                            <div className="absolute top-full right-0 mt-2 w-80 bg-white/90 backdrop-blur-sm p-4 rounded-lg shadow-lg border border-slate-200">
+                                <h4 className="font-semibold text-sm mb-2 text-slate-700">Afficher les mesures ISO</h4>
+                                <div className="max-h-60 overflow-y-auto pr-2">
+                                    {ISO_MEASURES_DATA.map(m => (
+                                        <div key={m.code} className="flex items-center space-x-2 my-1">
+                                            <input
+                                                type="checkbox"
+                                                id={`vis-iso-${m.code}`}
+                                                checked={isoMeasureVisibility[m.code] ?? false}
+                                                onChange={() => setIsoMeasureVisibility(prev => ({ ...prev, [m.code]: !prev[m.code] }))}
+                                                className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                                            />
+                                            <label htmlFor={`vis-iso-${m.code}`} className="text-sm text-slate-600 pr-2 cursor-pointer select-none">
+                                                {m.code} - {m.title}
+                                            </label>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="flex justify-between items-center mt-3 pt-3 border-t border-slate-200">
+                                    <button onClick={() => setIsoMeasureVisibility(ISO_MEASURES_DATA.reduce((acc, m) => ({ ...acc, [m.code]: true }), {}))} className="text-xs font-medium text-blue-600 hover:underline">Tout cocher</button>
+                                    <button onClick={() => setIsoMeasureVisibility(ISO_MEASURES_DATA.reduce((acc, m) => ({ ...acc, [m.code]: false }), {}))} className="text-xs font-medium text-blue-600 hover:underline">Tout décocher</button>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 )}
+
             </div>
+            
+            <ReactFlow
+                nodes={nodes}
+                edges={edges}
+                onNodeClick={onNodeClick}
+                fitView
+                className="bg-white rounded-lg border border-slate-200"
+            >
+                <MiniMap />
+                <Controls />
+                <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
+            </ReactFlow>
+
+            {selectedNode && (
+                <Modal 
+                    isOpen={!!selectedNode} 
+                    onClose={() => setSelectedNode(null)} 
+                    title={getModalTitle(selectedNode)}
+                    position="right"
+                >
+                    <NodeDetails node={selectedNode} orientationsData={orientations} />
+                </Modal>
+            )}
         </div>
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        onNodeClick={onNodeClick}
-        fitView
-        className="bg-white rounded-lg border border-slate-200"
-      >
-        <MiniMap nodeStrokeWidth={3} zoomable pannable />
-        <Controls />
-        <Background variant={BackgroundVariant.Dots} gap={16} size={1} />
-      </ReactFlow>
-      {selectedNode && (
-        <Modal 
-            isOpen={!!selectedNode} 
-            onClose={() => setSelectedNode(null)} 
-            title={getModalTitle(selectedNode)}
-            position="right"
-        >
-            <NodeDetails node={selectedNode} orientationsData={orientations} />
-        </Modal>
-    )}
-    </div>
-  );
+    );
 };
 
 export default GraphView;

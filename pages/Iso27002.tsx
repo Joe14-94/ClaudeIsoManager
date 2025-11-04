@@ -120,7 +120,9 @@ const Iso27002: React.FC = () => {
     };
   }, [allMeasures]);
 
-  type FilterableDetailKey = keyof typeof filterOptions;
+  // FIX: Explicitly define FilterableDetailKey as a union of string literals
+  // to prevent TypeScript from inferring a `symbol` type from `keyof`.
+  type FilterableDetailKey = 'type' | 'properties' | 'concepts' | 'processes' | 'functionalProcess' | 'domains';
 
   const [activeFilters, setActiveFilters] = useState<Record<FilterableDetailKey, string[]>>({
     type: [],

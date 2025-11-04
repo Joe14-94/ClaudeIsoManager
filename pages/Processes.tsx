@@ -3,7 +3,7 @@ import { useData } from '../contexts/DataContext';
 import Card, { CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import Modal from '../components/ui/Modal';
 import { SecurityProcess } from '../types';
-import { Scale, Archive, Users, Shield, HardHat, Handshake, Network, AppWindow, Siren, Gavel, ListChecks, Workflow, PlusCircle, Trash2 } from 'lucide-react';
+import { Scale, Archive, Users, Shield, HardHat, Handshake, Network, AppWindow, Siren, Gavel, ListChecks, Workflow, PlusCircle, Trash2, Edit } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 const processIcons: { [key: string]: React.ReactNode } = {
@@ -27,15 +27,16 @@ const Processes: React.FC = () => {
   const isReadOnly = userRole === 'readonly';
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentItem, setCurrentItem] = useState<Partial<SecurityProcess> | null>(null);
-  const [isEditMode, setIsEditMode] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
 
   const handleOpenModal = (process?: SecurityProcess) => {
     if (process) {
       setCurrentItem(process);
-      setIsEditMode(true);
+      setIsEditing(false);
     } else {
+      if (isReadOnly) return;
       setCurrentItem({ name: '', description: '' });
-      setIsEditMode(false);
+      setIsEditing(true);
     }
     setIsModalOpen(true);
   };
@@ -43,8 +44,19 @@ const Processes: React.FC = () => {
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setCurrentItem(null);
-    setIsEditMode(false);
+    setIsEditing(false);
   };
+  
+  const handleCancel = () => {
+      if (currentItem && !currentItem.id) {
+          handleCloseModal();
+      } else {
+          const originalItem = securityProcesses.find(p => p.id === currentItem?.id);
+          setCurrentItem(originalItem || null);
+          setIsEditing(false);
+      }
+  };
+
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     if (currentItem) {
@@ -59,7 +71,7 @@ const Processes: React.FC = () => {
       return;
     }
 
-    if (isEditMode && currentItem.id) {
+    if (currentItem.id) {
       setSecurityProcesses(prev => 
         prev.map(p => p.id === currentItem.id ? (currentItem as SecurityProcess) : p)
       );
@@ -120,29 +132,44 @@ const Processes: React.FC = () => {
         <Modal 
           isOpen={isModalOpen} 
           onClose={handleCloseModal}
-          title={isEditMode ? "Détails du processus" : "Nouveau processus"}
+          title={currentItem.id ? "Détails du processus" : "Nouveau processus"}
+          headerActions={
+            !isReadOnly && currentItem.id && !isEditing && (
+              <button
+                onClick={() => setIsEditing(true)}
+                className="p-1 rounded-md hover:bg-slate-200 text-slate-600 hover:text-slate-900 transition-colors"
+                aria-label="Modifier"
+              >
+                <Edit size={20} />
+              </button>
+            )
+          }
         >
           <form onSubmit={handleSave} className="space-y-4">
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-slate-700">Objet du processus</label>
-              <input type="text" name="name" id="name" value={currentItem.name || ''} onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" required readOnly={isReadOnly}/>
+              <input type="text" name="name" id="name" value={currentItem.name || ''} onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" required readOnly={isReadOnly || !isEditing}/>
             </div>
             <div>
               <label htmlFor="description" className="block text-sm font-medium text-slate-700">Explication du processus</label>
-              <textarea name="description" id="description" value={currentItem.description || ''} onChange={handleChange} rows={5} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" readOnly={isReadOnly}/>
+              <textarea name="description" id="description" value={currentItem.description || ''} onChange={handleChange} rows={5} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" readOnly={isReadOnly || !isEditing}/>
             </div>
             <div className="flex justify-between items-center gap-2 pt-4 border-t mt-6">
               <div>
-                {!isReadOnly && isEditMode && currentItem.id && (
+                {!isReadOnly && currentItem.id && isEditing && (
                   <button type="button" onClick={() => handleDelete(currentItem.id!)} className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700">
                       <Trash2 size={16} /> Supprimer
                   </button>
                 )}
               </div>
               <div className="flex gap-2">
-                <button type="button" onClick={handleCloseModal} className="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 border border-transparent rounded-md hover:bg-slate-200">{isReadOnly ? 'Fermer' : 'Annuler'}</button>
-                {!isReadOnly && (
-                  <button type="submit" className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700">Enregistrer</button>
+                {isReadOnly || !isEditing ? (
+                    <button type="button" onClick={handleCloseModal} className="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 border border-transparent rounded-md hover:bg-slate-200">Fermer</button>
+                ) : (
+                  <>
+                    <button type="button" onClick={handleCancel} className="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 border border-transparent rounded-md hover:bg-slate-200">Annuler</button>
+                    <button type="submit" className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700">Enregistrer</button>
+                  </>
                 )}
               </div>
             </div>

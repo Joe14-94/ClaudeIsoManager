@@ -150,6 +150,7 @@ export interface Activity {
   owner?: string; // Resource ID
   startDate?: DateTime;
   endDatePlanned?: DateTime;
+  workloadInPersonDays?: number;
   createdAt: DateTime;
   updatedAt: DateTime;
   functionalProcessId: string;

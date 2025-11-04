@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useData } from '../contexts/DataContext';
-import { Activity, ActivityStatus, Priority, SecurityDomain, ActivityType } from '../types';
+import { Activity, ActivityStatus, Priority, SecurityDomain, ActivityType, SecurityProcess } from '../types';
 import { DOMAIN_COLORS, STATUS_COLORS, PRIORITY_COLORS, ISO_MEASURES_DATA } from '../constants';
 import Card, { CardContent, CardHeader } from '../components/ui/Card';
 import Modal from '../components/ui/Modal';
@@ -13,14 +13,17 @@ const ActivityFilter: React.FC<{
   domainFilter: string;
   statusFilter: string;
   priorityFilter: string;
+  processFilter: string;
   setDomainFilter: (domain: string) => void;
   setStatusFilter: (status: string) => void;
   setPriorityFilter: (priority: string) => void;
+  setProcessFilter: (process: string) => void;
   setSearchTerm: (term: string) => void;
-}> = ({ searchTerm, domainFilter, statusFilter, priorityFilter, setDomainFilter, setStatusFilter, setPriorityFilter, setSearchTerm }) => {
+  securityProcesses: SecurityProcess[];
+}> = ({ searchTerm, domainFilter, statusFilter, priorityFilter, processFilter, setDomainFilter, setStatusFilter, setPriorityFilter, setProcessFilter, setSearchTerm, securityProcesses }) => {
   return (
-    <div className="flex flex-col md:flex-row gap-4 mb-4">
-      <div className="relative flex-1">
+    <div className="flex flex-col md:flex-row flex-wrap gap-4 mb-4">
+      <div className="relative flex-1 min-w-[200px]">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
         <input
           type="text"
@@ -54,6 +57,14 @@ const ActivityFilter: React.FC<{
         <option value="">Toutes les priorités</option>
         {Object.values(Priority).map(p => <option key={p} value={p}>{p}</option>)}
       </select>
+      <select 
+        value={processFilter}
+        onChange={(e) => setProcessFilter(e.target.value)}
+        className="px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+      >
+        <option value="">Tous les processus</option>
+        {securityProcesses.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+      </select>
     </div>
   );
 };
@@ -67,6 +78,7 @@ const Activities: React.FC = () => {
   const [domainFilter, setDomainFilter] = useState(location.state?.domainFilter || '');
   const [statusFilter, setStatusFilter] = useState(location.state?.statusFilter || '');
   const [priorityFilter, setPriorityFilter] = useState('');
+  const [processFilter, setProcessFilter] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [isEditMode, setIsEditMode] = useState(false);
 
@@ -134,10 +146,11 @@ const Activities: React.FC = () => {
         (domainFilter === '' || activity.securityDomain === domainFilter) &&
         (statusFilter === '' || activity.status === statusFilter) &&
         (priorityFilter === '' || activity.priority === priorityFilter) &&
+        (processFilter === '' || activity.functionalProcessId === processFilter) &&
         (searchTerm === '' || activity.title.toLowerCase().includes(searchTerm.toLowerCase()) || activity.activityId.toLowerCase().includes(searchTerm.toLowerCase()))
       );
     });
-  }, [activities, domainFilter, statusFilter, priorityFilter, searchTerm]);
+  }, [activities, domainFilter, statusFilter, priorityFilter, processFilter, searchTerm]);
 
   const handleOpenModal = (activityToEdit?: Activity) => {
     if (activityToEdit) {
@@ -173,7 +186,11 @@ const Activities: React.FC = () => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     if (currentActivity) {
       const { name, value } = e.target;
-      setCurrentActivity({ ...currentActivity, [name]: value });
+      if (name === 'workloadInPersonDays') {
+          setCurrentActivity({ ...currentActivity, workloadInPersonDays: value ? parseFloat(value) : undefined });
+      } else {
+          setCurrentActivity({ ...currentActivity, [name]: value });
+      }
     }
   };
 
@@ -238,10 +255,13 @@ const Activities: React.FC = () => {
             domainFilter={domainFilter}
             statusFilter={statusFilter}
             priorityFilter={priorityFilter}
+            processFilter={processFilter}
             setSearchTerm={setSearchTerm}
             setDomainFilter={setDomainFilter}
             setStatusFilter={setStatusFilter}
             setPriorityFilter={setPriorityFilter}
+            setProcessFilter={setProcessFilter}
+            securityProcesses={securityProcesses}
           />
         </CardHeader>
         <CardContent>
@@ -358,6 +378,17 @@ const Activities: React.FC = () => {
               </div>
             </div>
             
+            <div className="grid grid-cols-2 gap-4">
+                <div>
+                    <label htmlFor="startDate" className="block text-sm font-medium text-slate-700">Date de début (prévue)</label>
+                    <input type="date" name="startDate" id="startDate" value={currentActivity.startDate ? currentActivity.startDate.split('T')[0] : ''} onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" readOnly={isReadOnly} />
+                </div>
+                <div>
+                    <label htmlFor="endDatePlanned" className="block text-sm font-medium text-slate-700">Date de fin (prévue)</label>
+                    <input type="date" name="endDatePlanned" id="endDatePlanned" value={currentActivity.endDatePlanned ? currentActivity.endDatePlanned.split('T')[0] : ''} onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" readOnly={isReadOnly} />
+                </div>
+            </div>
+
             <div>
               <label htmlFor="functionalProcessId" className="block text-sm font-medium text-slate-700">Processus fonctionnel</label>
               <select name="functionalProcessId" id="functionalProcessId" value={currentActivity.functionalProcessId} onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" disabled={isReadOnly}>
@@ -386,13 +417,19 @@ const Activities: React.FC = () => {
               </select>
             </div>
             
-             <div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
                 <label htmlFor="owner" className="block text-sm font-medium text-slate-700">Responsable</label>
                 <select name="owner" id="owner" value={currentActivity.owner} onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" disabled={isReadOnly}>
                   <option value="">Non assigné</option>
                   {resources.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
                 </select>
               </div>
+              <div>
+                  <label htmlFor="workloadInPersonDays" className="block text-sm font-medium text-slate-700">Charge (J/H)</label>
+                  <input type="number" name="workloadInPersonDays" id="workloadInPersonDays" value={currentActivity.workloadInPersonDays || ''} onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" readOnly={isReadOnly} min="0" step="0.5"/>
+              </div>
+            </div>
 
             <div className="flex justify-end gap-2 pt-4 border-t mt-6">
               <button type="button" onClick={handleCloseModal} className="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 border border-transparent rounded-md hover:bg-slate-200">

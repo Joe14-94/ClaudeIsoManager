@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, ListChecks, Network, ShieldCheck, Target, TrendingUp, Users, Database, FileUp, FileDown, Workflow, GitMerge, ClipboardCheck, LogOut, KeyRound } from 'lucide-react';
+import { LayoutDashboard, ListChecks, Network, ShieldCheck, Target, TrendingUp, Users, Database, FileUp, FileDown, Workflow, GitMerge, ClipboardCheck, LogOut, KeyRound, DatabaseZap } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import ChangePasswordModal from '../auth/ChangePasswordModal';
 
@@ -86,6 +86,10 @@ const Sidebar: React.FC = () => {
                   <NavLink to="/data-management" className={getNavLinkClass}>
                       <Database size={18} className="mr-3" />
                       Gestion des données
+                  </NavLink>
+                  <NavLink to="/data-model" className={getNavLinkClass}>
+                      <DatabaseZap size={18} className="mr-3" />
+                      Modèle de données
                   </NavLink>
               </div>
           </div>

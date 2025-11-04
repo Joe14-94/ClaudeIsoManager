@@ -1,4 +1,5 @@
 
+
 import React from 'react';
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Sidebar from './components/layout/Sidebar';
@@ -17,6 +18,7 @@ import LoginPage from './pages/LoginPage';
 import { DataProvider } from './contexts/DataContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import ProtectedRoute from './components/auth/ProtectedRoute';
+import DataModelView from './pages/DataModelView';
 
 const AppLayout: React.FC = () => {
   return (
@@ -36,6 +38,7 @@ const AppLayout: React.FC = () => {
           <Route path="/processes" element={<Processes />} />
           <Route path="/resources" element={<Resources />} />
           <Route path="/data-management" element={<DataManagement />} />
+          <Route path="/data-model" element={<DataModelView />} />
         </Routes>
       </main>
     </div>

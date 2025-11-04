@@ -28,7 +28,7 @@ const REFERENCE_DATA_VERSION = '1.1';
 const VERSION_KEY = 'reference_data_version';
 
 
-export const DataProvider = ({ children }: { children?: ReactNode }) => {
+export const DataProvider = ({ children }: { children: ReactNode }) => {
     const [activities, setActivities] = useState<Activity[]>([]);
     const [resources, setResources] = useState<Resource[]>([]);
     const [securityProcesses, setSecurityProcesses] = useState<SecurityProcess[]>([]);
