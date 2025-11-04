@@ -12,10 +12,10 @@ export const DOMAIN_COLORS: { [key in SecurityDomain]: string } = {
 };
 
 export const DOMAIN_BG_COLORS: { [key in SecurityDomain]: string } = {
-  [SecurityDomain.GOUVERNANCE]: '#d8b4fe',
-  [SecurityDomain.PROTECTION]: '#93c5fd',
-  [SecurityDomain.DEFENSE]: '#fca5a5',
-  [SecurityDomain.RESILIENCE]: '#86efac',
+  [SecurityDomain.GOUVERNANCE]: '#e9d5ff', // purple-200
+  [SecurityDomain.PROTECTION]: '#bfdbfe', // blue-200
+  [SecurityDomain.DEFENSE]: '#fecaca',   // red-200
+  [SecurityDomain.RESILIENCE]: '#bbf7d0',  // green-200
 };
 
 export const STATUS_COLORS: { [key in ActivityStatus]: string } = {
@@ -25,6 +25,15 @@ export const STATUS_COLORS: { [key in ActivityStatus]: string } = {
   [ActivityStatus.COMPLETED]: 'bg-emerald-200 text-emerald-800',
   [ActivityStatus.CANCELLED]: 'bg-rose-200 text-rose-800',
 };
+
+export const STATUS_HEX_COLORS: { [key in ActivityStatus]: string } = {
+  [ActivityStatus.NOT_STARTED]: '#e2e8f0', // slate-200
+  [ActivityStatus.IN_PROGRESS]: '#bae6fd', // sky-200
+  [ActivityStatus.ON_HOLD]: '#fef08a',    // yellow-200
+  [ActivityStatus.COMPLETED]: '#a7f3d0',  // emerald-200
+  [ActivityStatus.CANCELLED]: '#fecaca',   // rose-200
+};
+
 
 export const PRIORITY_COLORS: { [key in Priority]: string } = {
   [Priority.LOW]: 'bg-gray-200 text-gray-800',

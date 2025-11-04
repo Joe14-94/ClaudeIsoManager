@@ -1,18 +1,23 @@
-
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useData } from '../contexts/DataContext';
 import { Activity, ActivityStatus, Priority, SecurityDomain, ActivityType } from '../types';
 import { DOMAIN_COLORS, STATUS_COLORS, PRIORITY_COLORS, ISO_MEASURES_DATA } from '../constants';
 import Card, { CardContent, CardHeader } from '../components/ui/Card';
 import Modal from '../components/ui/Modal';
 import { Search, PlusCircle, Edit } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 const ActivityFilter: React.FC<{
+  searchTerm: string;
+  domainFilter: string;
+  statusFilter: string;
+  priorityFilter: string;
   setDomainFilter: (domain: string) => void;
   setStatusFilter: (status: string) => void;
   setPriorityFilter: (priority: string) => void;
   setSearchTerm: (term: string) => void;
-}> = ({ setDomainFilter, setStatusFilter, setPriorityFilter, setSearchTerm }) => {
+}> = ({ searchTerm, domainFilter, statusFilter, priorityFilter, setDomainFilter, setStatusFilter, setPriorityFilter, setSearchTerm }) => {
   return (
     <div className="flex flex-col md:flex-row gap-4 mb-4">
       <div className="relative flex-1">
@@ -21,10 +26,12 @@ const ActivityFilter: React.FC<{
           type="text"
           placeholder="Rechercher une activité..."
           className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+          value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
       </div>
       <select 
+        value={domainFilter}
         onChange={(e) => setDomainFilter(e.target.value)}
         className="px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
       >
@@ -32,6 +39,7 @@ const ActivityFilter: React.FC<{
         {Object.values(SecurityDomain).map(d => <option key={d} value={d}>{d}</option>)}
       </select>
       <select 
+        value={statusFilter}
         onChange={(e) => setStatusFilter(e.target.value)}
         className="px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
       >
@@ -39,6 +47,7 @@ const ActivityFilter: React.FC<{
         {Object.values(ActivityStatus).map(s => <option key={s} value={s}>{s}</option>)}
       </select>
       <select 
+        value={priorityFilter}
         onChange={(e) => setPriorityFilter(e.target.value)}
         className="px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
       >
@@ -51,8 +60,12 @@ const ActivityFilter: React.FC<{
 
 const Activities: React.FC = () => {
   const { activities, setActivities, objectives, orientations, resources, securityProcesses } = useData();
-  const [domainFilter, setDomainFilter] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
+  const { userRole } = useAuth();
+  const isReadOnly = userRole === 'readonly';
+  const location = useLocation();
+  
+  const [domainFilter, setDomainFilter] = useState(location.state?.domainFilter || '');
+  const [statusFilter, setStatusFilter] = useState(location.state?.statusFilter || '');
   const [priorityFilter, setPriorityFilter] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [isEditMode, setIsEditMode] = useState(false);
@@ -61,6 +74,59 @@ const Activities: React.FC = () => {
   const [currentActivity, setCurrentActivity] = useState<Partial<Activity> | null>(null);
 
   const processMap = useMemo(() => new Map(securityProcesses.map(p => [p.id, p.name])), [securityProcesses]);
+  
+  const filteredObjectives = useMemo(() => {
+    if (!currentActivity?.strategicOrientations || currentActivity.strategicOrientations.length === 0) {
+      return objectives;
+    }
+    const selectedOrientationIds = new Set(currentActivity.strategicOrientations);
+    
+    // Improved filtering logic based on user request example.
+    // An orientation 'X.Y' filters objectives starting with 'X.YY'.
+    const prefixes = Array.from(selectedOrientationIds).map(id => {
+      const orientation = orientations.find(o => o.id === id);
+      if (!orientation) return null;
+      const parts = orientation.code.split('.');
+      if (parts.length < 2) return null;
+      // Recreate the logic '3.1' -> '3.01'
+      const prefix = `${parts[0]}.${String(parts[1]).padStart(2, '0')}`;
+      return prefix;
+    }).filter(p => p !== null) as string[];
+
+    if(prefixes.length === 0) {
+      return objectives;
+    }
+    
+    return objectives.filter(obj => 
+      prefixes.some(prefix => obj.code.startsWith(prefix))
+    );
+  }, [currentActivity?.strategicOrientations, objectives, orientations]);
+
+
+  useEffect(() => {
+    if (currentActivity?.objectives?.length) {
+      const availableObjectiveIds = new Set(filteredObjectives.map(o => o.id));
+      const validSelectedObjectives = currentActivity.objectives.filter(id => availableObjectiveIds.has(id));
+
+      if (validSelectedObjectives.length !== currentActivity.objectives.length) {
+        setCurrentActivity(prev => ({
+          ...prev!,
+          objectives: validSelectedObjectives,
+        }));
+      }
+    }
+  }, [filteredObjectives, currentActivity?.objectives]);
+
+
+  useEffect(() => {
+    const activityIdToOpen = location.state?.openActivity;
+    if (activityIdToOpen) {
+      const activityToOpen = activities.find(a => a.id === activityIdToOpen);
+      if (activityToOpen) {
+        handleOpenModal(activityToOpen);
+      }
+    }
+  }, [location.state, activities]);
 
   const filteredActivities = useMemo(() => {
     return activities.filter(activity => {
@@ -78,6 +144,7 @@ const Activities: React.FC = () => {
       setCurrentActivity(activityToEdit);
       setIsEditMode(true);
     } else {
+      if(isReadOnly) return;
       setCurrentActivity({
         activityId: `ACT-${String(activities.length + 1).padStart(3, '0')}`,
         title: '',
@@ -125,7 +192,7 @@ const Activities: React.FC = () => {
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!currentActivity) return;
+    if (!currentActivity || isReadOnly) return;
 
     if (!currentActivity.title || !currentActivity.activityId) {
       alert("L'ID d'activité et le titre sont obligatoires.");
@@ -156,19 +223,25 @@ const Activities: React.FC = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold text-slate-800">Activités</h1>
-        <button onClick={() => handleOpenModal()} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-          <PlusCircle size={20} />
-          <span>Nouvelle activité</span>
-        </button>
+        {!isReadOnly && (
+          <button onClick={() => handleOpenModal()} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+            <PlusCircle size={20} />
+            <span>Nouvelle activité</span>
+          </button>
+        )}
       </div>
       
       <Card>
         <CardHeader>
           <ActivityFilter 
+            searchTerm={searchTerm}
+            domainFilter={domainFilter}
+            statusFilter={statusFilter}
+            priorityFilter={priorityFilter}
+            setSearchTerm={setSearchTerm}
             setDomainFilter={setDomainFilter}
             setStatusFilter={setStatusFilter}
             setPriorityFilter={setPriorityFilter}
-            setSearchTerm={setSearchTerm}
           />
         </CardHeader>
         <CardContent>
@@ -242,87 +315,92 @@ const Activities: React.FC = () => {
         <Modal 
           isOpen={isModalOpen} 
           onClose={handleCloseModal}
-          title={isEditMode ? "Modifier l'activité" : "Nouvelle activité"}
+          title={isEditMode ? "Détails de l'activité" : "Nouvelle activité"}
         >
           <form onSubmit={handleSave} className="space-y-4">
             <div>
               <label htmlFor="activityId" className="block text-sm font-medium text-slate-700">ID Activité</label>
-              <input type="text" name="activityId" id="activityId" value={currentActivity.activityId || ''} onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" required />
+              <input type="text" name="activityId" id="activityId" value={currentActivity.activityId || ''} onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" required readOnly={isReadOnly} />
             </div>
             <div>
               <label htmlFor="title" className="block text-sm font-medium text-slate-700">Titre</label>
-              <input type="text" name="title" id="title" value={currentActivity.title || ''} onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" required />
+              <input type="text" name="title" id="title" value={currentActivity.title || ''} onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" required readOnly={isReadOnly} />
             </div>
             <div>
               <label htmlFor="description" className="block text-sm font-medium text-slate-700">Description</label>
-              <textarea name="description" id="description" value={currentActivity.description || ''} onChange={handleChange} rows={3} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" />
+              <textarea name="description" id="description" value={currentActivity.description || ''} onChange={handleChange} rows={3} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" readOnly={isReadOnly} />
             </div>
             
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label htmlFor="status" className="block text-sm font-medium text-slate-700">Statut</label>
-                <select name="status" id="status" value={currentActivity.status} onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm">
+                <select name="status" id="status" value={currentActivity.status} onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" disabled={isReadOnly}>
                   {Object.values(ActivityStatus).map(s => <option key={s} value={s}>{s}</option>)}
                 </select>
               </div>
               <div>
                 <label htmlFor="priority" className="block text-sm font-medium text-slate-700">Priorité</label>
-                <select name="priority" id="priority" value={currentActivity.priority} onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm">
+                <select name="priority" id="priority" value={currentActivity.priority} onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" disabled={isReadOnly}>
                   {Object.values(Priority).map(p => <option key={p} value={p}>{p}</option>)}
                 </select>
               </div>
               <div>
                 <label htmlFor="activityType" className="block text-sm font-medium text-slate-700">Type d'activité</label>
-                <select name="activityType" id="activityType" value={currentActivity.activityType} onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm">
+                <select name="activityType" id="activityType" value={currentActivity.activityType} onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" disabled={isReadOnly}>
                   {Object.values(ActivityType).map(t => <option key={t} value={t}>{t}</option>)}
                 </select>
               </div>
               <div>
                 <label htmlFor="securityDomain" className="block text-sm font-medium text-slate-700">Domaine de sécurité</label>
-                <select name="securityDomain" id="securityDomain" value={currentActivity.securityDomain} onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm">
+                <select name="securityDomain" id="securityDomain" value={currentActivity.securityDomain} onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" disabled={isReadOnly}>
                   {Object.values(SecurityDomain).map(d => <option key={d} value={d}>{d}</option>)}
                 </select>
               </div>
             </div>
             
             <div>
-              <label htmlFor="functionalProcessId" className="block text-sm font-medium text-slate-700">Processus Fonctionnel</label>
-              <select name="functionalProcessId" id="functionalProcessId" value={currentActivity.functionalProcessId} onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm">
+              <label htmlFor="functionalProcessId" className="block text-sm font-medium text-slate-700">Processus fonctionnel</label>
+              <select name="functionalProcessId" id="functionalProcessId" value={currentActivity.functionalProcessId} onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" disabled={isReadOnly}>
                 {securityProcesses.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
               </select>
             </div>
 
             <div>
               <label htmlFor="isoMeasures" className="block text-sm font-medium text-slate-700">Mesures ISO (maintenez Ctrl/Cmd pour sélectionner plusieurs)</label>
-              <select name="isoMeasures" id="isoMeasures" multiple value={currentActivity.isoMeasures || []} onChange={handleMultiSelectChange} className="mt-1 block w-full h-32 px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm">
+              <select name="isoMeasures" id="isoMeasures" multiple value={currentActivity.isoMeasures || []} onChange={handleMultiSelectChange} className="mt-1 block w-full h-32 px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" disabled={isReadOnly}>
                 {ISO_MEASURES_DATA.map(m => <option key={m.code} value={m.code}>{m.code} - {m.title}</option>)}
+              </select>
+            </div>
+
+            <div>
+              <label htmlFor="strategicOrientations" className="block text-sm font-medium text-slate-700">Orientations stratégiques (maintenez Ctrl/Cmd pour sélectionner plusieurs)</label>
+              <select name="strategicOrientations" id="strategicOrientations" multiple value={currentActivity.strategicOrientations || []} onChange={handleMultiSelectChange} className="mt-1 block w-full h-32 px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" disabled={isReadOnly}>
+                {orientations.map(o => <option key={o.id} value={o.id}>{o.code} - {o.label}</option>)}
               </select>
             </div>
             
             <div>
               <label htmlFor="objectives" className="block text-sm font-medium text-slate-700">Objectifs (maintenez Ctrl/Cmd pour sélectionner plusieurs)</label>
-              <select name="objectives" id="objectives" multiple value={currentActivity.objectives || []} onChange={handleMultiSelectChange} className="mt-1 block w-full h-32 px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm">
-                {objectives.map(o => <option key={o.id} value={o.id}>{o.code} - {o.label}</option>)}
+              <select name="objectives" id="objectives" multiple value={currentActivity.objectives || []} onChange={handleMultiSelectChange} className="mt-1 block w-full h-32 px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" disabled={isReadOnly}>
+                {filteredObjectives.map(o => <option key={o.id} value={o.id}>{o.code} - {o.label}</option>)}
               </select>
             </div>
             
-            <div>
-              <label htmlFor="strategicOrientations" className="block text-sm font-medium text-slate-700">Orientations stratégiques (maintenez Ctrl/Cmd pour sélectionner plusieurs)</label>
-              <select name="strategicOrientations" id="strategicOrientations" multiple value={currentActivity.strategicOrientations || []} onChange={handleMultiSelectChange} className="mt-1 block w-full h-32 px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm">
-                {orientations.map(o => <option key={o.id} value={o.id}>{o.code} - {o.label}</option>)}
-              </select>
-            </div>
              <div>
                 <label htmlFor="owner" className="block text-sm font-medium text-slate-700">Responsable</label>
-                <select name="owner" id="owner" value={currentActivity.owner} onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm">
+                <select name="owner" id="owner" value={currentActivity.owner} onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" disabled={isReadOnly}>
                   <option value="">Non assigné</option>
                   {resources.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
                 </select>
               </div>
 
             <div className="flex justify-end gap-2 pt-4 border-t mt-6">
-              <button type="button" onClick={handleCloseModal} className="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 border border-transparent rounded-md hover:bg-slate-200">Annuler</button>
-              <button type="submit" className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700">Enregistrer</button>
+              <button type="button" onClick={handleCloseModal} className="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 border border-transparent rounded-md hover:bg-slate-200">
+                {isReadOnly ? 'Fermer' : 'Annuler'}
+              </button>
+              {!isReadOnly && (
+                <button type="submit" className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700">Enregistrer</button>
+              )}
             </div>
           </form>
         </Modal>

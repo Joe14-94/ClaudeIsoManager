@@ -1,13 +1,15 @@
-
 import React, { useState } from 'react';
 import { useData } from '../contexts/DataContext';
 import { Resource } from '../types';
 import Card, { CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import Modal from '../components/ui/Modal';
 import { User, Users, PlusCircle, Edit, Trash2 } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 const Resources: React.FC = () => {
   const { resources, setResources } = useData();
+  const { userRole } = useAuth();
+  const isReadOnly = userRole === 'readonly';
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentItem, setCurrentItem] = useState<Partial<Resource> | null>(null);
 
@@ -23,8 +25,8 @@ const Resources: React.FC = () => {
 
   const handleSave = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!currentItem || !currentItem.name || !currentItem.entity) {
-        alert("Le nom et l'entité sont obligatoires.");
+    if (isReadOnly || !currentItem || !currentItem.name || !currentItem.entity) {
+        if(!isReadOnly) alert("Le nom et l'entité sont obligatoires.");
         return;
     }
 
@@ -44,6 +46,7 @@ const Resources: React.FC = () => {
   };
   
   const handleDelete = (id: string) => {
+    if (isReadOnly) return;
     if (window.confirm("Êtes-vous sûr de vouloir supprimer cette ressource ?")) {
       setResources(prevResources => prevResources.filter(r => r.id !== id));
       handleCloseModal();
@@ -60,10 +63,12 @@ const Resources: React.FC = () => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold text-slate-800">Gestion des ressources</h1>
-        <button onClick={() => handleOpenModal()} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-          <PlusCircle size={20} />
-          <span>Nouvelle ressource</span>
-        </button>
+        {!isReadOnly && (
+          <button onClick={() => handleOpenModal()} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+            <PlusCircle size={20} />
+            <span>Nouvelle ressource</span>
+          </button>
+        )}
       </div>
 
       <Card>
@@ -96,28 +101,30 @@ const Resources: React.FC = () => {
         <Modal 
           isOpen={isModalOpen} 
           onClose={handleCloseModal}
-          title={currentItem.id ? "Modifier la ressource" : "Nouvelle ressource"}
+          title={currentItem.id ? "Détails de la ressource" : "Nouvelle ressource"}
         >
           <form onSubmit={handleSave} className="space-y-4">
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-slate-700">Nom</label>
-              <input type="text" name="name" id="name" value={currentItem.name || ''} onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" required />
+              <input type="text" name="name" id="name" value={currentItem.name || ''} onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" required readOnly={isReadOnly}/>
             </div>
             <div>
               <label htmlFor="entity" className="block text-sm font-medium text-slate-700">Entité / Équipe</label>
-              <input type="text" name="entity" id="entity" value={currentItem.entity || ''} onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" required />
+              <input type="text" name="entity" id="entity" value={currentItem.entity || ''} onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" required readOnly={isReadOnly}/>
             </div>
             <div className="flex justify-between items-center gap-2 pt-4 border-t mt-6">
                  <div>
-                    {currentItem.id && (
+                    {!isReadOnly && currentItem.id && (
                         <button type="button" onClick={() => handleDelete(currentItem.id!)} className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700">
                             <Trash2 size={16} /> Supprimer
                         </button>
                     )}
                 </div>
                 <div className="flex gap-2">
-                    <button type="button" onClick={handleCloseModal} className="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 border border-transparent rounded-md hover:bg-slate-200">Annuler</button>
-                    <button type="submit" className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700">Enregistrer</button>
+                    <button type="button" onClick={handleCloseModal} className="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 border border-transparent rounded-md hover:bg-slate-200">{isReadOnly ? 'Fermer' : 'Annuler'}</button>
+                    {!isReadOnly && (
+                      <button type="submit" className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md shadow-sm hover:bg-blue-700">Enregistrer</button>
+                    )}
                 </div>
             </div>
           </form>

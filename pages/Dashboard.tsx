@@ -1,13 +1,17 @@
-import React, { useState, useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Card, { CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import Tooltip from '../components/ui/Tooltip';
-import { Activity, BarChart, FileText, CheckCircle, Target, ShieldCheck } from 'lucide-react';
+import { Activity, CheckCircle, Target, ShieldCheck } from 'lucide-react';
 import { ISO_MEASURES_DATA } from '../constants';
-import { IsoChapter, ActivityStatus, IsoMeasure } from '../types';
+import { ActivityStatus, IsoMeasure, Objective } from '../types';
 import { useData } from '../contexts/DataContext';
+import DomainDonutChart from '../components/charts/DomainDonutChart';
+import ActivityTimeline from '../components/charts/ActivityTimeline';
+import Modal from '../components/ui/Modal';
 
-const StatCard: React.FC<{ title: string; value: string | number; icon: React.ReactNode; trend?: string; }> = ({ title, value, icon, trend }) => (
-  <Card>
+const StatCard: React.FC<{ title: string; value: string | number; icon: React.ReactNode; trend?: string; onClick?: () => void; }> = ({ title, value, icon, trend, onClick }) => (
+  <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={onClick}>
     <CardContent className="flex items-center justify-between">
       <div>
         <p className="text-sm font-medium text-slate-500">{title}</p>
@@ -23,8 +27,10 @@ const StatCard: React.FC<{ title: string; value: string | number; icon: React.Re
 
 const Dashboard: React.FC = () => {
     const { activities, objectives } = useData();
+    const navigate = useNavigate();
+    const [isObjectivesModalOpen, setIsObjectivesModalOpen] = useState(false);
 
-    const stats = useMemo(() => {
+    const { stats, achievedObjectivesList } = useMemo(() => {
         const totalActivities = activities.length;
         const completedActivities = activities.filter(a => a.status === ActivityStatus.COMPLETED).length;
         const completionRate = totalActivities > 0 ? Math.round((completedActivities / totalActivities) * 100) : 0;
@@ -35,16 +41,22 @@ const Dashboard: React.FC = () => {
             const relatedActivities = activities.filter(a => a.objectives.includes(obj.id));
             if (relatedActivities.length === 0) return false;
             return relatedActivities.every(a => a.status === ActivityStatus.COMPLETED);
-        }).length;
+        });
 
-        return {
+        const stats = {
             totalActivities,
             completionRate,
             coveredMeasures,
             totalMeasures: ISO_MEASURES_DATA.length,
-            achievedObjectives,
+            achievedObjectives: achievedObjectives.length,
         };
+
+        return { stats, achievedObjectivesList: achievedObjectives };
     }, [activities, objectives]);
+
+    const coveredMeasuresCodes = useMemo(() => {
+        return Array.from(new Set(activities.flatMap(a => a.isoMeasures)));
+    }, [activities]);
 
     const coverageMatrix = useMemo(() => {
         const matrix: { [key: string]: { count: number; completed: number } } = {};
@@ -59,14 +71,13 @@ const Dashboard: React.FC = () => {
     }, [activities]);
 
     const measuresByChapter = useMemo(() => {
-        // Fix: Explicitly type the accumulator with the generic on `reduce` to ensure correct type inference.
         return ISO_MEASURES_DATA.reduce<Record<string, Omit<IsoMeasure, 'id'>[]>>((acc, measure) => {
             if (!acc[measure.chapter]) {
                 acc[measure.chapter] = [];
             }
             acc[measure.chapter].push(measure);
             return acc;
-        }, {});
+        }, {} as Record<string, Omit<IsoMeasure, 'id'>[]>);
     }, []);
 
     const getCoverageColor = (measureCode: string): string => {
@@ -89,23 +100,24 @@ const Dashboard: React.FC = () => {
       <h1 className="text-3xl font-bold text-slate-800">Tableau de bord</h1>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard title="Activités totales" value={stats.totalActivities} icon={<Activity size={24} />} />
-        <StatCard title="Taux de complétion" value={`${stats.completionRate}%`} icon={<CheckCircle size={24} />} />
-        <StatCard title="Mesures ISO couvertes" value={`${stats.coveredMeasures} / ${stats.totalMeasures}`} icon={<ShieldCheck size={24} />} />
-        <StatCard title="Objectifs atteints" value={stats.achievedObjectives} icon={<Target size={24} />} />
+        <StatCard title="Activités totales" value={stats.totalActivities} icon={<Activity size={24} />} onClick={() => navigate('/activities')} />
+        <StatCard title="Taux de complétion" value={`${stats.completionRate}%`} icon={<CheckCircle size={24} />} onClick={() => navigate('/activities', { state: { statusFilter: ActivityStatus.COMPLETED } })} />
+        <StatCard title="Mesures ISO couvertes" value={`${stats.coveredMeasures} / ${stats.totalMeasures}`} icon={<ShieldCheck size={24} />} onClick={() => navigate('/iso27002', { state: { filter: 'covered', coveredMeasuresCodes } })} />
+        <StatCard title="Objectifs atteints" value={stats.achievedObjectives} icon={<Target size={24} />} onClick={() => setIsObjectivesModalOpen(true)} />
       </div>
 
       <Card>
         <CardHeader>
           <CardTitle>Matrice de couverture ISO 27002</CardTitle>
-          <p className="text-sm text-slate-500 mt-1">Survolez une case pour voir le détail de la mesure.</p>
+          <p className="text-sm text-slate-500 mt-1">Survolez une case pour voir le détail, cliquez pour accéder à la mesure.</p>
         </CardHeader>
         <CardContent>
             {Object.entries(measuresByChapter).map(([chapter, measures]) => (
                 <div key={chapter} className="mb-6">
                     <h4 className="text-md font-semibold text-slate-700 mb-2">{chapter}</h4>
                     <div className="flex flex-wrap gap-1">
-                        {measures.slice().sort((a,b) => {
+                        {/* FIX: Explicitly type `measures` to ensure it is treated as an array. */}
+                        {(measures as Omit<IsoMeasure, 'id'>[]).slice().sort((a,b) => {
                             const aParts = a.code.split('.').map(Number);
                             const bParts = b.code.split('.').map(Number);
                             if (aParts[0] !== bParts[0]) {
@@ -114,7 +126,10 @@ const Dashboard: React.FC = () => {
                             return aParts[1] - bParts[1];
                         }).map((measure) => (
                           <Tooltip key={measure.code} text={`${measure.code}: ${measure.title} (${coverageMatrix[measure.code]?.completed || 0}/${coverageMatrix[measure.code]?.count || 0})`}>
-                            <div className={`h-10 w-10 flex items-center justify-center rounded text-xs font-mono cursor-pointer transition-colors ${getCoverageColor(measure.code)}`}>
+                            <div 
+                              className={`h-10 w-10 flex items-center justify-center rounded text-xs font-mono cursor-pointer transition-colors ${getCoverageColor(measure.code)}`}
+                              onClick={() => navigate('/iso27002', { state: { openMeasure: measure.code } })}
+                            >
                               {measure.code}
                             </div>
                           </Tooltip>
@@ -136,21 +151,48 @@ const Dashboard: React.FC = () => {
               <CardHeader>
                   <CardTitle>Répartition par domaine</CardTitle>
               </CardHeader>
-              <CardContent className="h-64 flex items-center justify-center text-slate-400">
-                  <BarChart size={48} />
-                  <p className="ml-4">Graphique Sunburst à venir...</p>
+              <CardContent>
+                  <DomainDonutChart 
+                    data={activities} 
+                    onSliceClick={(domain) => navigate('/activities', { state: { domainFilter: domain } })}
+                  />
               </CardContent>
           </Card>
           <Card>
               <CardHeader>
                   <CardTitle>Timeline des activités</CardTitle>
               </CardHeader>
-              <CardContent className="h-64 flex items-center justify-center text-slate-400">
-                  <FileText size={48} />
-                   <p className="ml-4">Graphique Gantt à venir...</p>
+              <CardContent className="h-[400px] overflow-hidden">
+                  <ActivityTimeline 
+                    activities={activities} 
+                    onActivityClick={(activityId) => navigate('/activities', { state: { openActivity: activityId } })}
+                  />
               </CardContent>
           </Card>
       </div>
+      
+      {isObjectivesModalOpen && (
+        <Modal 
+          isOpen={isObjectivesModalOpen}
+          onClose={() => setIsObjectivesModalOpen(false)}
+          title={`Objectifs Atteints (${achievedObjectivesList.length})`}
+        >
+          <div className="space-y-4">
+            {achievedObjectivesList.length > 0 ? (
+              achievedObjectivesList.map(obj => (
+                <div key={obj.id} className="p-3 border rounded-lg bg-slate-50">
+                  <p className="font-semibold text-slate-800">
+                    <span className="font-mono text-blue-600">{obj.code}</span> - {obj.label}
+                  </p>
+                  <p className="text-sm text-slate-600 mt-1">{obj.description}</p>
+                </div>
+              ))
+            ) : (
+              <p className="text-slate-500">Aucun objectif n'a été atteint pour le moment.</p>
+            )}
+          </div>
+        </Modal>
+      )}
 
     </div>
   );

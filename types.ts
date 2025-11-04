@@ -1,4 +1,3 @@
-
 export type DateTime = string;
 
 export enum IsoChapter {
@@ -176,3 +175,5 @@ export interface CoverageMatrix {
     completed: number;
   }
 }
+
+export type UserRole = 'admin' | 'readonly';

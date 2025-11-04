@@ -1,10 +1,11 @@
-
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { ISO_MEASURES_DATA, CHAPTER_COLORS } from '../constants';
 import { IsoChapter, IsoMeasure, IsoMeasureDetails } from '../types';
 import Card, { CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import Modal from '../components/ui/Modal';
 import { SlidersHorizontal } from 'lucide-react';
+import { useData } from '../contexts/DataContext';
 
 const MeasureDetails: React.FC<{ measure: IsoMeasure }> = ({ measure }) => {
     if (!measure.details) {
@@ -62,12 +63,31 @@ const MeasureDetails: React.FC<{ measure: IsoMeasure }> = ({ measure }) => {
 
 
 const Iso27002: React.FC = () => {
+  const location = useLocation();
   const [selectedMeasure, setSelectedMeasure] = useState<IsoMeasure | null>(null);
   const [showFilters, setShowFilters] = useState(false);
+  const [filterByCoverage, setFilterByCoverage] = useState(false);
 
   const allMeasures: IsoMeasure[] = useMemo(() => ISO_MEASURES_DATA.map(m => ({ ...m, id: m.code, details: (m as any).details })), []);
 
-  const filterOptions = useMemo(() => {
+  useEffect(() => {
+    const measureCodeToOpen = location.state?.openMeasure;
+    if (measureCodeToOpen) {
+      const measure = allMeasures.find(m => m.code === measureCodeToOpen);
+      if (measure) {
+        setSelectedMeasure(measure);
+        // Clear state to prevent modal from re-opening on navigation
+        window.history.replaceState({}, document.title)
+      }
+    }
+    if (location.state?.filter === 'covered') {
+        setFilterByCoverage(true);
+        setShowFilters(false);
+        window.history.replaceState({}, document.title)
+    }
+  }, [location.state, allMeasures]);
+
+  const filterOptions = useMemo((): Record<'type' | 'properties' | 'concepts' | 'processes' | 'functionalProcess' | 'domains', string[]> => {
     const options = {
         type: new Set<string>(),
         properties: new Set<string>(),
@@ -111,77 +131,23 @@ const Iso27002: React.FC = () => {
     domains: [],
   });
 
-  const filterCounts = useMemo(() => {
-    const counts: Record<string, Record<string, number>> = {};
-
-    (Object.keys(filterOptions) as FilterableDetailKey[]).forEach(category => {
-      counts[category] = {};
-
-      const relevantMeasures = allMeasures.filter(measure => {
-        if (!measure.details) return false;
-        
-        return (Object.keys(activeFilters) as FilterableDetailKey[]).every(cat => {
-          if (cat === category) return true;
-          
-          const selectedValues = activeFilters[cat];
-          if (selectedValues.length === 0) return true;
-
-          const measureValues = measure.details?.[cat as keyof IsoMeasureDetails];
-          if (!measureValues) return false;
-
-          if (Array.isArray(measureValues)) {
-            return measureValues.some(measureValue => selectedValues.includes(measureValue));
-          }
-          return selectedValues.includes(measureValues as string);
-        });
-      });
-
-      const options = filterOptions[category];
-      options.forEach(value => {
-        counts[category][value] = relevantMeasures.filter(measure => {
-            const prop = measure.details?.[category as keyof IsoMeasureDetails];
-            if (Array.isArray(prop)) {
-              return prop.includes(value);
-            }
-            return prop === value;
-        }).length;
-      });
-    });
-
-    return counts;
-  }, [allMeasures, activeFilters, filterOptions]);
-
-  const handleFilterChange = (category: FilterableDetailKey, value: string) => {
-    setActiveFilters(prev => {
-        const currentCategoryFilters = prev[category] || [];
-        const newCategoryFilters = currentCategoryFilters.includes(value)
-            ? currentCategoryFilters.filter(item => item !== value)
-            : [...currentCategoryFilters, value];
-        return {
-            ...prev,
-            [category]: newCategoryFilters,
-        };
-    });
-  };
-
-  const resetFilters = () => {
-      setActiveFilters({
-        type: [],
-        properties: [],
-        concepts: [],
-        processes: [],
-        functionalProcess: [],
-        domains: [],
-      });
-  };
+  const { activities } = useData();
+  const coveredMeasuresCodes = useMemo(() => new Set(activities.flatMap(a => a.isoMeasures)), [activities]);
 
   const filteredMeasures = useMemo(() => {
-    const isAnyFilterActive = Object.values(activeFilters).some(arr => arr.length > 0);
-    if (!isAnyFilterActive) {
-        return allMeasures;
+    const isAnyDetailFilterActive = Object.values(activeFilters).some(arr => (arr as string[]).length > 0);
+
+    let measures = allMeasures;
+
+    if (filterByCoverage) {
+      measures = measures.filter(measure => coveredMeasuresCodes.has(measure.code));
+    }
+    
+    if (!isAnyDetailFilterActive) {
+        return measures;
     }
 
-    return allMeasures.filter(measure => {
+    return measures.filter(measure => {
         if (!measure.details) return false;
 
         return (Object.keys(activeFilters) as FilterableDetailKey[]).every(category => {
@@ -199,7 +165,57 @@ const Iso27002: React.FC = () => {
             return selectedValues.includes(measureValues as string);
         });
     });
-  }, [allMeasures, activeFilters]);
+  }, [allMeasures, activeFilters, filterByCoverage, coveredMeasuresCodes]);
+
+  const filterCounts = useMemo(() => {
+    const counts: Record<string, Record<string, number>> = {};
+
+    (Object.keys(filterOptions) as FilterableDetailKey[]).forEach(category => {
+      counts[category] = {};
+
+      const relevantMeasures = filteredMeasures; // Count within already filtered measures
+
+      const options = filterOptions[category];
+      options.forEach(value => {
+        counts[category][value] = relevantMeasures.filter(measure => {
+            const prop = measure.details?.[category as keyof IsoMeasureDetails];
+            if (Array.isArray(prop)) {
+              return prop.includes(value);
+            }
+            return prop === value;
+        }).length;
+      });
+    });
+
+    return counts;
+  }, [filteredMeasures, filterOptions]);
+
+  const handleFilterChange = (category: FilterableDetailKey, value: string) => {
+    setFilterByCoverage(false); // Disable coverage filter if detail filters are used
+    setActiveFilters(prev => {
+        const currentCategoryFilters = prev[category] || [];
+        const newCategoryFilters = currentCategoryFilters.includes(value)
+            ? currentCategoryFilters.filter(item => item !== value)
+            : [...currentCategoryFilters, value];
+        return {
+            ...prev,
+            [category]: newCategoryFilters,
+        };
+    });
+  };
+
+  const resetFilters = () => {
+      setFilterByCoverage(false);
+      setActiveFilters({
+        type: [],
+        properties: [],
+        concepts: [],
+        processes: [],
+        functionalProcess: [],
+        domains: [],
+      });
+  };
+
 
   const measuresByChapter = useMemo(() => {
     return filteredMeasures.reduce<Record<string, IsoMeasure[]>>((acc, measure) => {
@@ -208,7 +224,7 @@ const Iso27002: React.FC = () => {
       }
       acc[measure.chapter].push(measure);
       return acc;
-    }, {});
+    }, {} as Record<string, IsoMeasure[]>);
   }, [filteredMeasures]);
 
   const totalFilteredMeasures = filteredMeasures.length;
@@ -228,7 +244,7 @@ const Iso27002: React.FC = () => {
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold text-slate-800">Référentiel ISO 27002:2022</h1>
         <button 
-          onClick={() => setShowFilters(!showFilters)} 
+          onClick={() => { setShowFilters(!showFilters); setFilterByCoverage(false); }} 
           className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-100 transition-colors shadow-sm"
           aria-expanded={showFilters}
         >
@@ -290,17 +306,18 @@ const Iso27002: React.FC = () => {
 
       <div className="text-sm text-slate-500 font-medium">
         {totalFilteredMeasures} sur {allMeasures.length} mesure(s) affichée(s).
+        {filterByCoverage && <span className="ml-2 font-semibold text-blue-600">(Filtre "Mesures couvertes" actif)</span>}
       </div>
 
       {totalFilteredMeasures > 0 ? (
         Object.entries(measuresByChapter).map(([chapter, measures]) => (
-            measures.length > 0 && (
+            (measures as IsoMeasure[]).length > 0 && (
                 <div key={chapter}>
                     <h2 className={`text-xl font-semibold text-slate-700 mb-3 pl-3 border-l-4 ${CHAPTER_COLORS[chapter as IsoChapter]}`}>
                         {chapter}
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {measures.map((measure) => (
+                        {(measures as IsoMeasure[]).map((measure) => (
                         <Card key={measure.code} className="cursor-pointer hover:shadow-md transition-shadow duration-200" onClick={() => setSelectedMeasure(measure)}>
                             <CardContent>
                             <div className="font-semibold text-slate-800">

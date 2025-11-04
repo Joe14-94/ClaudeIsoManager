@@ -1,8 +1,8 @@
-
 import React from 'react';
 import Card, { CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import { Upload, HelpCircle, DatabaseBackup, Info } from 'lucide-react';
 import { useData } from '../contexts/DataContext';
+import { useAuth } from '../contexts/AuthContext';
 import Tooltip from '../components/ui/Tooltip';
 
 const DataManagement: React.FC = () => {
@@ -13,8 +13,11 @@ const DataManagement: React.FC = () => {
     resources, setResources,
     chantiers, setChantiers
   } = useData();
+  const { userRole } = useAuth();
+  const isReadOnly = userRole === 'readonly';
   
   const handleExport = () => {
+    if (isReadOnly) return;
     const allData = {
       activities,
       objectives,
@@ -34,6 +37,7 @@ const DataManagement: React.FC = () => {
   };
 
   const handleFileImport = (event: React.ChangeEvent<HTMLInputElement>, dataType: string) => {
+    if (isReadOnly) return;
     const file = event.target.files?.[0];
     if (file) {
       const reader = new FileReader();
@@ -84,12 +88,21 @@ const DataManagement: React.FC = () => {
     event.target.value = '';
   };
 
+  const buttonClasses = "flex items-center justify-center px-4 py-2 rounded-lg transition-colors";
+  const disabledClasses = "bg-slate-300 text-slate-500 cursor-not-allowed";
+
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-bold text-slate-800">Gestion des données</h1>
       <p className="text-slate-600">
         Importez, exportez ou sauvegardez/restaurez les données de votre application.
       </p>
+      {isReadOnly && (
+        <div className="p-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700">
+          <p className="font-bold">Mode lecture seule</p>
+          <p>Les fonctionnalités d'importation et d'exportation sont désactivées.</p>
+        </div>
+      )}
 
       <Card>
         <CardHeader className="flex items-center justify-between">
@@ -101,16 +114,17 @@ const DataManagement: React.FC = () => {
         <CardContent className="flex flex-col sm:flex-row gap-4">
           <button
             onClick={handleExport}
-            className="flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            disabled={isReadOnly}
+            className={`${buttonClasses} ${isReadOnly ? disabledClasses : 'bg-blue-600 text-white hover:bg-blue-700'}`}
           >
             <DatabaseBackup className="mr-2" size={18} />
             Sauvegarder les données (JSON)
           </button>
           
-          <label className="flex items-center justify-center px-4 py-2 bg-slate-500 text-white rounded-lg hover:bg-slate-600 transition-colors cursor-pointer">
+          <label className={`${buttonClasses} ${isReadOnly ? disabledClasses : 'bg-slate-500 text-white hover:bg-slate-600 cursor-pointer'}`}>
               <Upload className="mr-2" size={18} />
               Restaurer une sauvegarde
-              <input type="file" className="hidden" accept=".json" onChange={(e) => handleFileImport(e, 'Sauvegarde Complète')} />
+              <input type="file" className="hidden" accept=".json" onChange={(e) => handleFileImport(e, 'Sauvegarde Complète')} disabled={isReadOnly} />
           </label>
         </CardContent>
       </Card>
@@ -128,9 +142,9 @@ const DataManagement: React.FC = () => {
               <HelpCircle size={16} className="mr-2"/>
               <span>Le fichier JSON doit être un tableau d'objets `Objective`.</span>
             </div>
-            <label className="flex items-center px-3 py-1.5 text-sm bg-green-600 text-white rounded-md hover:bg-green-700 cursor-pointer w-fit">
+            <label className={`${buttonClasses} text-sm w-fit ${isReadOnly ? disabledClasses : 'bg-green-600 text-white hover:bg-green-700 cursor-pointer'}`}>
               <Upload size={16} className="mr-2" /> Importer
-              <input type="file" className="hidden" accept=".json" onChange={(e) => handleFileImport(e, 'Objectifs')} />
+              <input type="file" className="hidden" accept=".json" onChange={(e) => handleFileImport(e, 'Objectifs')} disabled={isReadOnly}/>
             </label>
           </div>
           
@@ -140,9 +154,9 @@ const DataManagement: React.FC = () => {
               <HelpCircle size={16} className="mr-2"/>
               <span>Le fichier JSON doit être un tableau d'objets `StrategicOrientation`.</span>
             </div>
-            <label className="flex items-center px-3 py-1.5 text-sm bg-green-600 text-white rounded-md hover:bg-green-700 cursor-pointer w-fit">
+            <label className={`${buttonClasses} text-sm w-fit ${isReadOnly ? disabledClasses : 'bg-green-600 text-white hover:bg-green-700 cursor-pointer'}`}>
               <Upload size={16} className="mr-2" /> Importer
-              <input type="file" className="hidden" accept=".json" onChange={(e) => handleFileImport(e, 'Orientations')} />
+              <input type="file" className="hidden" accept=".json" onChange={(e) => handleFileImport(e, 'Orientations')} disabled={isReadOnly}/>
             </label>
           </div>
 
@@ -152,9 +166,9 @@ const DataManagement: React.FC = () => {
               <HelpCircle size={16} className="mr-2"/>
               <span>Le fichier JSON doit être un tableau d'objets `Activity`.</span>
             </div>
-            <label className="flex items-center px-3 py-1.5 text-sm bg-green-600 text-white rounded-md hover:bg-green-700 cursor-pointer w-fit">
+            <label className={`${buttonClasses} text-sm w-fit ${isReadOnly ? disabledClasses : 'bg-green-600 text-white hover:bg-green-700 cursor-pointer'}`}>
               <Upload size={16} className="mr-2" /> Importer
-              <input type="file" className="hidden" accept=".json" onChange={(e) => handleFileImport(e, 'Activités')} />
+              <input type="file" className="hidden" accept=".json" onChange={(e) => handleFileImport(e, 'Activités')} disabled={isReadOnly}/>
             </label>
           </div>
 
