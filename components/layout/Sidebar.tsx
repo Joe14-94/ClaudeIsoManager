@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, ListChecks, Network, ShieldCheck, Target, TrendingUp, Users, Database, FileUp, FileDown, Workflow, GitMerge, ClipboardCheck, LogOut, KeyRound, DatabaseZap } from 'lucide-react';
+import { LayoutDashboard, ListChecks, Network, ShieldCheck, Target, TrendingUp, Users, Database, FileUp, FileDown, Workflow, GitMerge, ClipboardCheck, LogOut, KeyRound, DatabaseZap, GanttChart } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import ChangePasswordModal from '../auth/ChangePasswordModal';
+import { APP_VERSION } from '../../config';
 
 const Sidebar: React.FC = () => {
   const { logout, userRole } = useAuth();
@@ -39,6 +40,10 @@ const Sidebar: React.FC = () => {
               <NavLink to="/activities" className={getNavLinkClass}>
                 <ListChecks size={18} className="mr-3" />
                 Activités
+              </NavLink>
+              <NavLink to="/timeline" className={getNavLinkClass}>
+                <GanttChart size={18} className="mr-3" />
+                Timeline
               </NavLink>
               <NavLink to="/graph" className={getNavLinkClass}>
                 <Network size={18} className="mr-3" />
@@ -107,7 +112,7 @@ const Sidebar: React.FC = () => {
           </button>
           <div className="px-4 text-xs text-slate-400">
             <p>&copy; 2025 ISO Manager</p>
-            <p>Version 1.0.0</p>
+            <p>Version {APP_VERSION}</p>
           </div>
         </div>
       </aside>

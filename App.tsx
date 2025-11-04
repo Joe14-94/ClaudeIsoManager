@@ -19,6 +19,7 @@ import { DataProvider } from './contexts/DataContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import DataModelView from './pages/DataModelView';
+import TimelinePage from './pages/TimelinePage';
 
 const AppLayout: React.FC = () => {
   return (
@@ -29,6 +30,7 @@ const AppLayout: React.FC = () => {
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/activities" element={<Activities />} />
+          <Route path="/timeline" element={<TimelinePage />} />
           <Route path="/graph" element={<GraphView />} />
           <Route path="/d3-graph" element={<D3GraphView />} />
           <Route path="/iso27002" element={<Iso27002 />} />
