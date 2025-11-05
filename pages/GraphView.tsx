@@ -1,3 +1,4 @@
+
 import React, { useMemo, useState, useCallback, Fragment } from 'react';
 import { ReactFlow, MiniMap, Controls, Background, BackgroundVariant, Node, Edge, Position } from '@xyflow/react';
 import { useData } from '../contexts/DataContext';
@@ -66,7 +67,7 @@ const NodeDetails: React.FC<{ node: Node | null, orientationsData: StrategicOrie
                 <div>
                     <DetailItem label="Code">{item.code}</DetailItem>
                     <DetailItem label="Description">{item.description || 'Non fournie'}</DetailItem>
-                    {orientation && <DetailItem label="Orientation Stratégique">{orientation.code} - {orientation.label}</DetailItem>}
+                    {orientation && <DetailItem label="Orientation stratégique">{orientation.code} - {orientation.label}</DetailItem>}
                 </div>
             );
         }
@@ -76,8 +77,8 @@ const NodeDetails: React.FC<{ node: Node | null, orientationsData: StrategicOrie
                 <div>
                     <DetailItem label="Code">{item.code}</DetailItem>
                     <DetailItem label="Description">{item.description || 'Non fournie'}</DetailItem>
-                    <DetailItem label="Date Cible">{item.targetDate ? new Date(item.targetDate).toLocaleDateString() : 'N/A'}</DetailItem>
-                    <DetailItem label="Orientations Stratégiques">
+                    <DetailItem label="Date cible">{item.targetDate ? new Date(item.targetDate).toLocaleDateString() : 'N/A'}</DetailItem>
+                    <DetailItem label="Orientations stratégiques">
                         <div className="flex flex-wrap gap-2">
                         {item.strategicOrientations?.map(soId => {
                             const orientation = orientationsData.find(o => o.id === soId);
@@ -92,7 +93,7 @@ const NodeDetails: React.FC<{ node: Node | null, orientationsData: StrategicOrie
             const item = data as unknown as Activity;
             return (
                 <div>
-                    <DetailItem label="ID Activité">{item.activityId}</DetailItem>
+                    <DetailItem label="ID activité">{item.activityId}</DetailItem>
                     <DetailItem label="Description">{item.description || 'Non fournie'}</DetailItem>
                     <DetailItem label="Statut">
                         <span className={`px-2 py-1 text-xs font-medium rounded-full ${STATUS_COLORS[item.status]}`}>{item.status}</span>
@@ -100,7 +101,7 @@ const NodeDetails: React.FC<{ node: Node | null, orientationsData: StrategicOrie
                      <DetailItem label="Priorité">
                         <span className={`px-2 py-1 text-xs font-medium rounded-full ${PRIORITY_COLORS[item.priority]}`}>{item.priority}</span>
                     </DetailItem>
-                    <DetailItem label="Domaine de Sécurité">
+                    <DetailItem label="Domaine de sécurité">
                          <span className={`px-2 py-1 text-xs font-medium rounded-full border ${DOMAIN_COLORS[item.securityDomain]}`}>{item.securityDomain}</span>
                     </DetailItem>
                     <DetailItem label="Mesures ISO">

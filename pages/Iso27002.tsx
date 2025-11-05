@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { ISO_MEASURES_DATA, CHAPTER_COLORS } from '../constants';
@@ -34,8 +35,8 @@ const MeasureDetails: React.FC<{ measure: IsoMeasure }> = ({ measure }) => {
                 {renderTags('Type', details.type)}
                 {renderTags('Propriétés', details.properties)}
                 {renderTags('Concepts', details.concepts)}
-                {renderTags('Capacités Op.', details.processes)}
-                {details.functionalProcess && renderTags('Processus Fonc.', details.functionalProcess)}
+                {renderTags('Capacités op.', details.processes)}
+                {details.functionalProcess && renderTags('Processus fonc.', details.functionalProcess)}
                 {renderTags('Domaines', details.domains)}
             </div>
 
@@ -235,8 +236,8 @@ const Iso27002: React.FC = () => {
     type: 'Type de mesure',
     properties: 'Propriétés',
     concepts: 'Concepts de cybersécurité',
-    processes: 'Capacités Opérationnelles',
-    functionalProcess: 'Processus Fonctionnels',
+    processes: 'Capacités opérationnelles',
+    functionalProcess: 'Processus fonctionnels',
     domains: 'Domaines de sécurité'
   };
 
@@ -308,7 +309,7 @@ const Iso27002: React.FC = () => {
 
       <div className="text-sm text-slate-500 font-medium">
         {totalFilteredMeasures} sur {allMeasures.length} mesure(s) affichée(s).
-        {filterByCoverage && <span className="ml-2 font-semibold text-blue-600">(Filtre "Mesures couvertes" actif)</span>}
+        {filterByCoverage && <span className="ml-2 font-semibold text-blue-600">(Filtre "mesures couvertes" actif)</span>}
       </div>
 
       {totalFilteredMeasures > 0 ? (

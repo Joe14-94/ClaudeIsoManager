@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useData } from '../contexts/DataContext';
 import { Chantier, StrategicOrientation } from '../types';
@@ -165,7 +166,7 @@ const Chantiers: React.FC = () => {
               <textarea name="description" id="description" value={currentItem.description || ''} onChange={handleChange} rows={4} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" readOnly={isReadOnly || !isEditing}/>
             </div>
             <div>
-              <label htmlFor="strategicOrientationId" className="block text-sm font-medium text-slate-700">Orientation Stratégique</label>
+              <label htmlFor="strategicOrientationId" className="block text-sm font-medium text-slate-700">Orientation stratégique</label>
               <select name="strategicOrientationId" id="strategicOrientationId" value={currentItem.strategicOrientationId} onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" required disabled={isReadOnly || !isEditing}>
                 <option value="">Sélectionner une orientation</option>
                 {orientations.map(o => <option key={o.id} value={o.id}>{o.code} - {o.label}</option>)}

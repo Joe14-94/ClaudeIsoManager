@@ -1,3 +1,4 @@
+
 import React from 'react';
 import Card, { CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import { Upload, HelpCircle, DatabaseBackup, Info } from 'lucide-react';
@@ -107,7 +108,7 @@ const DataManagement: React.FC = () => {
       <Card>
         <CardHeader className="flex items-center justify-between">
           <CardTitle>Sauvegarde et restauration</CardTitle>
-           <Tooltip text="La sauvegarde complète inclut : Activités, Objectifs, Orientations, Chantiers, et Ressources.">
+           <Tooltip text="La sauvegarde complète inclut : activités, objectifs, orientations, chantiers et ressources.">
             <Info size={18} className="text-slate-500 cursor-help" />
           </Tooltip>
         </CardHeader>

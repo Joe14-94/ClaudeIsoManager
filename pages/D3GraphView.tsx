@@ -1,3 +1,4 @@
+
 import React, { useRef, useEffect, useMemo, useState } from 'react';
 import * as d3 from 'd3';
 import { useData } from '../contexts/DataContext';
@@ -270,7 +271,7 @@ const NodeDetails: React.FC<{ node: D3Node, orientationsData: StrategicOrientati
             const item = data as Activity;
             return (
                 <div>
-                    <DetailItem label="ID Activité">{item.activityId}</DetailItem>
+                    <DetailItem label="ID activité">{item.activityId}</DetailItem>
                     <DetailItem label="Description">{item.description || 'Non fournie'}</DetailItem>
                     <DetailItem label="Statut">
                         <span className={`px-2 py-1 text-xs font-medium rounded-full ${STATUS_COLORS[item.status]}`}>{item.status}</span>

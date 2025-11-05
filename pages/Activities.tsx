@@ -1,3 +1,5 @@
+
+
 import React, { useState, useMemo, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useData } from '../contexts/DataContext';
@@ -5,8 +7,9 @@ import { Activity, ActivityStatus, Priority, SecurityDomain, ActivityType, Secur
 import { DOMAIN_COLORS, STATUS_COLORS, PRIORITY_COLORS, ISO_MEASURES_DATA } from '../constants';
 import Card, { CardContent, CardHeader } from '../components/ui/Card';
 import Modal from '../components/ui/Modal';
-import { Search, PlusCircle, Edit } from 'lucide-react';
+import { Search, PlusCircle, Edit, Sparkles } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import GuidedActivityWizard from '../components/wizards/GuidedActivityWizard';
 
 const ActivityFilter: React.FC<{
   searchTerm: string;
@@ -82,7 +85,8 @@ const Activities: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isEditMode, setIsEditMode] = useState(false);
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isFormModalOpen, setIsFormModalOpen] = useState(false);
+  const [isWizardOpen, setIsWizardOpen] = useState(false);
   const [currentActivity, setCurrentActivity] = useState<Partial<Activity> | null>(null);
 
   const processMap = useMemo(() => new Map(securityProcesses.map(p => [p.id, p.name])), [securityProcesses]);
@@ -93,14 +97,11 @@ const Activities: React.FC = () => {
     }
     const selectedOrientationIds = new Set(currentActivity.strategicOrientations);
     
-    // Improved filtering logic based on user request example.
-    // An orientation 'X.Y' filters objectives starting with 'X.YY'.
     const prefixes = Array.from(selectedOrientationIds).map(id => {
       const orientation = orientations.find(o => o.id === id);
       if (!orientation) return null;
       const parts = orientation.code.split('.');
       if (parts.length < 2) return null;
-      // Recreate the logic '3.1' -> '3.01'
       const prefix = `${parts[0]}.${String(parts[1]).padStart(2, '0')}`;
       return prefix;
     }).filter(p => p !== null) as string[];
@@ -135,7 +136,7 @@ const Activities: React.FC = () => {
     if (activityIdToOpen) {
       const activityToOpen = activities.find(a => a.id === activityIdToOpen);
       if (activityToOpen) {
-        handleOpenModal(activityToOpen);
+        handleOpenFormModal(activityToOpen);
       }
     }
   }, [location.state, activities]);
@@ -152,7 +153,7 @@ const Activities: React.FC = () => {
     });
   }, [activities, domainFilter, statusFilter, priorityFilter, processFilter, searchTerm]);
 
-  const handleOpenModal = (activityToEdit?: Activity) => {
+  const handleOpenFormModal = (activityToEdit?: Activity) => {
     if (activityToEdit) {
       setCurrentActivity(activityToEdit);
       setIsEditMode(true);
@@ -174,11 +175,12 @@ const Activities: React.FC = () => {
       });
       setIsEditMode(false);
     }
-    setIsModalOpen(true);
+    setIsFormModalOpen(true);
   };
 
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
+  const handleCloseModals = () => {
+    setIsFormModalOpen(false);
+    setIsWizardOpen(false);
     setCurrentActivity(null);
     setIsEditMode(false);
   };
@@ -232,19 +234,26 @@ const Activities: React.FC = () => {
         
         setActivities(prev => [newActivity, ...prev]);
     }
-    handleCloseModal();
+    handleCloseModals();
   };
+  
+  const handleSaveFromWizard = (newActivity: Activity) => {
+    setActivities(prev => [newActivity, ...prev]);
+    handleCloseModals();
+  }
 
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center flex-wrap gap-4">
         <h1 className="text-3xl font-bold text-slate-800">Activités</h1>
         {!isReadOnly && (
-          <button onClick={() => handleOpenModal()} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-            <PlusCircle size={20} />
-            <span>Nouvelle activité</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <button onClick={() => setIsWizardOpen(true)} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+              <Sparkles size={20} />
+              <span>Création guidée</span>
+            </button>
+          </div>
         )}
       </div>
       
@@ -314,7 +323,7 @@ const Activities: React.FC = () => {
                       </div>
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <button onClick={() => handleOpenModal(activity)} className="p-1 text-slate-500 rounded-md hover:bg-slate-100 hover:text-blue-600">
+                      <button onClick={() => handleOpenFormModal(activity)} className="p-1 text-slate-500 rounded-md hover:bg-slate-100 hover:text-blue-600">
                         <Edit size={18} />
                       </button>
                     </td>
@@ -331,15 +340,15 @@ const Activities: React.FC = () => {
         </CardContent>
       </Card>
       
-      {isModalOpen && currentActivity && (
+      {isFormModalOpen && currentActivity && (
         <Modal 
-          isOpen={isModalOpen} 
-          onClose={handleCloseModal}
+          isOpen={isFormModalOpen} 
+          onClose={handleCloseModals}
           title={isEditMode ? "Détails de l'activité" : "Nouvelle activité"}
         >
           <form onSubmit={handleSave} className="space-y-4">
             <div>
-              <label htmlFor="activityId" className="block text-sm font-medium text-slate-700">ID Activité</label>
+              <label htmlFor="activityId" className="block text-sm font-medium text-slate-700">ID activité</label>
               <input type="text" name="activityId" id="activityId" value={currentActivity.activityId || ''} onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" required readOnly={isReadOnly} />
             </div>
             <div>
@@ -432,7 +441,7 @@ const Activities: React.FC = () => {
             </div>
 
             <div className="flex justify-end gap-2 pt-4 border-t mt-6">
-              <button type="button" onClick={handleCloseModal} className="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 border border-transparent rounded-md hover:bg-slate-200">
+              <button type="button" onClick={handleCloseModals} className="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 border border-transparent rounded-md hover:bg-slate-200">
                 {isReadOnly ? 'Fermer' : 'Annuler'}
               </button>
               {!isReadOnly && (
@@ -441,6 +450,18 @@ const Activities: React.FC = () => {
             </div>
           </form>
         </Modal>
+      )}
+
+      {isWizardOpen && (
+        <GuidedActivityWizard 
+          isOpen={isWizardOpen}
+          onClose={handleCloseModals}
+          onSave={handleSaveFromWizard}
+          onSwitchToManual={() => {
+            handleCloseModals();
+            handleOpenFormModal();
+          }}
+        />
       )}
     </div>
   );

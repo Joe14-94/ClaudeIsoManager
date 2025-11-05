@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useData } from '../contexts/DataContext';
 import Card, { CardContent, CardHeader, CardTitle } from '../components/ui/Card';
@@ -98,7 +99,7 @@ const Processes: React.FC = () => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-slate-800">Processus Fonctionnels de Sécurité</h1>
+        <h1 className="text-3xl font-bold text-slate-800">Processus fonctionnels de sécurité</h1>
         {!isReadOnly && (
           <button onClick={() => handleOpenModal()} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
             <PlusCircle size={20} />
