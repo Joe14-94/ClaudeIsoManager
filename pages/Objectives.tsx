@@ -1,11 +1,12 @@
-
 import React, { useState } from 'react';
 import { useData } from '../contexts/DataContext';
 import { Objective, StrategicOrientation } from '../types';
 import Card, { CardContent } from '../components/ui/Card';
 import Modal from '../components/ui/Modal';
-import { PlusCircle, Trash2, Edit } from 'lucide-react';
+import { PlusCircle, Trash2, Edit, Target } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import CustomMultiSelect from '../components/ui/CustomMultiSelect';
+import Tooltip from '../components/ui/Tooltip';
 
 const ObjectiveDetails: React.FC<{
   objective: Objective;
@@ -61,6 +62,8 @@ const Objectives: React.FC = () => {
   const [currentItem, setCurrentItem] = useState<Partial<Objective> | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   
+  const orientationsMap = new Map<string, StrategicOrientation>(orientations.map(o => [o.id, o]));
+
   const handleOpenModal = (item?: Objective) => {
     if (item) { // View/edit existing
       setCurrentItem(item);
@@ -95,16 +98,9 @@ const Objectives: React.FC = () => {
     }
   };
 
-  const handleMultiSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleCustomMultiSelectChange = (name: string, value: string[]) => {
     if (currentItem) {
-      const { name, options } = e.target;
-      const value: string[] = [];
-      for (let i = 0, l = options.length; i < l; i++) {
-        if (options[i].selected) {
-          value.push(options[i].value);
-        }
-      }
-      setCurrentItem({ ...currentItem, [name]: value });
+      setCurrentItem(prev => ({ ...prev, [name]: value }));
     }
   };
 
@@ -150,21 +146,65 @@ const Objectives: React.FC = () => {
         )}
       </div>
        <p className="text-slate-600">
-        Les objectifs de la stratégie cybersécurité. Cliquez sur une carte pour la modifier.
+        Les objectifs de la stratégie cybersécurité. Cliquez sur un objectif pour le modifier.
       </p>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {objectives.map((objective) => (
+      <div className="space-y-4">
+        {objectives
+          .slice()
+          .sort((a,b) => a.code.localeCompare(b.code, undefined, { numeric: true }))
+          .map((objective) => (
           <Card 
             key={objective.id} 
             className="cursor-pointer hover:shadow-md transition-shadow duration-200"
             onClick={() => handleOpenModal(objective)}
           >
-            <CardContent>
-              <div className="font-semibold text-slate-800">
-                <span className="font-mono text-blue-600">{objective.code}</span> - {objective.label}
-              </div>
-              <p className="text-sm text-slate-500 mt-2 line-clamp-3">{objective.description || 'Aucune description fournie.'}</p>
+            <CardContent className="p-4">
+               <div className="flex flex-col md:flex-row md:justify-between gap-4">
+                  <div className="flex-grow">
+                    <div className="flex items-center">
+                      <Target size={20} className="text-green-600 mr-3 flex-shrink-0" />
+                      <h3 className="font-semibold text-slate-900 text-base">
+                        <span className="font-mono text-blue-600">{objective.code}</span> - {objective.label}
+                      </h3>
+                    </div>
+                    <p className="text-sm text-slate-600 mt-2 md:pl-8 line-clamp-2">{objective.description || 'Aucune description fournie.'}</p>
+                  </div>
+                  
+                  <div className="flex-shrink-0 md:ml-6 flex flex-col md:items-end gap-4">
+                    {objective.strategicOrientations && objective.strategicOrientations.length > 0 && (
+                      <div>
+                          <h4 className="text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider">Orientations</h4>
+                          <div className="flex flex-wrap gap-1 justify-start md:justify-end">
+                            {objective.strategicOrientations.map(soId => {
+                                const orientation = orientationsMap.get(soId);
+                                return orientation ? (
+                                    <Tooltip key={soId} text={orientation.label}>
+                                      <span className="px-2 py-0.5 text-xs font-medium rounded-full border bg-purple-100 text-purple-800 border-purple-200">
+                                          {orientation.code}
+                                      </span>
+                                    </Tooltip>
+                                ) : null;
+                            })}
+                          </div>
+                      </div>
+                    )}
+                    {objective.mesures_iso && objective.mesures_iso.length > 0 && (
+                      <div>
+                          <h4 className="text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider">Mesures ISO</h4>
+                           <div className="flex flex-wrap gap-1 justify-start md:justify-end">
+                            {objective.mesures_iso.map((mesure, index) => (
+                                <Tooltip key={index} text={mesure.titre}>
+                                  <span className="px-2 py-0.5 text-xs font-mono bg-red-100 text-red-700 rounded">
+                                      {mesure.numero_mesure}
+                                  </span>
+                                </Tooltip>
+                            ))}
+                          </div>
+                      </div>
+                    )}
+                  </div>
+               </div>
             </CardContent>
           </Card>
         ))}
@@ -204,12 +244,16 @@ const Objectives: React.FC = () => {
               <label htmlFor="targetDate" className="block text-sm font-medium text-slate-700">Date cible</label>
               <input type="date" name="targetDate" id="targetDate" value={currentItem.targetDate ? currentItem.targetDate.split('T')[0] : ''} onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" readOnly={isReadOnly || !isEditing}/>
             </div>
-            <div>
-              <label htmlFor="strategicOrientations" className="block text-sm font-medium text-slate-700">Orientations stratégiques (maintenez Ctrl/Cmd pour sélectionner)</label>
-              <select name="strategicOrientations" id="strategicOrientations" multiple value={currentItem.strategicOrientations || []} onChange={handleMultiSelectChange} className="mt-1 block w-full h-24 px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" disabled={isReadOnly || !isEditing}>
-                {orientations.map(o => <option key={o.id} value={o.id}>{o.code} - {o.label}</option>)}
-              </select>
-            </div>
+            
+            <CustomMultiSelect
+                label="Orientations stratégiques (maintenez Ctrl/Cmd pour sélectionner)"
+                name="strategicOrientations"
+                options={orientations.map(o => ({ value: o.id, label: `${o.code} - ${o.label}`}))}
+                selectedValues={currentItem.strategicOrientations || []}
+                onChange={handleCustomMultiSelectChange}
+                disabled={isReadOnly || !isEditing}
+                heightClass="h-24"
+            />
             
             {currentItem.id && (
                 <ObjectiveDetails objective={currentItem as Objective} orientations={orientations} />

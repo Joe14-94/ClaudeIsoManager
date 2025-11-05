@@ -405,8 +405,26 @@ const D3GraphView: React.FC = () => {
                     tooltip.style('opacity', 0.9).html(d.data.data.title || d.data.data.label || d.data.name);
                 })
                 .on('mousemove', (event) => {
-                    tooltip.style('left', (event.pageX + 15) + 'px')
-                           .style('top', (event.pageY - 28) + 'px');
+                    const tooltipNode = tooltip.node();
+                    if (!tooltipNode) return;
+
+                    const { offsetWidth: tooltipWidth, offsetHeight: tooltipHeight } = tooltipNode;
+                    const { pageX, pageY } = event;
+                    
+                    let x = pageX + 15;
+                    let y = pageY - 15;
+
+                    if (x + tooltipWidth > window.innerWidth) {
+                        x = pageX - 15 - tooltipWidth;
+                    }
+                    if (y + tooltipHeight > window.innerHeight) {
+                        y = pageY - 15 - tooltipHeight;
+                    }
+                    if (y < 0) {
+                        y = pageY + 15;
+                    }
+
+                    tooltip.style('left', `${x}px`).style('top', `${y}px`);
                 })
                 .on('mouseout', () => {
                     tooltip.style('opacity', 0);

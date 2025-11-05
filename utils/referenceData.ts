@@ -35,7 +35,7 @@ export const loadReferenceData = async () => {
         id: `so-${orientationNumero}`,
         code: orientationNumero,
         label: entry.orientation_strategique.description,
-        description: entry.orientation_strategique.description,
+        description: '',
         createdAt: new Date().toISOString(),
       });
     }
@@ -46,7 +46,7 @@ export const loadReferenceData = async () => {
         id: `ch-${chantierNumero}`,
         code: chantierNumero,
         label: entry.chantier.description,
-        description: entry.chantier.description,
+        description: '',
         strategicOrientationId: `so-${orientationNumero}`,
         createdAt: new Date().toISOString(),
       });
@@ -58,7 +58,7 @@ export const loadReferenceData = async () => {
         id: `obj-${objectifNumero}`,
         code: objectifNumero,
         label: entry.objectif.description,
-        description: entry.objectif.description,
+        description: '',
         strategicOrientations: [],
         mesures_iso: [],
         createdAt: new Date().toISOString(),
@@ -73,18 +73,22 @@ export const loadReferenceData = async () => {
       currentObjective.strategicOrientations.push(orientationId);
     }
 
-    // Add ISO link to objective
-    const isoLink: IsoLink = {
-        domaine: entry.mapping_iso_27002.domaine,
-        numero_mesure: entry.mapping_iso_27002.numero_mesure,
-        titre: isoMeasuresMap.get(entry.mapping_iso_27002.numero_mesure) || "Titre non trouvé",
-        description: entry.mapping_iso_27002.synthese_mesure,
-        niveau_application: "",
-    };
-    
-    if (!currentObjective.mesures_iso!.some(m => m.numero_mesure === isoLink.numero_mesure && m.description === isoLink.description)) {
-        currentObjective.mesures_iso!.push(isoLink);
-    }
+    // Add ISO link(s) to objective
+    const isoCodes = entry.mapping_iso_27002.numero_mesure.split(',').map(code => code.trim()).filter(Boolean);
+
+    isoCodes.forEach(code => {
+        const isoLink: IsoLink = {
+            domaine: entry.mapping_iso_27002.domaine,
+            numero_mesure: code,
+            titre: isoMeasuresMap.get(code) || "Titre non trouvé",
+            description: entry.mapping_iso_27002.synthese_mesure,
+            niveau_application: "",
+        };
+        
+        if (!currentObjective.mesures_iso!.some(m => m.numero_mesure === isoLink.numero_mesure)) {
+            currentObjective.mesures_iso!.push(isoLink);
+        }
+    });
   });
 
   const finalOrientations: StrategicOrientation[] = Array.from(orientationsMap.values()).map(o => ({

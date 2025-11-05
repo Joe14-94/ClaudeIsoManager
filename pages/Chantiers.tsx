@@ -1,21 +1,22 @@
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useData } from '../contexts/DataContext';
-import { Chantier, StrategicOrientation } from '../types';
-import Card, { CardContent, CardHeader, CardTitle } from '../components/ui/Card';
+import { Chantier, StrategicOrientation, Objective } from '../types';
+import Card, { CardContent } from '../components/ui/Card';
 import Modal from '../components/ui/Modal';
 import { PlusCircle, Trash2, Workflow, Edit } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import Tooltip from '../components/ui/Tooltip';
 
 const Chantiers: React.FC = () => {
-  const { chantiers, setChantiers, orientations } = useData();
+  const { chantiers, setChantiers, orientations, objectives } = useData();
   const { userRole } = useAuth();
   const isReadOnly = userRole === 'readonly';
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentItem, setCurrentItem] = useState<Partial<Chantier> | null>(null);
   const [isEditing, setIsEditing] = useState(false);
 
-  const orientationsMap = new Map<string, StrategicOrientation>(orientations.map(o => [o.id, o]));
+  const orientationsMap = useMemo(() => new Map<string, StrategicOrientation>(orientations.map(o => [o.id, o])), [orientations]);
 
   const handleOpenModal = (item?: Chantier) => {
     if (item) { // View/edit existing
@@ -45,7 +46,6 @@ const Chantiers: React.FC = () => {
     }
   };
 
-  // FIX: Added missing handleChange function to handle form inputs.
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     if (currentItem) {
       setCurrentItem({ ...currentItem, [e.target.name]: e.target.value });
@@ -80,6 +80,15 @@ const Chantiers: React.FC = () => {
     }
   };
 
+  const getLinkedObjectivesCount = (chantierCode: string): number => {
+    return objectives.filter(o => {
+        const objCodeParts = o.code.split('.');
+        if (objCodeParts.length < 3) return false;
+        const chantierCodeGuess = `${objCodeParts[0]}.${parseInt(objCodeParts[1])}.${parseInt(objCodeParts[2])}`;
+        return chantierCodeGuess === chantierCode;
+    }).length;
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -92,44 +101,59 @@ const Chantiers: React.FC = () => {
         )}
       </div>
       <p className="text-slate-600">
-        Les chantiers de la stratégie cybersécurité. Cliquez sur une carte pour la modifier.
+        Les chantiers de la stratégie cybersécurité. Cliquez sur un chantier pour le modifier.
       </p>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {chantiers.map((chantier) => {
+      <div className="space-y-4">
+        {chantiers
+          .slice()
+          .sort((a,b) => a.code.localeCompare(b.code, undefined, { numeric: true }))
+          .map((chantier) => {
           const orientation = orientationsMap.get(chantier.strategicOrientationId);
+          const linkedObjectivesCount = getLinkedObjectivesCount(chantier.code);
+
           return (
-            <Card key={chantier.id} className="flex flex-col cursor-pointer hover:shadow-lg transition-shadow" onClick={() => handleOpenModal(chantier)}>
-              <CardHeader>
-                <CardTitle>
-                  <div className="flex items-start">
-                    <Workflow size={24} className="text-blue-600 mr-3 mt-1" />
-                    <div>
-                      <p className="text-base">{chantier.code} - {chantier.label}</p>
+            <Card key={chantier.id} className="cursor-pointer hover:shadow-md transition-shadow duration-200" onClick={() => handleOpenModal(chantier)}>
+              <CardContent className="p-4">
+                <div className="flex flex-col md:flex-row md:justify-between gap-4">
+                  <div className="flex-grow">
+                    <div className="flex items-center">
+                      <Workflow size={20} className="text-cyan-600 mr-3 flex-shrink-0" />
+                      <h3 className="font-semibold text-slate-900 text-base">
+                        <span className="font-mono text-blue-600">{chantier.code}</span> - {chantier.label}
+                      </h3>
                     </div>
+                    <p className="text-sm text-slate-600 mt-2 md:pl-8 line-clamp-2">{chantier.description || 'Aucune description fournie.'}</p>
                   </div>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="flex-grow">
-                <p className="text-slate-600">{chantier.description}</p>
-              </CardContent>
-              {orientation && (
-                 <div className="p-4 border-t border-slate-200">
-                    <h4 className="text-xs font-semibold text-slate-500 mb-2">Orientation liée :</h4>
-                    <div className="flex flex-wrap gap-2">
-                        <span
-                        className="px-2 py-1 text-xs font-normal rounded-full border"
-                        style={{ 
-                            backgroundColor: `${orientation.color || '#D1D5DB'}40`,
-                            borderColor: orientation.color || '#D1D5DB',
-                            color: '#1e293b'
-                        }}
-                        >
-                        {orientation.code} - {orientation.label}
-                        </span>
-                    </div>
+                  
+                  <div className="flex-shrink-0 md:ml-6 flex flex-col md:items-end gap-4">
+                    {orientation && (
+                      <div>
+                        <h4 className="text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider">Orientation</h4>
+                        <div className="flex flex-wrap gap-1 justify-start md:justify-end">
+                           <Tooltip text={orientation.label}>
+                              <span className="px-2 py-0.5 text-xs font-medium rounded-full border bg-purple-100 text-purple-800 border-purple-200">
+                                  {orientation.code}
+                              </span>
+                            </Tooltip>
+                        </div>
+                      </div>
+                    )}
+                     {linkedObjectivesCount > 0 && (
+                      <div>
+                          <h4 className="text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider">Objectifs liés</h4>
+                           <div className="flex flex-wrap gap-1 justify-start md:justify-end">
+                                <Tooltip text={`${linkedObjectivesCount} objectif(s) directement lié(s) à ce chantier.`}>
+                                  <span className="px-2 py-0.5 text-xs font-mono bg-green-100 text-green-800 border border-green-200 rounded-full">
+                                      {linkedObjectivesCount}
+                                  </span>
+                                </Tooltip>
+                          </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              )}
+              </CardContent>
             </Card>
           );
         })}

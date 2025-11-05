@@ -1,5 +1,3 @@
-
-
 import React, { useState, useMemo, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useData } from '../contexts/DataContext';
@@ -10,6 +8,7 @@ import Modal from '../components/ui/Modal';
 import { Search, PlusCircle, Edit, Sparkles } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import GuidedActivityWizard from '../components/wizards/GuidedActivityWizard';
+import CustomMultiSelect from '../components/ui/CustomMultiSelect';
 
 const ActivityFilter: React.FC<{
   searchTerm: string;
@@ -196,16 +195,9 @@ const Activities: React.FC = () => {
     }
   };
 
-  const handleMultiSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleCustomMultiSelectChange = (name: string, value: string[]) => {
     if (currentActivity) {
-      const { name, options } = e.target;
-      const value: string[] = [];
-      for (let i = 0, l = options.length; i < l; i++) {
-        if (options[i].selected) {
-          value.push(options[i].value);
-        }
-      }
-      setCurrentActivity({ ...currentActivity, [name]: value });
+      setCurrentActivity(prev => ({ ...prev!, [name]: value }));
     }
   };
 
@@ -405,26 +397,32 @@ const Activities: React.FC = () => {
               </select>
             </div>
 
-            <div>
-              <label htmlFor="isoMeasures" className="block text-sm font-medium text-slate-700">Mesures ISO (maintenez Ctrl/Cmd pour sélectionner plusieurs)</label>
-              <select name="isoMeasures" id="isoMeasures" multiple value={currentActivity.isoMeasures || []} onChange={handleMultiSelectChange} className="mt-1 block w-full h-32 px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" disabled={isReadOnly}>
-                {ISO_MEASURES_DATA.map(m => <option key={m.code} value={m.code}>{m.code} - {m.title}</option>)}
-              </select>
-            </div>
+            <CustomMultiSelect
+                label="Mesures ISO (maintenez Ctrl/Cmd pour sélectionner plusieurs)"
+                name="isoMeasures"
+                options={ISO_MEASURES_DATA.map(m => ({ value: m.code, label: `${m.code} - ${m.title}` }))}
+                selectedValues={currentActivity.isoMeasures || []}
+                onChange={handleCustomMultiSelectChange}
+                disabled={isReadOnly}
+            />
 
-            <div>
-              <label htmlFor="strategicOrientations" className="block text-sm font-medium text-slate-700">Orientations stratégiques (maintenez Ctrl/Cmd pour sélectionner plusieurs)</label>
-              <select name="strategicOrientations" id="strategicOrientations" multiple value={currentActivity.strategicOrientations || []} onChange={handleMultiSelectChange} className="mt-1 block w-full h-32 px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" disabled={isReadOnly}>
-                {orientations.map(o => <option key={o.id} value={o.id}>{o.code} - {o.label}</option>)}
-              </select>
-            </div>
+            <CustomMultiSelect
+                label="Orientations stratégiques (maintenez Ctrl/Cmd pour sélectionner plusieurs)"
+                name="strategicOrientations"
+                options={orientations.map(o => ({ value: o.id, label: `${o.code} - ${o.label}`}))}
+                selectedValues={currentActivity.strategicOrientations || []}
+                onChange={handleCustomMultiSelectChange}
+                disabled={isReadOnly}
+            />
             
-            <div>
-              <label htmlFor="objectives" className="block text-sm font-medium text-slate-700">Objectifs (maintenez Ctrl/Cmd pour sélectionner plusieurs)</label>
-              <select name="objectives" id="objectives" multiple value={currentActivity.objectives || []} onChange={handleMultiSelectChange} className="mt-1 block w-full h-32 px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" disabled={isReadOnly}>
-                {filteredObjectives.map(o => <option key={o.id} value={o.id}>{o.code} - {o.label}</option>)}
-              </select>
-            </div>
+            <CustomMultiSelect
+                label="Objectifs (maintenez Ctrl/Cmd pour sélectionner plusieurs)"
+                name="objectives"
+                options={filteredObjectives.map(o => ({ value: o.id, label: `${o.code} - ${o.label}`}))}
+                selectedValues={currentActivity.objectives || []}
+                onChange={handleCustomMultiSelectChange}
+                disabled={isReadOnly}
+            />
             
             <div className="grid grid-cols-2 gap-4">
               <div>
