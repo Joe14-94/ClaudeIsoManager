@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useEffect } from 'react';
 // FIX: The project appears to use react-router-dom v5. The `useLocation` hook is available in v5.1+, and the error likely stems from a project-wide version mismatch with v6. Updated to v6.
 import { useLocation } from 'react-router-dom';
@@ -11,6 +10,7 @@ import { Search, PlusCircle, Edit, Sparkles } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import GuidedActivityWizard from '../components/wizards/GuidedActivityWizard';
 import CustomMultiSelect from '../components/ui/CustomMultiSelect';
+import CalendarDatePicker from '../components/ui/CalendarDatePicker';
 
 const ActivityFilter: React.FC<{
   searchTerm: string;
@@ -386,11 +386,23 @@ const Activities: React.FC = () => {
             <div className="grid grid-cols-2 gap-4">
                 <div>
                     <label htmlFor="startDate" className="block text-sm font-medium text-slate-700">Date de début (prévue)</label>
-                    <input type="date" name="startDate" id="startDate" value={currentActivity.startDate ? currentActivity.startDate.split('T')[0] : ''} onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" readOnly={isReadOnly} />
+                    <CalendarDatePicker
+                      id="startDate"
+                      name="startDate"
+                      value={currentActivity.startDate ? currentActivity.startDate.split('T')[0] : ''}
+                      onChange={handleChange}
+                      readOnly={isReadOnly}
+                    />
                 </div>
                 <div>
                     <label htmlFor="endDatePlanned" className="block text-sm font-medium text-slate-700">Date de fin (prévue)</label>
-                    <input type="date" name="endDatePlanned" id="endDatePlanned" value={currentActivity.endDatePlanned ? currentActivity.endDatePlanned.split('T')[0] : ''} onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" readOnly={isReadOnly} />
+                    <CalendarDatePicker
+                      id="endDatePlanned"
+                      name="endDatePlanned"
+                      value={currentActivity.endDatePlanned ? currentActivity.endDatePlanned.split('T')[0] : ''}
+                      onChange={handleChange}
+                      readOnly={isReadOnly}
+                    />
                 </div>
             </div>
 

@@ -1,0 +1,2173 @@
+[
+  {
+    "id": "obj-1.01.01.01-0",
+    "code": "1.01.01.01",
+    "label": "Mettre en place et maintenir une comitologie cybersécurité au niveau du réseau, de l'[Organisation] et DSI",
+    "description": "",
+    "strategicOrientations": [
+      "so-1.1"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "5. Mesures Organisationnelles",
+        "numero_mesure": "5.4",
+        "titre": "La direction doit exiger et soutenir la mise en œuvre de la sécurité de l'information.",
+        "description": "La direction doit exiger et soutenir la mise en œuvre de la sécurité de l'information.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-1.01.01.01-1",
+    "code": "1.01.01.01",
+    "label": "Construire et mettre en œuvre les processus nécessaires à un dispositif d'amélioration continue de la cybersécurité au sein du réseau",
+    "description": "",
+    "strategicOrientations": [
+      "so-1.1"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "5. Mesures Organisationnelles",
+        "numero_mesure": "5.27",
+        "titre": "Tirer les leçons des incidents de sécurité pour améliorer les contrôles et les processus.",
+        "description": "Tirer les leçons des incidents de sécurité pour améliorer les contrôles et les processus.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-1.01.01.01-2",
+    "code": "1.01.01.01",
+    "label": "Définir, outiller et suivre un nombre efficace d'indicateurs cybersécurité",
+    "description": "",
+    "strategicOrientations": [
+      "so-1.1"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "5. Mesures Organisationnelles",
+        "numero_mesure": "5.36",
+        "titre": "Assurer la conformité aux politiques et normes par le biais de la surveillance et de la mesure.",
+        "description": "Assurer la conformité aux politiques et normes par le biais de la surveillance et de la mesure.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-1.01.02.01-3",
+    "code": "1.01.02.01",
+    "label": "Construire et maintenir un outil de centralisation de la documentation SSI (contenu, lieu de stockage…), le compléter avec la documentation existante",
+    "description": "",
+    "strategicOrientations": [
+      "so-1.1"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "5. Mesures Organisationnelles",
+        "numero_mesure": "5.37",
+        "titre": "Les procédures d'exploitation des installations de traitement de l'information doivent être documentées et disponibles.",
+        "description": "Les procédures d'exploitation des installations de traitement de l'information doivent être documentées et disponibles.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-1.01.02.01-4",
+    "code": "1.01.02.01",
+    "label": "Identifier la documentation cible à formaliser (intégrant notamment les processus liés à la mise en place d'un dispositif d'amélioration continue, mais également ceux liés à la protection, la réaction et la résilience) et la feuille de route de formalisation de cette documentation",
+    "description": "",
+    "strategicOrientations": [
+      "so-1.1"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "5. Mesures Organisationnelles",
+        "numero_mesure": "5.37",
+        "titre": "Documenter les procédures opérationnelles pour garantir une exécution cohérente et sécurisée.",
+        "description": "Documenter les procédures opérationnelles pour garantir une exécution cohérente et sécurisée.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-1.01.02.01-5",
+    "code": "1.01.02.01",
+    "label": "Formaliser la documentation SSI manquante",
+    "description": "",
+    "strategicOrientations": [
+      "so-1.1"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "5. Mesures Organisationnelles",
+        "numero_mesure": "5.37",
+        "titre": "S'assurer que toutes les procédures opérationnelles nécessaires sont formellement documentées.",
+        "description": "S'assurer que toutes les procédures opérationnelles nécessaires sont formellement documentées.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-EX-2.02.01.02-6",
+    "code": "EX-2.02.01.02",
+    "label": "- Définir et faire évoluer régulièrement la charte utilisateurs et la charte administrateurs commune à l'ensemble des organisations du réseau",
+    "description": "",
+    "strategicOrientations": [
+      "so-1.1"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "5. Mesures Organisationnelles",
+        "numero_mesure": "5.10",
+        "titre": "Définir et documenter des règles claires pour l'utilisation acceptable des informations et des actifs.",
+        "description": "Définir et documenter des règles claires pour l'utilisation acceptable des informations et des actifs.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-EX-3.06.02.01-7",
+    "code": "EX-3.06.02.01",
+    "label": "- Définir et formaliser les principes d'architecture devant être respectés par l'ensemble des applications afin de disposer d'un SI homogène à l'échelle du réseau",
+    "description": "",
+    "strategicOrientations": [
+      "so-1.1"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "8. Mesures Technologiques",
+        "numero_mesure": "8.26",
+        "titre": "Établir, documenter et appliquer des principes d'architecture et d'ingénierie système sécurisées.",
+        "description": "Établir, documenter et appliquer des principes d'architecture et d'ingénierie système sécurisées.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-1.01.02.02-8",
+    "code": "1.01.02.02",
+    "label": "Refondre et maintenir à jour la PSSI pour tenir compte des évolutions organisationnelles, métiers et techniques",
+    "description": "",
+    "strategicOrientations": [
+      "so-1.1"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "5. Mesures Organisationnelles",
+        "numero_mesure": "5.1",
+        "titre": "Définir, approuver, publier et revoir un ensemble de politiques de sécurité de l'information.",
+        "description": "Définir, approuver, publier et revoir un ensemble de politiques de sécurité de l'information.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-1.01.03.01-9",
+    "code": "1.01.03.01",
+    "label": "Définir et mettre en œuvre un processus annuel d'identification des projets cybersécurité à mettre en œuvre et des besoins consolidés associés (financiers et en ressources humaines)",
+    "description": "",
+    "strategicOrientations": [
+      "so-1.1"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "5. Mesures Organisationnelles",
+        "numero_mesure": "5.4",
+        "titre": "La direction doit s'assurer que les ressources nécessaires à la sécurité de l'information sont planifiées et allouées.",
+        "description": "La direction doit s'assurer que les ressources nécessaires à la sécurité de l'information sont planifiées et allouées.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-1.02.01.01-10",
+    "code": "1.02.01.01",
+    "label": "- Identifier les inventaires des ressources (applications, infrastructures, flux, ...) et des tiers (prestataires...) ainsi que des inventaires cybersécurité existants au sein du réseau",
+    "description": "",
+    "strategicOrientations": [
+      "so-1.2"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "5. Mesures Organisationnelles",
+        "numero_mesure": "5.9",
+        "titre": "Établir et maintenir un inventaire des informations et autres actifs associés, y compris leurs propriétaires.",
+        "description": "Établir et maintenir un inventaire des informations et autres actifs associés, y compris leurs propriétaires.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-1.02.01.01-11",
+    "code": "1.02.01.01",
+    "label": "- Formaliser et maintenir une politique de classification cybersécurité des données, des ressources et des tiers (inventaires ciblés, champs cybersécurité dans les inventaires, échelles, conséquences en terme de mesures/processus cybersécurité...)",
+    "description": "",
+    "strategicOrientations": [
+      "so-1.2"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "5. Mesures Organisationnelles",
+        "numero_mesure": "5.12",
+        "titre": "Classifier les informations en fonction de leur criticité et de leurs exigences de sécurité.",
+        "description": "Classifier les informations en fonction de leur criticité et de leurs exigences de sécurité.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-1.02.01.01-12",
+    "code": "1.02.01.01",
+    "label": "- Définir une feuille de route de mise en œuvre de la politique de classification",
+    "description": "",
+    "strategicOrientations": [
+      "so-1.2"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "5. Mesures Organisationnelles",
+        "numero_mesure": "5.12",
+        "titre": "Planifier la mise en œuvre des procédures de classification des informations dans toute l'organisation.",
+        "description": "Planifier la mise en œuvre des procédures de classification des informations dans toute l'organisation.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-1.02.01.02-13",
+    "code": "1.02.01.02",
+    "label": "Mettre en œuvre la feuille de route liée à la politique de classification",
+    "description": "",
+    "strategicOrientations": [
+      "so-1.2"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "5. Mesures Organisationnelles",
+        "numero_mesure": "5.12",
+        "titre": "Appliquer la classification et l'étiquetage des informations conformément au schéma établi.",
+        "description": "Appliquer la classification et l'étiquetage des informations conformément au schéma établi.",
+        "niveau_application": ""
+      },
+      {
+        "domaine": "5. Mesures Organisationnelles",
+        "numero_mesure": "5.13",
+        "titre": "Appliquer la classification et l'étiquetage des informations conformément au schéma établi.",
+        "description": "Appliquer la classification et l'étiquetage des informations conformément au schéma établi.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-1.02.02.01-14",
+    "code": "1.02.02.01",
+    "label": "Déterminer le périmètre des ressources (données, applications, infrastructure) et zones réseaux critiques devant faire l'objet d'une sécurisation renforcée",
+    "description": "",
+    "strategicOrientations": [
+      "so-1.2"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "5. Mesures Organisationnelles",
+        "numero_mesure": "5.12",
+        "titre": "Utiliser la classification pour identifier les actifs critiques qui nécessitent des mesures de protection renforcées.",
+        "description": "Utiliser la classification pour identifier les actifs critiques qui nécessitent des mesures de protection renforcées.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-1.03.01.01-15",
+    "code": "1.03.01.01",
+    "label": "Définir, outiller et maintenir un processus d'appréciation des risques cybersécurité à l'échelle du réseau",
+    "description": "",
+    "strategicOrientations": [
+      "so-1.3"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "5. Mesures Organisationnelles",
+        "numero_mesure": "5.7",
+        "titre": "Mettre en place un processus formel pour l'identification, l'analyse et l'évaluation des risques liés à la sécurité.",
+        "description": "Mettre en place un processus formel pour l'identification, l'analyse et l'évaluation des risques liés à la sécurité.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-1.03.01.01-16",
+    "code": "1.03.01.01",
+    "label": "Ce processus devra se coordonner avec le processus d'intégration de la sécurité dans les projets",
+    "description": "",
+    "strategicOrientations": [
+      "so-1.3"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "5. Mesures Organisationnelles",
+        "numero_mesure": "5.8",
+        "titre": "Intégrer la gestion des risques de sécurité de l'information dans le cycle de vie de la gestion de projet.",
+        "description": "Intégrer la gestion des risques de sécurité de l'information dans le cycle de vie de la gestion de projet.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-1.03.02.01-17",
+    "code": "1.03.02.01",
+    "label": "- Mettre en œuvre le processus d'appréciation des risques à l'échelle du réseau (panorama des menaces, cartographie, identification et validation des risques, association des risques à des chantiers/Actions de sécurisation…)",
+    "description": "",
+    "strategicOrientations": [
+      "so-1.3"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "5. Mesures Organisationnelles",
+        "numero_mesure": "5.7",
+        "titre": "Collecter et analyser des informations sur les menaces pour produire des renseignements pertinents.",
+        "description": "Collecter et analyser des informations sur les menaces pour produire des renseignements pertinents.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-1.03.02.01-18",
+    "code": "1.03.02.01",
+    "label": "- Mettre à jour la cartographie des risques de manière régulière pour prendre en compte l'évolution du contexte",
+    "description": "",
+    "strategicOrientations": [
+      "so-1.3"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "5. Mesures Organisationnelles",
+        "numero_mesure": "5.7",
+        "titre": "Revoir et actualiser régulièrement l'évaluation des risques pour qu'elle reste pertinente.",
+        "description": "Revoir et actualiser régulièrement l'évaluation des risques pour qu'elle reste pertinente.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-1.03.02.02-19",
+    "code": "1.03.02.02",
+    "label": "- Suivre de manière régulière l'avancement des chantiers cybersécurité associés aux risques ainsi que l'évolution du contexte du réseau afin d'évaluer la progression des risques résiduels et mettre à jour la cartographie des risques",
+    "description": "",
+    "strategicOrientations": [
+      "so-1.3"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "5. Mesures Organisationnelles",
+        "numero_mesure": "5.7",
+        "titre": "Surveiller les risques identifiés, l'efficacité des contrôles et les changements de contexte.",
+        "description": "Surveiller les risques identifiés, l'efficacité des contrôles et les changements de contexte.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-1.03.02.02-20",
+    "code": "1.03.02.02",
+    "label": "- Identifier les chantiers complémentaires de cybersécurité à mettre en œuvre pour maîtriser l'évolution des risques",
+    "description": "",
+    "strategicOrientations": [
+      "so-1.3"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "5. Mesures Organisationnelles",
+        "numero_mesure": "5.7",
+        "titre": "Définir des plans de traitement des risques basés sur les résultats de l'évaluation des risques.",
+        "description": "Définir des plans de traitement des risques basés sur les résultats de l'évaluation des risques.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-1.05.01.01-21",
+    "code": "1.05.01.01",
+    "label": "- Identifier les postes sensibles au sein du réseau",
+    "description": "",
+    "strategicOrientations": [
+      "so-1.5"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "6. Mesures relatives aux personnes",
+        "numero_mesure": "6.1",
+        "titre": "Le processus de sélection doit identifier les rôles critiques et inclure des vérifications appropriées.",
+        "description": "Le processus de sélection doit identifier les rôles critiques et inclure des vérifications appropriées.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-1.05.01.01-22",
+    "code": "1.05.01.01",
+    "label": "- Définir et mettre en place une politique de validation des profils faisant l'objet d'un recrutement interne pour des postes sensibles et des profils proposés par les prestataires en cas d'externalisation des postes sensibles",
+    "description": "",
+    "strategicOrientations": [
+      "so-1.5"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "6. Mesures relatives aux personnes",
+        "numero_mesure": "6.1",
+        "titre": "S'assurer que les candidats (internes ou externes) sont aptes au rôle pour lequel ils sont considérés.",
+        "description": "S'assurer que les candidats (internes ou externes) sont aptes au rôle pour lequel ils sont considérés.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-1.05.02.01-23",
+    "code": "1.05.02.01",
+    "label": "- Définir des attributs cybersécurité pour les prestataires (enjeux cybersécurité du périmètre concerné par la prestation, accès aux SI, …), les inclure dans l'outil de pilotage devant être déployé par les services achats et les renseigner pour les prestataires du réseau",
+    "description": "",
+    "strategicOrientations": [
+      "so-1.5"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "5. Mesures Organisationnelles",
+        "numero_mesure": "5.19",
+        "titre": "Gérer les risques de sécurité liés à la chaîne d'approvisionnement des produits et services.",
+        "description": "Gérer les risques de sécurité liés à la chaîne d'approvisionnement des produits et services.",
+        "niveau_application": ""
+      },
+      {
+        "domaine": "5. Mesures Organisationnelles",
+        "numero_mesure": "5.21",
+        "titre": "Gérer les risques de sécurité liés à la chaîne d'approvisionnement des produits et services.",
+        "description": "Gérer les risques de sécurité liés à la chaîne d'approvisionnement des produits et services.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-1.05.02.01-24",
+    "code": "1.05.02.01",
+    "label": "- Formaliser une politique et un processus de gestion sécurité des prestations incluant un dispositif d'évaluation de la maturité cybersécurité des prestataires (évaluation déclarative réduite, PAS, audit préalable…) variant en fonction de la criticité des prestations (selon une échelle à définir)",
+    "description": "",
+    "strategicOrientations": [
+      "so-1.5"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "5. Mesures Organisationnelles",
+        "numero_mesure": "5.19",
+        "titre": "Définir et mettre en œuvre un processus pour gérer les risques de sécurité de l'information liés aux fournisseurs.",
+        "description": "Définir et mettre en œuvre un processus pour gérer les risques de sécurité de l'information liés aux fournisseurs.",
+        "niveau_application": ""
+      },
+      {
+        "domaine": "5. Mesures Organisationnelles",
+        "numero_mesure": "5.20",
+        "titre": "Définir et mettre en œuvre un processus pour gérer les risques de sécurité de l'information liés aux fournisseurs.",
+        "description": "Définir et mettre en œuvre un processus pour gérer les risques de sécurité de l'information liés aux fournisseurs.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-1.05.02.01-25",
+    "code": "1.05.02.01",
+    "label": "Les sous-traitants et co-traitants devront également faire l'objet d'une évaluation avant acceptation avant de travailler pour le réseau",
+    "description": "",
+    "strategicOrientations": [
+      "so-1.5"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "5. Mesures Organisationnelles",
+        "numero_mesure": "5.21",
+        "titre": "Gérer les risques de sécurité tout au long de la chaîne d'approvisionnement, y compris chez les sous-traitants.",
+        "description": "Gérer les risques de sécurité tout au long de la chaîne d'approvisionnement, y compris chez les sous-traitants.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-1.05.02.01-26",
+    "code": "1.05.02.01",
+    "label": "- Outiller le dispositif d'évaluation maturité des prestataires",
+    "description": "",
+    "strategicOrientations": [
+      "so-1.5"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "5. Mesures Organisationnelles",
+        "numero_mesure": "5.19",
+        "titre": "Utiliser des outils pour surveiller et évaluer les pratiques de sécurité des fournisseurs.",
+        "description": "Utiliser des outils pour surveiller et évaluer les pratiques de sécurité des fournisseurs.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-1.05.02.01-27",
+    "code": "1.05.02.01",
+    "label": "- Définir et mettre en place un plan d'accompagnement au changement des équipes achats pour appliquer le processus",
+    "description": "",
+    "strategicOrientations": [
+      "so-1.5"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "5. Mesures Organisationnelles",
+        "numero_mesure": "5.19",
+        "titre": "Former et sensibiliser les équipes concernées (achats) aux exigences de sécurité dans les relations avec les fournisseurs.",
+        "description": "Former et sensibiliser les équipes concernées (achats) aux exigences de sécurité dans les relations avec les fournisseurs.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-1.06.01.01-28",
+    "code": "1.06.01.01",
+    "label": "- Identifier les réglementations applicables et leur périmètre d'application",
+    "description": "",
+    "strategicOrientations": [
+      "so-1.6"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "5. Mesures Organisationnelles",
+        "numero_mesure": "5.31",
+        "titre": "Identifier et documenter les exigences légales, réglementaires et contractuelles pertinentes.",
+        "description": "Identifier et documenter les exigences légales, réglementaires et contractuelles pertinentes.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-1.06.01.01-29",
+    "code": "1.06.01.01",
+    "label": "- Evaluer les écarts au regard des règlementations NIS, Référentiel Général de Sécurité, Règlement Général sur la Protection des Données, eIDAS et des réglementations européennes liées à la continuité d'activité pour les périmètres applicables",
+    "description": "",
+    "strategicOrientations": [
+      "so-1.6"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "5. Mesures Organisationnelles",
+        "numero_mesure": "5.31",
+        "titre": "Évaluer la conformité avec les exigences identifiées, y compris celles relatives à la protection de la vie privée.",
+        "description": "Évaluer la conformité avec les exigences identifiées, y compris celles relatives à la protection de la vie privée.",
+        "niveau_application": ""
+      },
+      {
+        "domaine": "5. Mesures Organisationnelles",
+        "numero_mesure": "5.34",
+        "titre": "Évaluer la conformité avec les exigences identifiées, y compris celles relatives à la protection de la vie privée.",
+        "description": "Évaluer la conformité avec les exigences identifiées, y compris celles relatives à la protection de la vie privée.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-1.06.01.01-30",
+    "code": "1.06.01.01",
+    "label": "- Définir les plans d'actions visant à atteindre une mise en conformité",
+    "description": "",
+    "strategicOrientations": [
+      "so-1.6"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "5. Mesures Organisationnelles",
+        "numero_mesure": "5.31",
+        "titre": "Mettre en œuvre les contrôles nécessaires pour répondre aux exigences identifiées.",
+        "description": "Mettre en œuvre les contrôles nécessaires pour répondre aux exigences identifiées.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-1.06.01.01-31",
+    "code": "1.06.01.01",
+    "label": "- Mettre en place et appliquer un processus de suivi des plans d'action concernant les mesures de mise en conformité",
+    "description": "",
+    "strategicOrientations": [
+      "so-1.6"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "5. Mesures Organisationnelles",
+        "numero_mesure": "5.36",
+        "titre": "Surveiller et examiner régulièrement la conformité de l'organisation avec ses propres politiques et les exigences externes.",
+        "description": "Surveiller et examiner régulièrement la conformité de l'organisation avec ses propres politiques et les exigences externes.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-1.06.01.01-32",
+    "code": "1.06.01.01",
+    "label": "- Mettre en place une veille réglementaire pour assurer le maintien en conformité",
+    "description": "",
+    "strategicOrientations": [
+      "so-1.6"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "5. Mesures Organisationnelles",
+        "numero_mesure": "5.31",
+        "titre": "Surveiller les changements dans les exigences légales et réglementaires pour maintenir la conformité.",
+        "description": "Surveiller les changements dans les exigences légales et réglementaires pour maintenir la conformité.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-1.06.01.02-33",
+    "code": "1.06.01.02",
+    "label": "- Appliquer le plan de mise en conformité avec le NIS",
+    "description": "",
+    "strategicOrientations": [
+      "so-1.6"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "5. Mesures Organisationnelles",
+        "numero_mesure": "5.31",
+        "titre": "Mettre en œuvre les mesures spécifiques requises par la directive NIS.",
+        "description": "Mettre en œuvre les mesures spécifiques requises par la directive NIS.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-1.06.01.03-34",
+    "code": "1.06.01.03",
+    "label": "- Appliquer le plan de mise en conformité avec la PSSI MCAS",
+    "description": "",
+    "strategicOrientations": [
+      "so-1.6"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "5. Mesures Organisationnelles",
+        "numero_mesure": "5.1",
+        "titre": "Mettre en œuvre et se conformer à la politique de sécurité des systèmes d'information définie par l'État.",
+        "description": "Mettre en œuvre et se conformer à la politique de sécurité des systèmes d'information définie par l'État.",
+        "niveau_application": ""
+      },
+      {
+        "domaine": "5. Mesures Organisationnelles",
+        "numero_mesure": "5.36",
+        "titre": "Mettre en œuvre et se conformer à la politique de sécurité des systèmes d'information définie par l'État.",
+        "description": "Mettre en œuvre et se conformer à la politique de sécurité des systèmes d'information définie par l'État.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-1.06.01.04-35",
+    "code": "1.06.01.04",
+    "label": "- Appliquer le plan de mise en conformité de la PKI avec le RGS et eIDAS",
+    "description": "",
+    "strategicOrientations": [
+      "so-1.6"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "5. & 8. Mesures Organisationnelles & Technologiques",
+        "numero_mesure": "5.31",
+        "titre": "Se conformer aux réglementations sur l'identification électronique et les services de confiance et utiliser la cryptographie adéquate.",
+        "description": "Se conformer aux réglementations sur l'identification électronique et les services de confiance et utiliser la cryptographie adéquate.",
+        "niveau_application": ""
+      },
+      {
+        "domaine": "5. & 8. Mesures Organisationnelles & Technologiques",
+        "numero_mesure": "8.23",
+        "titre": "Se conformer aux réglementations sur l'identification électronique et les services de confiance et utiliser la cryptographie adéquate.",
+        "description": "Se conformer aux réglementations sur l'identification électronique et les services de confiance et utiliser la cryptographie adéquate.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-1.06.01.05-36",
+    "code": "1.06.01.05",
+    "label": "- Appliquer le plan de mise en conformité avec le RGPD (sur les aspects sécurité)",
+    "description": "",
+    "strategicOrientations": [
+      "so-1.6"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "5. Mesures Organisationnelles",
+        "numero_mesure": "5.34",
+        "titre": "Mettre en œuvre les mesures techniques et organisationnelles appropriées pour protéger les données personnelles.",
+        "description": "Mettre en œuvre les mesures techniques et organisationnelles appropriées pour protéger les données personnelles.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-1.07.01.02-37",
+    "code": "1.07.01.02",
+    "label": "- Formaliser un plan d'audit pluriannuel en cohérence avec le dispositif de contrôle permanent",
+    "description": "",
+    "strategicOrientations": [
+      "so-1.7"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "5. Mesures Organisationnelles",
+        "numero_mesure": "5.35",
+        "titre": "Assurer un examen indépendant des pratiques de sécurité de l'information à des intervalles planifiés.",
+        "description": "Assurer un examen indépendant des pratiques de sécurité de l'information à des intervalles planifiés.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-1.07.01.02-38",
+    "code": "1.07.01.02",
+    "label": "Ce plan d'audit sera revu annuellement. Il intégrera notamment l'audit des déclarations des PAS de prestataires critiques",
+    "description": "",
+    "strategicOrientations": [
+      "so-1.7"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "5. Mesures Organisationnelles",
+        "numero_mesure": "5.22",
+        "titre": "Surveiller, examiner et auditer régulièrement les services et les pratiques de sécurité des fournisseurs.",
+        "description": "Surveiller, examiner et auditer régulièrement les services et les pratiques de sécurité des fournisseurs.",
+        "niveau_application": ""
+      },
+      {
+        "domaine": "5. Mesures Organisationnelles",
+        "numero_mesure": "5.35",
+        "titre": "Surveiller, examiner et auditer régulièrement les services et les pratiques de sécurité des fournisseurs.",
+        "description": "Surveiller, examiner et auditer régulièrement les services et les pratiques de sécurité des fournisseurs.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-1.07.01.02-39",
+    "code": "1.07.01.02",
+    "label": "- Formaliser, outiller et mettre en œuvre un processus de suivi centralisé des audits et de l'avancement de leurs plans d'action",
+    "description": "",
+    "strategicOrientations": [
+      "so-1.7"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "5. Mesures Organisationnelles",
+        "numero_mesure": "5.35",
+        "titre": "S'assurer que les résultats des audits sont communiqués et que les non-conformités sont traitées en temps opportun.",
+        "description": "S'assurer que les résultats des audits sont communiqués et que les non-conformités sont traitées en temps opportun.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-1.07.02.01-40",
+    "code": "1.07.02.01",
+    "label": "- Renforcer l'application des CSSI existants sur les périmètres de l'[Organisation]",
+    "description": "",
+    "strategicOrientations": [
+      "so-1.7"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "5. Mesures Organisationnelles",
+        "numero_mesure": "5.36",
+        "titre": "Vérifier que les activités liées aux systèmes d'information sont conformes aux politiques et procédures de sécurité.",
+        "description": "Vérifier que les activités liées aux systèmes d'information sont conformes aux politiques et procédures de sécurité.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-1.07.02.01-41",
+    "code": "1.07.02.01",
+    "label": "- Identifier et mettre en œuvre des CSSI complémentaires",
+    "description": "",
+    "strategicOrientations": [
+      "so-1.7"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "5. Mesures Organisationnelles",
+        "numero_mesure": "5.36",
+        "titre": "Développer et déployer des contrôles de sécurité spécifiques lorsque cela est nécessaire pour maintenir la conformité.",
+        "description": "Développer et déployer des contrôles de sécurité spécifiques lorsque cela est nécessaire pour maintenir la conformité.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-2.01.01.01-42",
+    "code": "2.01.01.01",
+    "label": "- Faire un bilan en ETP des compétences et expertises cybersécurité existant au sein du réseau",
+    "description": "",
+    "strategicOrientations": [
+      "so-2.1"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "5. Mesures Organisationnelles",
+        "numero_mesure": "5.2",
+        "titre": "Identifier les rôles et responsabilités actuels en matière de sécurité de l'information.",
+        "description": "Identifier les rôles et responsabilités actuels en matière de sécurité de l'information.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-2.01.01.01-43",
+    "code": "2.01.01.01",
+    "label": "- Identifier les besoins bruts du réseau en ETP de compétences et expertises cybersécurité pour réaliser l'ensemble des activités cybersécurité attendues (en 2023 et en 2027) et l'écart avec l'existant",
+    "description": "",
+    "strategicOrientations": [
+      "so-2.1"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "5. Mesures Organisationnelles",
+        "numero_mesure": "5.2",
+        "titre": "Définir les rôles et les responsabilités nécessaires pour mettre en œuvre la stratégie de sécurité de l'information.",
+        "description": "Définir les rôles et les responsabilités nécessaires pour mettre en œuvre la stratégie de sécurité de l'information.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-2.01.01.01-44",
+    "code": "2.01.01.01",
+    "label": "- Déterminer les évolutions à apporter à l'organisation des équipes cybersécurité et aux agents qui la composent (activités menées par les équipes, affectation des ressources existantes, recrutement interne/externe, montées en compétence/ formations,…) pour atteindre les besoins en compétences et expertises",
+    "description": "",
+    "strategicOrientations": [
+      "so-2.1"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "5. Mesures Organisationnelles",
+        "numero_mesure": "5.2",
+        "titre": "Allouer les rôles et responsabilités de sécurité de l'information aux individus appropriés.",
+        "description": "Allouer les rôles et responsabilités de sécurité de l'information aux individus appropriés.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-2.01.01.01-45",
+    "code": "2.01.01.01",
+    "label": "- Formaliser ou revoir les fiches emploi SDSNUM et de la SDSSI en adéquation avec les évolutions de l'organisation",
+    "description": "",
+    "strategicOrientations": [
+      "so-2.1"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "5. Mesures Organisationnelles",
+        "numero_mesure": "5.2",
+        "titre": "Documenter clairement les rôles et les responsabilités de sécurité de l'information dans les descriptions de poste.",
+        "description": "Documenter clairement les rôles et les responsabilités de sécurité de l'information dans les descriptions de poste.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-2.01.01.01-46",
+    "code": "2.01.01.01",
+    "label": "- Mettre en œuvre les évolutions identifiées",
+    "description": "",
+    "strategicOrientations": [
+      "so-2.1"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "5. Mesures Organisationnelles",
+        "numero_mesure": "5.2",
+        "titre": "Assigner les rôles et responsabilités aux personnes possédant les compétences et l'autorité nécessaires.",
+        "description": "Assigner les rôles et responsabilités aux personnes possédant les compétences et l'autorité nécessaires.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-2.01.01.01-47",
+    "code": "2.01.01.01",
+    "label": "- Revoir annuellement le plan permettant d'atteindre la cible",
+    "description": "",
+    "strategicOrientations": [
+      "so-2.1"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "5. Mesures Organisationnelles",
+        "numero_mesure": "5.2",
+        "titre": "Examiner et mettre à jour périodiquement les attributions de rôles et de responsabilités.",
+        "description": "Examiner et mettre à jour périodiquement les attributions de rôles et de responsabilités.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-2.01.02.01-48",
+    "code": "2.01.02.01",
+    "label": "- Définir une stratégie de formation cybersécurité pour l'ensemble du réseau",
+    "description": "",
+    "strategicOrientations": [
+      "so-2.1"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "6. Mesures relatives aux personnes",
+        "numero_mesure": "6.3",
+        "titre": "Élaborer un programme de sensibilisation, d'éducation et de formation à la sécurité de l'information.",
+        "description": "Élaborer un programme de sensibilisation, d'éducation et de formation à la sécurité de l'information.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-2.01.02.01-49",
+    "code": "2.01.02.01",
+    "label": "- Appliquer la stratégie de formation",
+    "description": "",
+    "strategicOrientations": [
+      "so-2.1"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "6. Mesures relatives aux personnes",
+        "numero_mesure": "6.3",
+        "titre": "Fournir au personnel une formation appropriée à la sécurité de l'information.",
+        "description": "Fournir au personnel une formation appropriée à la sécurité de l'information.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-2.01.02.01-50",
+    "code": "2.01.02.01",
+    "label": "- Mettre à jour annuellement la stratégie de formation",
+    "description": "",
+    "strategicOrientations": [
+      "so-2.1"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "6. Mesures relatives aux personnes",
+        "numero_mesure": "6.3",
+        "titre": "Revoir et mettre à jour régulièrement le programme de formation pour qu'il reste pertinent.",
+        "description": "Revoir et mettre à jour régulièrement le programme de formation pour qu'il reste pertinent.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-2.01.03.01-51",
+    "code": "2.01.03.01",
+    "label": "- Définir une stratégie RH (facteurs d'attractivité et de rétention, parcours, formations, reconnaissance…) spécifique aux ressources cybersécurité, différenciée selon les populations techniques d'une part et généralistes d'autre part",
+    "description": "",
+    "strategicOrientations": [
+      "so-2.1"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "6. Mesures relatives aux personnes",
+        "numero_mesure": "6.1",
+        "titre": "Développer des stratégies pour attirer et retenir les talents nécessaires aux rôles de sécurité.",
+        "description": "Développer des stratégies pour attirer et retenir les talents nécessaires aux rôles de sécurité.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-2.01.03.01-52",
+    "code": "2.01.03.01",
+    "label": "- Définir et mettre en œuvre un plan d'actions en déclinaison de la stratégie de rétention (revue des tâches, diversification et répartition des tâches, formation et sensibilisation)",
+    "description": "",
+    "strategicOrientations": [
+      "so-2.1"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "6. Mesures relatives aux personnes",
+        "numero_mesure": "6.3",
+        "titre": "Utiliser la formation et le développement de carrière comme outils de rétention.",
+        "description": "Utiliser la formation et le développement de carrière comme outils de rétention.",
+        "niveau_application": ""
+      },
+      {
+        "domaine": "6. Mesures relatives aux personnes",
+        "numero_mesure": "6.4",
+        "titre": "Utiliser la formation et le développement de carrière comme outils de rétention.",
+        "description": "Utiliser la formation et le développement de carrière comme outils de rétention.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-2.01.03.01-53",
+    "code": "2.01.03.01",
+    "label": "- Définir et mettre en œuvre un plan d'actions en déclinaison de la stratégie de recrutement (fiches de postes travaillées, sourcing adapté, valorisation de la filière en interne, rémunération ... )",
+    "description": "",
+    "strategicOrientations": [
+      "so-2.1"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "6. Mesures relatives aux personnes",
+        "numero_mesure": "6.1",
+        "titre": "Mettre en place un processus de recrutement adapté pour attirer des candidats qualifiés pour les postes de sécurité.",
+        "description": "Mettre en place un processus de recrutement adapté pour attirer des candidats qualifiés pour les postes de sécurité.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-2.01.03.01-54",
+    "code": "2.01.03.01",
+    "label": "- Mettre à jour annuellement la stratégie RH",
+    "description": "",
+    "strategicOrientations": [
+      "so-2.1"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "6. Mesures relatives aux personnes",
+        "numero_mesure": "6.1",
+        "titre": "Revoir et adapter régulièrement les stratégies de recrutement et de rétention en fonction des besoins et du marché.",
+        "description": "Revoir et adapter régulièrement les stratégies de recrutement et de rétention en fonction des besoins et du marché.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-2.02.01.01-55",
+    "code": "2.02.01.01",
+    "label": "- Définir une stratégie de sensibilisation pour l'ensemble du réseau (populations visées, médias utilisés pour chaque population visée, messages majeurs à communiquer pour chaque population visée...)",
+    "description": "",
+    "strategicOrientations": [
+      "so-2.2"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "6. Mesures relatives aux personnes",
+        "numero_mesure": "6.3",
+        "titre": "Développer un programme de sensibilisation à la sécurité adapté aux différents publics de l'organisation.",
+        "description": "Développer un programme de sensibilisation à la sécurité adapté aux différents publics de l'organisation.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-2.02.01.01-56",
+    "code": "2.02.01.01",
+    "label": "Cette stratégie devra notamment renforcer fortement l'effort sur la sensibilisation de l'[Organisation] (métier, DSI), des populations sensibles (MOA, développeurs, administrateurs techniques) et des cadres dirigeants du réseau",
+    "description": "",
+    "strategicOrientations": [
+      "so-2.2"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "6. Mesures relatives aux personnes",
+        "numero_mesure": "6.3",
+        "titre": "Adapter les messages et les méthodes de sensibilisation aux rôles et responsabilités spécifiques des employés.",
+        "description": "Adapter les messages et les méthodes de sensibilisation aux rôles et responsabilités spécifiques des employés.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-2.02.01.01-57",
+    "code": "2.02.01.01",
+    "label": "Cette stratégie devra permettre de définir et communiquer les limites et les bonnes pratiques d’utilisation sécurisée des outils du quotidien comme Teams (par exemple : peut-on échanger sur des plaintes sur Teams ?) ou la messagerie, du partage des données avec des externes ou pour l'archivage",
+    "description": "",
+    "strategicOrientations": [
+      "so-2.2"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "5. Mesures Organisationnelles",
+        "numero_mesure": "5.10",
+        "titre": "Les règles d'utilisation acceptable des informations et des actifs doivent être communiquées à tous les utilisateurs.",
+        "description": "Les règles d'utilisation acceptable des informations et des actifs doivent être communiquées à tous les utilisateurs.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-2.02.01.01-58",
+    "code": "2.02.01.01",
+    "label": "- Définir et mettre en œuvre un plan d'action en déclinaison de la stratégie de sensibilisation",
+    "description": "",
+    "strategicOrientations": [
+      "so-2.2"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "6. Mesures relatives aux personnes",
+        "numero_mesure": "6.3",
+        "titre": "Mettre en œuvre le programme de sensibilisation à la sécurité de l'information.",
+        "description": "Mettre en œuvre le programme de sensibilisation à la sécurité de l'information.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-2.02.01.01-59",
+    "code": "2.02.01.01",
+    "label": "- Revoir annuellement la stratégie de sensibilisation",
+    "description": "",
+    "strategicOrientations": [
+      "so-2.2"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "6. Mesures relatives aux personnes",
+        "numero_mesure": "6.3",
+        "titre": "Évaluer et mettre à jour régulièrement le programme de sensibilisation pour garantir son efficacité.",
+        "description": "Évaluer et mettre à jour régulièrement le programme de sensibilisation pour garantir son efficacité.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-2.02.01.02-60",
+    "code": "2.02.01.02",
+    "label": "La charte utilisateur intégrera notamment les exigences liées à la fourniture d'équipements informatiques au sein des [organisations] et/ou de l'[Organisation] (smartphones,…) => A repositionner",
+    "description": "",
+    "strategicOrientations": [
+      "so-6.2"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "5. Mesures Organisationnelles",
+        "numero_mesure": "5.10",
+        "titre": "Inclure dans les règles d'utilisation les conditions de restitution des actifs de l'organisation.",
+        "description": "Inclure dans les règles d'utilisation les conditions de restitution des actifs de l'organisation.",
+        "niveau_application": ""
+      },
+      {
+        "domaine": "5. Mesures Organisationnelles",
+        "numero_mesure": "5.11",
+        "titre": "Inclure dans les règles d'utilisation les conditions de restitution des actifs de l'organisation.",
+        "description": "Inclure dans les règles d'utilisation les conditions de restitution des actifs de l'organisation.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-2.02.01.02-61",
+    "code": "2.02.01.02",
+    "label": "- Définir et appliquer un processus commun de communication à l'ensemble des organismes du réseau des chartes aux personnes concernées",
+    "description": "",
+    "strategicOrientations": [
+      "so-6.2"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "6. Mesures relatives aux personnes",
+        "numero_mesure": "6.2",
+        "titre": "S'assurer que le personnel comprend ses responsabilités en matière de sécurité, telles que définies dans les chartes et politiques.",
+        "description": "S'assurer que le personnel comprend ses responsabilités en matière de sécurité, telles que définies dans les chartes et politiques.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-2.02.01.02-62",
+    "code": "2.02.01.02",
+    "label": "Il s'agira notamment de déterminer si ce processus inclut une démarche de signature par la personne concernée",
+    "description": "",
+    "strategicOrientations": [
+      "so-6.2"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "6. Mesures relatives aux personnes",
+        "numero_mesure": "6.2",
+        "titre": "Les termes et conditions d'emploi doivent inclure l'engagement du personnel à respecter les politiques de sécurité.",
+        "description": "Les termes et conditions d'emploi doivent inclure l'engagement du personnel à respecter les politiques de sécurité.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-1.04.01.01-63",
+    "code": "1.04.01.01",
+    "label": "- Définir, mettre en place et maintenir un processus de build dans les projets dès le cadrage",
+    "description": "",
+    "strategicOrientations": [
+      "so-1.4"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "8. Mesures Technologiques",
+        "numero_mesure": "8.24",
+        "titre": "Mettre en œuvre un cycle de vie de développement sécurisé et définir les exigences de sécurité dès le début du projet.",
+        "description": "Mettre en œuvre un cycle de vie de développement sécurisé et définir les exigences de sécurité dès le début du projet.",
+        "niveau_application": ""
+      },
+      {
+        "domaine": "8. Mesures Technologiques",
+        "numero_mesure": "8.25",
+        "titre": "Mettre en œuvre un cycle de vie de développement sécurisé et définir les exigences de sécurité dès le début du projet.",
+        "description": "Mettre en œuvre un cycle de vie de développement sécurisé et définir les exigences de sécurité dès le début du projet.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-1.04.01.01-64",
+    "code": "1.04.01.01",
+    "label": "Ce processus définira notamment la documentation minimale nécessaire à formaliser en phase de build afin de faciliter le passage en run",
+    "description": "",
+    "strategicOrientations": [
+      "so-1.4"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "8. Mesures Technologiques",
+        "numero_mesure": "8.24",
+        "titre": "La documentation de sécurité doit être produite et maintenue tout au long du cycle de vie du développement.",
+        "description": "La documentation de sécurité doit être produite et maintenue tout au long du cycle de vie du développement.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-1.04.01.01-65",
+    "code": "1.04.01.01",
+    "label": "Il devra également aider l'équipe projet à prendre en compte les contraintes et exigences du RUN le plus tôt possible dans le projet",
+    "description": "",
+    "strategicOrientations": [
+      "so-1.4"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "8. Mesures Technologiques",
+        "numero_mesure": "8.24",
+        "titre": "Le cycle de vie du développement sécurisé doit tenir compte des exigences de sécurité opérationnelle.",
+        "description": "Le cycle de vie du développement sécurisé doit tenir compte des exigences de sécurité opérationnelle.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-1.04.01.01-66",
+    "code": "1.04.01.01",
+    "label": "- Acculturer les équipes projets MOE/MOA et les développeurs à la sécurité",
+    "description": "",
+    "strategicOrientations": [
+      "so-1.4"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "6. Mesures relatives aux personnes",
+        "numero_mesure": "6.3",
+        "titre": "Fournir une formation spécifique sur le développement sécurisé aux équipes projet et aux développeurs.",
+        "description": "Fournir une formation spécifique sur le développement sécurisé aux équipes projet et aux développeurs.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-1.04.01.02-67",
+    "code": "1.04.01.02",
+    "label": "- Définir une méthodologie d'ISP intégrant les étapes de qualification sécurité d'un projet, d'analyse de risques, de définition d'architecture sécurisée et résiliente, d'homologation, de recette sécurité et de type de développements (cycle en V, agile...)",
+    "description": "",
+    "strategicOrientations": [
+      "so-1.4"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "5. & 8. Mesures Organisationnelles & Technologiques",
+        "numero_mesure": "5.8",
+        "titre": "Intégrer la sécurité dans la gestion de projet, appliquer des principes d'architecture sécurisée et effectuer des tests de sécurité.",
+        "description": "Intégrer la sécurité dans la gestion de projet, appliquer des principes d'architecture sécurisée et effectuer des tests de sécurité.",
+        "niveau_application": ""
+      },
+      {
+        "domaine": "5. & 8. Mesures Organisationnelles & Technologiques",
+        "numero_mesure": "8.26",
+        "titre": "Intégrer la sécurité dans la gestion de projet, appliquer des principes d'architecture sécurisée et effectuer des tests de sécurité.",
+        "description": "Intégrer la sécurité dans la gestion de projet, appliquer des principes d'architecture sécurisée et effectuer des tests de sécurité.",
+        "niveau_application": ""
+      },
+      {
+        "domaine": "5. & 8. Mesures Organisationnelles & Technologiques",
+        "numero_mesure": "8.29",
+        "titre": "Intégrer la sécurité dans la gestion de projet, appliquer des principes d'architecture sécurisée et effectuer des tests de sécurité.",
+        "description": "Intégrer la sécurité dans la gestion de projet, appliquer des principes d'architecture sécurisée et effectuer des tests de sécurité.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-1.04.01.02-68",
+    "code": "1.04.01.02",
+    "label": "Cette méthodologie doit pouvoir s'appliquer à tout type de projet (applications, infrastructures IT, infrastructures sécurité...)",
+    "description": "",
+    "strategicOrientations": [
+      "so-1.4"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "5. Mesures Organisationnelles",
+        "numero_mesure": "5.8",
+        "titre": "La sécurité de l'information doit être intégrée dans la méthodologie de gestion de projet de l'organisation.",
+        "description": "La sécurité de l'information doit être intégrée dans la méthodologie de gestion de projet de l'organisation.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-1.04.01.02-69",
+    "code": "1.04.01.02",
+    "label": "- Définir, structurer et mettre en place l'organisation à mettre en œuvre pour accompagner les projets dans le cadre de l'ISP.",
+    "description": "",
+    "strategicOrientations": [
+      "so-1.4"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "5. Mesures Organisationnelles",
+        "numero_mesure": "5.2",
+        "titre": "Définir les rôles et les responsabilités pour la mise en œuvre de la sécurité dans les projets.",
+        "description": "Définir les rôles et les responsabilités pour la mise en œuvre de la sécurité dans les projets.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-1.04.01.02-70",
+    "code": "1.04.01.02",
+    "label": "- Définir et mettre en place un plan d'accompagnement au changement auprès des MOA, des développeurs et des équipes projet",
+    "description": "",
+    "strategicOrientations": [
+      "so-1.4"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "6. Mesures relatives aux personnes",
+        "numero_mesure": "6.3",
+        "titre": "Sensibiliser et former les parties prenantes du projet à leurs responsabilités en matière de sécurité.",
+        "description": "Sensibiliser et former les parties prenantes du projet à leurs responsabilités en matière de sécurité.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-1.04.01.02-71",
+    "code": "1.04.01.02",
+    "label": "- Définir, mettre en place et suivre les indicateurs permettant de connaître le nombre de projets suivis et l'état d'avancement de leur processus d'ISP",
+    "description": "",
+    "strategicOrientations": [
+      "so-1.4"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "5. Mesures Organisationnelles",
+        "numero_mesure": "5.36",
+        "titre": "Mesurer et suivre la conformité des projets aux politiques et procédures de sécurité.",
+        "description": "Mesurer et suivre la conformité des projets aux politiques et procédures de sécurité.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-1.04.03.01-72",
+    "code": "1.04.03.01",
+    "label": "- Définir une organisation sécurité cible spécifique au DevOps au sein des équipes projets",
+    "description": "",
+    "strategicOrientations": [
+      "so-1.4"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "5. Mesures Organisationnelles",
+        "numero_mesure": "5.2",
+        "titre": "Définir les rôles de sécurité (ex: Security Champions) au sein des équipes agiles/DevOps.",
+        "description": "Définir les rôles de sécurité (ex: Security Champions) au sein des équipes agiles/DevOps.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-1.04.03.01-73",
+    "code": "1.04.03.01",
+    "label": "Cette organisation devra notamment permettre de faire travailler ensemble l'équipe projet et l'équipe sécurité dès le développement d'un projet, de formaliser une en amont de la mise en production pour répondre aux besoins de sécurité et de réaliser des revues de codes dès que possible...",
+    "description": "",
+    "strategicOrientations": [
+      "so-1.4"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "8. Mesures Technologiques",
+        "numero_mesure": "8.24",
+        "titre": "Intégrer la sécurité dans le cycle de vie du développement, y compris la collaboration continue et les revues de code sécurisé.",
+        "description": "Intégrer la sécurité dans le cycle de vie du développement, y compris la collaboration continue et les revues de code sécurisé.",
+        "niveau_application": ""
+      },
+      {
+        "domaine": "8. Mesures Technologiques",
+        "numero_mesure": "8.28",
+        "titre": "Intégrer la sécurité dans le cycle de vie du développement, y compris la collaboration continue et les revues de code sécurisé.",
+        "description": "Intégrer la sécurité dans le cycle de vie du développement, y compris la collaboration continue et les revues de code sécurisé.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-1.04.03.01-74",
+    "code": "1.04.03.01",
+    "label": "- Définir la feuille de route de conduite du changement pour atteindre cette cible DevSecOps",
+    "description": "",
+    "strategicOrientations": [
+      "so-1.4"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "6. Mesures relatives aux personnes",
+        "numero_mesure": "6.3",
+        "titre": "Planifier la formation et la sensibilisation pour soutenir la transition vers une culture DevSecOps.",
+        "description": "Planifier la formation et la sensibilisation pour soutenir la transition vers une culture DevSecOps.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-1.04.03.01-75",
+    "code": "1.04.03.01",
+    "label": "Cette feuille de route intègrera un plan d'accompagnement au changement",
+    "description": "",
+    "strategicOrientations": [
+      "so-1.4"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "6. Mesures relatives aux personnes",
+        "numero_mesure": "6.3",
+        "titre": "Le plan doit inclure des actions de communication, de formation et de soutien pour les équipes.",
+        "description": "Le plan doit inclure des actions de communication, de formation et de soutien pour les équipes.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-1.04.03.01-76",
+    "code": "1.04.03.01",
+    "label": "- Mettre en œuvre la feuille de route pour atteindre l'organisation cible DevSecOps",
+    "description": "",
+    "strategicOrientations": [
+      "so-1.4"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "8. Mesures Technologiques",
+        "numero_mesure": "8.24",
+        "titre": "Mettre en œuvre les pratiques, outils et processus qui soutiennent une approche DevSecOps.",
+        "description": "Mettre en œuvre les pratiques, outils et processus qui soutiennent une approche DevSecOps.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-1.04.03.01-77",
+    "code": "1.04.03.01",
+    "label": "- Piloter et animer l'organisation sécurité cible spécifique au DevSecOps",
+    "description": "",
+    "strategicOrientations": [
+      "so-1.4"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "5. Mesures Organisationnelles",
+        "numero_mesure": "5.2",
+        "titre": "Animer la communauté des acteurs de la sécurité (Security Champions) et assurer le suivi des pratiques.",
+        "description": "Animer la communauté des acteurs de la sécurité (Security Champions) et assurer le suivi des pratiques.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-3.01.01.01-78",
+    "code": "3.01.01.01",
+    "label": "- Définir puis maintenir une stratégie de protection et de maintien en conditions de sécurité des infrastructures et des socles serveurs (gestion des mises à jour, des vulnérabilités, de l'obsolescence, du durcissement, de déploiement de solutions de sécurisation) pour prioriser les travaux à réaliser",
+    "description": "",
+    "strategicOrientations": [
+      "so-3.1"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "8. Mesures Technologiques",
+        "numero_mesure": "8.8",
+        "titre": "Élaborer une approche globale pour la gestion des vulnérabilités techniques et de la configuration des systèmes.",
+        "description": "Élaborer une approche globale pour la gestion des vulnérabilités techniques et de la configuration des systèmes.",
+        "niveau_application": ""
+      },
+      {
+        "domaine": "8. Mesures Technologiques",
+        "numero_mesure": "8.9",
+        "titre": "Élaborer une approche globale pour la gestion des vulnérabilités techniques et de la configuration des systèmes.",
+        "description": "Élaborer une approche globale pour la gestion des vulnérabilités techniques et de la configuration des systèmes.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-3.01.01.01-79",
+    "code": "3.01.01.01",
+    "label": "- Formaliser puis maintenir une politique de protection et de maintien en conditions de sécurité des infrastructures et des socles (MCS) en accord avec la stratégie",
+    "description": "",
+    "strategicOrientations": [
+      "so-3.1"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "5. Mesures Organisationnelles",
+        "numero_mesure": "5.1",
+        "titre": "Documenter formellement les règles et les exigences pour la sécurité des infrastructures.",
+        "description": "Documenter formellement les règles et les exigences pour la sécurité des infrastructures.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-3.01.01.01-80",
+    "code": "3.01.01.01",
+    "label": "Concernant le maintien à jour des infrastructures et des socles : Formaliser (puis appliquer) un processus de gestion des mises à jour des infrastructures (dont socles) concernant les mises à jour de sécurité et hors sécurité",
+    "description": "",
+    "strategicOrientations": [
+      "so-3.1"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "8. Mesures Technologiques",
+        "numero_mesure": "8.8",
+        "titre": "Gérer les vulnérabilités techniques en installant les mises à jour logicielles en temps opportun.",
+        "description": "Gérer les vulnérabilités techniques en installant les mises à jour logicielles en temps opportun.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-3.01.01.01-81",
+    "code": "3.01.01.01",
+    "label": "Concernant le maintien à jour des infrastructures et des socles : Mettre en indépendance pour le périmètre des socles l'application des patchs sécurité par rapport aux autres mises à jour",
+    "description": "",
+    "strategicOrientations": [
+      "so-3.1"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "8. Mesures Technologiques",
+        "numero_mesure": "8.8",
+        "titre": "Prioriser l'application des correctifs de sécurité critiques.",
+        "description": "Prioriser l'application des correctifs de sécurité critiques.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-3.01.01.01-82",
+    "code": "3.01.01.01",
+    "label": "Concernant le maintien à jour des infrastructures et des socles : Mettre en place un dispositif de déploiement automatique des mises à jour sur les périmètres pertinents (ex : les infrastructures sécurité)",
+    "description": "",
+    "strategicOrientations": [
+      "so-3.1"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "8. Mesures Technologiques",
+        "numero_mesure": "8.8",
+        "titre": "Utiliser des outils pour automatiser le processus de gestion des correctifs afin d'assurer une couverture rapide.",
+        "description": "Utiliser des outils pour automatiser le processus de gestion des correctifs afin d'assurer une couverture rapide.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-3.01.01.01-83",
+    "code": "3.01.01.01",
+    "label": "Concernant le maintien à jour des infrastructures et des socles : Mettre en place un environnement de pré-production pour les équipements sécurité permettant notamment de tester de leurs mises à jour avant mise en production",
+    "description": "",
+    "strategicOrientations": [
+      "so-3.1"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "8. Mesures Technologiques",
+        "numero_mesure": "8.27",
+        "titre": "Utiliser des environnements de test pour valider les changements et les mises à jour avant leur déploiement en production.",
+        "description": "Utiliser des environnements de test pour valider les changements et les mises à jour avant leur déploiement en production.",
+        "niveau_application": ""
+      },
+      {
+        "domaine": "8. Mesures Technologiques",
+        "numero_mesure": "8.32",
+        "titre": "Utiliser des environnements de test pour valider les changements et les mises à jour avant leur déploiement en production.",
+        "description": "Utiliser des environnements de test pour valider les changements et les mises à jour avant leur déploiement en production.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-3.01.01.01-84",
+    "code": "3.01.01.01",
+    "label": "Concernant la protection contre les vulnérabilités et les menaces externes : Identifier, mettre en place et exploiter des outils permettant d'identifier les vulnérabilités présentes sur les serveurs (ex : Rapid7, module Red Hat Insight)",
+    "description": "",
+    "strategicOrientations": [
+      "so-3.1"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "8. Mesures Technologiques",
+        "numero_mesure": "8.8",
+        "titre": "Utiliser des outils d'analyse de vulnérabilités pour identifier les faiblesses techniques des systèmes.",
+        "description": "Utiliser des outils d'analyse de vulnérabilités pour identifier les faiblesses techniques des systèmes.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-3.01.01.01-85",
+    "code": "3.01.01.01",
+    "label": "Concernant la protection contre les vulnérabilités et les menaces externes : Identifier, mettre en place, exploiter et maintenir des outils permettant de protéger les infrastructures serveurs contre les menaces externes (ex : antivirus sur les périmètres Linux, EDR...) et identifier les modalités d'exploitation efficace de ces solutions (tri et hiérarchisation des éléments générés, déclenchement d'alertes pertinentes...)",
+    "description": "",
+    "strategicOrientations": [
+      "so-3.1"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "8. Mesures Technologiques",
+        "numero_mesure": "8.7",
+        "titre": "Mettre en œuvre des contrôles de protection, de détection et de récupération contre les logiciels malveillants.",
+        "description": "Mettre en œuvre des contrôles de protection, de détection et de récupération contre les logiciels malveillants.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-3.01.01.01-86",
+    "code": "3.01.01.01",
+    "label": "Concernant le durcissement de la configuration des ressources : Formaliser et maintenir un guide de durcissement des serveurs (Windows/Linux) et des autres infrastructures (AD, réseau, sécurité, sauvegarde…)",
+    "description": "",
+    "strategicOrientations": [
+      "so-3.1"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "8. Mesures Technologiques",
+        "numero_mesure": "8.9",
+        "titre": "Définir et documenter des configurations sécurisées (lignes de base) pour les technologies utilisées.",
+        "description": "Définir et documenter des configurations sécurisées (lignes de base) pour les technologies utilisées.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-3.01.01.01-87",
+    "code": "3.01.01.01",
+    "label": "Concernant le durcissement de la configuration des ressources : Construire et maintenir des templates durcis à mettre en œuvre systématiquement pour les nouveaux serveurs (Windows/Linux)",
+    "description": "",
+    "strategicOrientations": [
+      "so-3.1"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "8. Mesures Technologiques",
+        "numero_mesure": "8.9",
+        "titre": "Créer des images et des modèles de configuration sécurisés pour les nouveaux déploiements de systèmes.",
+        "description": "Créer des images et des modèles de configuration sécurisés pour les nouveaux déploiements de systèmes.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-3.01.01.01-88",
+    "code": "3.01.01.01",
+    "label": "Concernant le durcissement de la configuration des ressources : Formaliser, outiller et maintenir un processus de revue et correction des écarts à la stratégie de durcissement",
+    "description": "",
+    "strategicOrientations": [
+      "so-3.1"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "8. Mesures Technologiques",
+        "numero_mesure": "8.9",
+        "titre": "Surveiller les systèmes pour détecter les écarts par rapport aux configurations sécurisées établies.",
+        "description": "Surveiller les systèmes pour détecter les écarts par rapport aux configurations sécurisées établies.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-3.01.01.01-89",
+    "code": "3.01.01.01",
+    "label": "Concernant la gestion des obsolescences : Définir et appliquer un processus de gestion des obsolescences pour les infrastructures permettant d'identifier puis d'isoler et protéger les ressources obsolètes",
+    "description": "",
+    "strategicOrientations": [
+      "so-3.1"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "8. Mesures Technologiques",
+        "numero_mesure": "8.8",
+        "titre": "Gérer les risques associés aux systèmes qui ne sont plus supportés par le fournisseur.",
+        "description": "Gérer les risques associés aux systèmes qui ne sont plus supportés par le fournisseur.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-3.01.02.01-90",
+    "code": "3.01.02.01",
+    "label": "- Mettre en œuvre la feuille de route de mise en œuvre de la stratégie MCS sur les aspects liés à la mise à jour des infrastructures et des socles hors équipements de sécurité",
+    "description": "",
+    "strategicOrientations": [
+      "so-3.1"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "8. Mesures Technologiques",
+        "numero_mesure": "8.8",
+        "titre": "Appliquer les correctifs aux vulnérabilités techniques en temps opportun.",
+        "description": "Appliquer les correctifs aux vulnérabilités techniques en temps opportun.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-3.01.02.02-91",
+    "code": "3.01.02.02",
+    "label": "- Mettre en œuvre la feuille de route sur les aspects liés à la mise à jour (MCO et MCS) des infrastructures de sécurité",
+    "description": "",
+    "strategicOrientations": [
+      "so-3.1"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "8. Mesures Technologiques",
+        "numero_mesure": "8.8",
+        "titre": "S'assurer que les dispositifs de sécurité eux-mêmes sont à jour et ne présentent pas de vulnérabilités.",
+        "description": "S'assurer que les dispositifs de sécurité eux-mêmes sont à jour et ne présentent pas de vulnérabilités.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-3.01.03.01-92",
+    "code": "3.01.03.01",
+    "label": "- Mettre en œuvre la feuille de route sur les aspects liés à l'identification des vulnérabilités et la protection contre les menaces externes",
+    "description": "",
+    "strategicOrientations": [
+      "so-3.1"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "8. Mesures Technologiques",
+        "numero_mesure": "8.7",
+        "titre": "Obtenir des informations sur les vulnérabilités techniques et mettre en œuvre une protection contre les logiciels malveillants.",
+        "description": "Obtenir des informations sur les vulnérabilités techniques et mettre en œuvre une protection contre les logiciels malveillants.",
+        "niveau_application": ""
+      },
+      {
+        "domaine": "8. Mesures Technologiques",
+        "numero_mesure": "8.8",
+        "titre": "Obtenir des informations sur les vulnérabilités techniques et mettre en œuvre une protection contre les logiciels malveillants.",
+        "description": "Obtenir des informations sur les vulnérabilités techniques et mettre en œuvre une protection contre les logiciels malveillants.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-3.01.04.01-93",
+    "code": "3.01.04.01",
+    "label": "- Mettre en œuvre la feuille de route sur les aspects liés au renforcement et au contrôle de la configuration sécurisée des ressources",
+    "description": "",
+    "strategicOrientations": [
+      "so-3.1"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "8. Mesures Technologiques",
+        "numero_mesure": "8.9",
+        "titre": "Mettre en œuvre, surveiller et examiner les configurations sécurisées de la technologie.",
+        "description": "Mettre en œuvre, surveiller et examiner les configurations sécurisées de la technologie.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-3.01.05.01-94",
+    "code": "3.01.05.01",
+    "label": "- Mettre en œuvre la feuille de route sur les aspects liés à l'obsolescence",
+    "description": "",
+    "strategicOrientations": [
+      "so-3.1"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "8. Mesures Technologiques",
+        "numero_mesure": "8.8",
+        "titre": "Gérer les risques posés par les technologies obsolètes.",
+        "description": "Gérer les risques posés par les technologies obsolètes.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-3.02.01.01-95",
+    "code": "3.02.01.01",
+    "label": "- Industrialiser la gestion de la conformité à la politique de filtrage, le workflow de création des règles de filtrage et le processus de cartographie des flux mis en œuvre (ex : outil Skybox)",
+    "description": "",
+    "strategicOrientations": [
+      "so-3.2"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "8. Mesures Technologiques",
+        "numero_mesure": "8.20",
+        "titre": "Gérer et contrôler les réseaux pour protéger les systèmes d'information.",
+        "description": "Gérer et contrôler les réseaux pour protéger les systèmes d'information.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-3.02.02.01-96",
+    "code": "3.02.02.01",
+    "label": "- Définir une stratégie de cloisonnement et de filtrage réseau tenant compte des enjeux sécurité (renforcement du cloisonnement entre populations, séparation des périmètres OSE, cloisonnement des architectures 3 tiers, cloisonnement vis à vis des partenaires et des prestataires, vis à vis des périmètres Cloud…).",
+    "description": "",
+    "strategicOrientations": [
+      "so-3.2"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "8. Mesures Technologiques",
+        "numero_mesure": "8.21",
+        "titre": "Séparer les réseaux en domaines de sécurité distincts.",
+        "description": "Séparer les réseaux en domaines de sécurité distincts.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-3.02.02.01-97",
+    "code": "3.02.02.01",
+    "label": "Il s'agira notamment de déterminer si la stratégie actuelle basée sur les gabarits est toujours adaptée",
+    "description": "",
+    "strategicOrientations": [
+      "so-3.2"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "8. Mesures Technologiques",
+        "numero_mesure": "8.21",
+        "titre": "Revoir périodiquement l'efficacité de la segmentation du réseau.",
+        "description": "Revoir périodiquement l'efficacité de la segmentation du réseau.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-3.02.02.01-98",
+    "code": "3.02.02.01",
+    "label": "- Mettre à jour la politique de cloisonnement réseau pour tenir compte de la nouvelle stratégie",
+    "description": "",
+    "strategicOrientations": [
+      "so-3.2"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "5. Mesures Organisationnelles",
+        "numero_mesure": "5.1",
+        "titre": "La politique de sécurité doit inclure les règles relatives à la sécurité des réseaux.",
+        "description": "La politique de sécurité doit inclure les règles relatives à la sécurité des réseaux.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-3.02.02.01-99",
+    "code": "3.02.02.01",
+    "label": "- Définir un plan d'action en déclinaison de la stratégie de cloisonnement et de filtrage réseau",
+    "description": "",
+    "strategicOrientations": [
+      "so-3.2"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "8. Mesures Technologiques",
+        "numero_mesure": "8.21",
+        "titre": "Planifier la mise en œuvre des contrôles de ségrégation du réseau.",
+        "description": "Planifier la mise en œuvre des contrôles de ségrégation du réseau.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-3.02.02.02-100",
+    "code": "3.02.02.02",
+    "label": "- Mettre en œuvre le plan d'action en déclinaison de la stratégie de cloisonnement et de filtrage réseau",
+    "description": "",
+    "strategicOrientations": [
+      "so-3.2"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "8. Mesures Technologiques",
+        "numero_mesure": "8.21",
+        "titre": "Mettre en œuvre la ségrégation des réseaux.",
+        "description": "Mettre en œuvre la ségrégation des réseaux.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-3.02.03.01-101",
+    "code": "3.02.03.01",
+    "label": "- Déployer et maintenir une solution NAC sur l'ensemble du périmètre du réseau",
+    "description": "",
+    "strategicOrientations": [
+      "so-3.2"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "8. Mesures Technologiques",
+        "numero_mesure": "8.20",
+        "titre": "Mettre en œuvre des contrôles d'admission au réseau pour faire respecter les politiques de sécurité des terminaux.",
+        "description": "Mettre en œuvre des contrôles d'admission au réseau pour faire respecter les politiques de sécurité des terminaux.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-3.02.03.02-102",
+    "code": "3.02.03.02",
+    "label": "- Réaliser une étude complémentaire sur la mise en œuvre de solutions en complément des solutions actuelles pour lutter contre les attaques Ddos",
+    "description": "",
+    "strategicOrientations": [
+      "so-3.2"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "8. Mesures Technologiques",
+        "numero_mesure": "8.20",
+        "titre": "Protéger les services réseau contre les attaques par déni de service.",
+        "description": "Protéger les services réseau contre les attaques par déni de service.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-3.02.03.02-103",
+    "code": "3.02.03.02",
+    "label": "- Mettre en œuvre les conclusions de l'étude",
+    "description": "",
+    "strategicOrientations": [
+      "so-3.2"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "8. Mesures Technologiques",
+        "numero_mesure": "8.20",
+        "titre": "Déployer les solutions de protection DDoS identifiées.",
+        "description": "Déployer les solutions de protection DDoS identifiées.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-3.03.01.01-104",
+    "code": "3.03.01.01",
+    "label": "- Formaliser une politique de sécurisation des postes de travail utilisateurs et VIP (durcissement du BIOS et de la configuration de l'OS, blocage des ports, chiffrement, outils de protection, pratiques d'administration locale, liste blanche des applications, pratiques d'administration en support, outils de contrôle du respect de la politique, correction des non-conformités)",
+    "description": "",
+    "strategicOrientations": [
+      "so-3.3"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "8. Mesures Technologiques",
+        "numero_mesure": "8.1",
+        "titre": "Protéger les informations sur les terminaux des utilisateurs par la mise en œuvre de multiples contrôles de sécurité.",
+        "description": "Protéger les informations sur les terminaux des utilisateurs par la mise en œuvre de multiples contrôles de sécurité.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-3.03.01.01-105",
+    "code": "3.03.01.01",
+    "label": "- Définir un plan d'action en déclinaison de la politique de sécurisation des postes de travail (ex : déploiement d'un EDR, chiffrement des disques durs, déploiement d'un outil pour faire la mise à jour du BIOS au fil de l'eau...)",
+    "description": "",
+    "strategicOrientations": [
+      "so-3.3"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "8. Mesures Technologiques",
+        "numero_mesure": "8.1",
+        "titre": "Planifier le déploiement des mesures de sécurité nécessaires pour protéger les terminaux.",
+        "description": "Planifier le déploiement des mesures de sécurité nécessaires pour protéger les terminaux.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-3.03.01.02-106",
+    "code": "3.03.01.02",
+    "label": "- Mettre en œuvre le plan de sécurisation sur l'ensemble du parc de postes de travail du réseau",
+    "description": "",
+    "strategicOrientations": [
+      "so-3.3"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "8. Mesures Technologiques",
+        "numero_mesure": "8.1",
+        "titre": "Appliquer les mesures de sécurité définies à tous les terminaux des utilisateurs.",
+        "description": "Appliquer les mesures de sécurité définies à tous les terminaux des utilisateurs.",
+        "niveau_application": ""
+      }
+    ]
+  },
+  {
+    "id": "obj-3.03.02.01-107",
+    "code": "3.03.02.01",
+    "label": "- Formaliser et outiller un processus de détection et de correction des non-conformités (configuration des postes de travail, applications autorisées, mise en œuvre des patchs, configuration du FW, configuration du BIOS...)",
+    "description": "",
+    "strategicOrientations": [
+      "so-3.3"
+    ],
+    "createdAt": "2025-11-01T10:00:00Z",
+    "mesures_iso": [
+      {
+        "domaine": "8. Mesures Technologiques",
+        "numero_mesure": "8.1",
+        "titre": "Surveiller la conformité des terminaux aux politiques de sécurité et aux configurations établies.",
+        "description": "Surveiller la conformité des terminaux aux politiques de sécurité et aux configurations établies.",
+        "niveau_application": ""
+      },
+      {
+        "domaine": "8. Mesures Technologiques",
+        "numero_mesure": "8.9",
+        "titre": "Surveiller la conformité des terminaux aux politiques de sécurité et aux configurations établies.",
+        "description": "Surveiller la conformité des terminaux aux politiques de sécurité et aux configurations établies.",
+        "niveau_application": ""
+      }
+    ]
+  }
+]

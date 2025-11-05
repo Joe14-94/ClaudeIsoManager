@@ -3299,8 +3299,8 @@
         "description": "- Identifier les besoins métiers en terme de sécurité et de protection de l'information et mettre en place des dispositifs permettant d'y faire face"
       },
       "chantier": {
-        "numero": "[NEW] 3.7.1",
-        "description": "[NEW] Mettre en place des solutions de sécurité adaptées aux métiers"
+        "numero": "3.7.1 [NEW]",
+        "description": "Mettre en place des solutions de sécurité adaptées aux métiers"
       },
       "orientation_strategique": {
         "numero": "3.7",
@@ -3322,8 +3322,8 @@
         "description": "Parmi les systèmes qui pourront être mis en place, on pourra notamment contrôle déployer des dispositifs pour lutter contre l'usurpation d'identité, la fraude au président ou la corruption (Machine learning / IA, éditeur de règles...)"
       },
       "chantier": {
-        "numero": "[NEW] 3.7.1",
-        "description": "[NEW] Mettre en place des solutions de sécurité adaptées aux métiers"
+        "numero": "3.7.1 [NEW]",
+        "description": "Mettre en place des solutions de sécurité adaptées aux métiers"
       },
       "orientation_strategique": {
         "numero": "3.7",
@@ -4150,8 +4150,8 @@
         "description": "- Définir et formaliser une stratégie de génération et rétention des logs (sources de logs, structure des logs, durée de rétention, lieu de stockage, sécurisation des accès, en fonction des logs) et de détection (périmètres couverts, grandes typologies d'évènements à détecter, ressources humaines mises en œuvre, outils de détection et de corrélation, rôles et les responsabilités/RACI)"
       },
       "chantier": {
-        "numero": "[NEW] 4.1.1",
-        "description": "[NEW] Établir une stratégie de journalisation et de détection"
+        "numero": "4.1.1 [NEW]",
+        "description": "Établir une stratégie de journalisation et de détection"
       },
       "orientation_strategique": {
         "numero": "4.1",
@@ -4173,8 +4173,8 @@
         "description": "- Définir un plan d'action permettant de se mettre progressivement en conformité avec la stratégie de génération et de rétention des logs et celle de détection"
       },
       "chantier": {
-        "numero": "[NEW] 4.2.1",
-        "description": "[NEW] Mettre en œuvre la stratégie de journalisation et de détection"
+        "numero": "4.2.1 [NEW]",
+        "description": "Mettre en œuvre la stratégie de journalisation et de détection"
       },
       "orientation_strategique": {
         "numero": "4.2",
@@ -4196,8 +4196,8 @@
         "description": "Ce plan identifiera notamment les moyens techniques à déployer et exploiter pour renforcer les capacités de détection ainsi que les périmètres sur lesquels ces moyens seront mis en œuvre. Ces moyens pourront notamment être : * capacités d'analyse (ex : IDS/IPS) des flux circulant dans le réseau interne des centres informatiques * capacités d'analyse avancée des comportements (ex : sondes vectra) sur le réseau interne des centres informatiques * capacités d'analyse sur le périmètre O365 * capacités d'analyse des usages liés aux services Cloud (CASB,...) * capacités d'analyse des équipements connectés au réseau du réseau (scans de découverte...)"
       },
       "chantier": {
-        "numero": "[NEW] 4.2.1",
-        "description": "[NEW] Mettre en œuvre la stratégie de journalisation et de détection"
+        "numero": "4.2.1 [NEW]",
+        "description": "Mettre en œuvre la stratégie de journalisation et de détection"
       },
       "orientation_strategique": {
         "numero": "4.2",
@@ -4219,8 +4219,8 @@
         "description": "Ce plan d'actions devra également permettre d'identifier, déployer et exploiter un outil de corrélation des évènements de sécurité (ex : SIEM) appartenant à le réseau"
       },
       "chantier": {
-        "numero": "[NEW] 4.2.1",
-        "description": "[NEW] Mettre en œuvre la stratégie de journalisation et de détection"
+        "numero": "4.2.1 [NEW]",
+        "description": "Mettre en œuvre la stratégie de journalisation et de détection"
       },
       "orientation_strategique": {
         "numero": "4.2",
@@ -4242,8 +4242,8 @@
         "description": "Le plan d'actions étendra progressivement l'activité du SOC hybride et de son service managé (incluant des services SIEM et SOAR) sur le périmètre offres de service ainsi que sur les actifs les plus critiques"
       },
       "chantier": {
-        "numero": "[NEW] 4.2.1",
-        "description": "[NEW] Mettre en œuvre la stratégie de journalisation et de détection"
+        "numero": "4.2.1 [NEW]",
+        "description": "Mettre en œuvre la stratégie de journalisation et de détection"
       },
       "orientation_strategique": {
         "numero": "4.2",
@@ -4265,8 +4265,8 @@
         "description": "Une réflexion devra également être menée concernant l'inscription dans le projet de CERT interréseau pour notamment renforcer les capacités de threat intelligence le et déploiement de ressources humaines permettant de traiter les alertes générées en dehors de heures ouvrés"
       },
       "chantier": {
-        "numero": "[NEW] 4.2.1",
-        "description": "[NEW] Mettre en œuvre la stratégie de journalisation et de détection"
+        "numero": "4.2.1 [NEW]",
+        "description": "Mettre en œuvre la stratégie de journalisation et de détection"
       },
       "orientation_strategique": {
         "numero": "4.2",
@@ -4288,8 +4288,8 @@
         "description": "- Mettre en œuvre le plan d'actions permettant de se mettre progressivement en conformité avec la stratégie de génération et de rétention des logs et celle de détection"
       },
       "chantier": {
-        "numero": "[NEW] 4.2.1",
-        "description": "[NEW] Mettre en œuvre la stratégie de journalisation et de détection"
+        "numero": "4.2.1 [NEW]",
+        "description": "Mettre en œuvre la stratégie de journalisation et de détection"
       },
       "orientation_strategique": {
         "numero": "4.2",
@@ -4311,8 +4311,8 @@
         "description": "- Identifier les cas d'usages de détection à mettre en œuvre sur les périmètres (applications, socles et infrastructures) déjà en production sur la base d'enjeux sécurité métier et d'enjeux sécurité d'administration technique ainsi que les logs nécessaires à leur réalisation."
       },
       "chantier": {
-        "numero": "[NEW] 4.3.1",
-        "description": "[NEW] Définir et implémenter les cas d'usage de détection"
+        "numero": "4.3.1 [NEW]",
+        "description": "Définir et implémenter les cas d'usage de détection"
       },
       "orientation_strategique": {
         "numero": "4.3",
@@ -4334,8 +4334,8 @@
         "description": "- Définir et mettre en œuvre une feuille de route de mise en œuvre progressive de ces cas d'usage via la génération et la collecte des logs nécessaires à la mise en œuvre des cas d'usages et leur implémentation dans les outils de détection et de corrélation existant"
       },
       "chantier": {
-        "numero": "[NEW] 4.3.1",
-        "description": "[NEW] Définir et implémenter les cas d'usage de détection"
+        "numero": "4.3.1 [NEW]",
+        "description": "Définir et implémenter les cas d'usage de détection"
       },
       "orientation_strategique": {
         "numero": "4.3",
@@ -4357,8 +4357,8 @@
         "description": "- Définir une stratégie de tests (contrôles unitaires réguliers, audits simulant des attaques réelles...) permettant de vérifier que les alertes implémentées dans les outils de détection se déclenchent lorsque cela est attendu puis veiller à l'amélioration continue des dispositifs"
       },
       "chantier": {
-        "numero": "[NEW] 4.4.1",
-        "description": "[NEW] Mettre en place et exécuter une stratégie de test de la détection"
+        "numero": "4.4.1 [NEW]",
+        "description": "Mettre en place et exécuter une stratégie de test de la détection"
       },
       "orientation_strategique": {
         "numero": "4.4",
@@ -4380,8 +4380,8 @@
         "description": "- Mettre en œuvre la stratégie de test"
       },
       "chantier": {
-        "numero": "[NEW] 4.4.1",
-        "description": "[NEW] Mettre en place et exécuter une stratégie de test de la détection"
+        "numero": "4.4.1 [NEW]",
+        "description": "Mettre en place et exécuter une stratégie de test de la détection"
       },
       "orientation_strategique": {
         "numero": "4.4",
@@ -4403,8 +4403,8 @@
         "description": "- Mettre à jour et outiller le processus de gestion des incidents cybersécurité et de leur investigation"
       },
       "chantier": {
-        "numero": "[NEW] 4.5.1",
-        "description": "[NEW] Renforcer le processus de gestion des incidents et de crise"
+        "numero": "4.5.1 [NEW]",
+        "description": "Renforcer le processus de gestion des incidents et de crise"
       },
       "orientation_strategique": {
         "numero": "4.5",
@@ -4426,8 +4426,8 @@
         "description": "Ces travaux intègreront notamment : * la mise en place d'une grille de classification des incidents, * la définition d'un processus d'habilitation d'urgence permettant d'attribuer des habilitations complémentaires à l'agent d'astreinte de la DSI et aux équipes techniques en cas d'incident sécurité * la définition d'un processus de prise de décision d'un arrêt d'urgence du SI"
       },
       "chantier": {
-        "numero": "[NEW] 4.5.1",
-        "description": "[NEW] Renforcer le processus de gestion des incidents et de crise"
+        "numero": "4.5.1 [NEW]",
+        "description": "Renforcer le processus de gestion des incidents et de crise"
       },
       "orientation_strategique": {
         "numero": "4.5",
@@ -4449,8 +4449,8 @@
         "description": "- Définir et mettre en place des moyens techniques et organisationnels permettant de limiter l'impact technique d'une attaque"
       },
       "chantier": {
-        "numero": "[NEW] 4.5.1",
-        "description": "[NEW] Renforcer le processus de gestion des incidents et de crise"
+        "numero": "4.5.1 [NEW]",
+        "description": "Renforcer le processus de gestion des incidents et de crise"
       },
       "orientation_strategique": {
         "numero": "4.5",
@@ -4472,8 +4472,8 @@
         "description": "Ces travaux intègreront notamment : * la coordination des moyens techniques sécurité et des moyens techniques réseau existant afin de lutter contre la propagation d'une attaque * la mise en place et le test régulier d'une procédure technique d'arrêt d'urgence du SI * de déploiement de comptes d'administration des serveurs de sauvegardes et serveurs d'infrastructure clés indépendants des annuaires centralisés * la souscription à un CSIRT externe"
       },
       "chantier": {
-        "numero": "[NEW] 4.5.1",
-        "description": "[NEW] Renforcer le processus de gestion des incidents et de crise"
+        "numero": "4.5.1 [NEW]",
+        "description": "Renforcer le processus de gestion des incidents et de crise"
       },
       "orientation_strategique": {
         "numero": "4.5",
@@ -4495,8 +4495,8 @@
         "description": "- Etudier la souscription à une cyber-assurance"
       },
       "chantier": {
-        "numero": "[NEW] 4.5.1",
-        "description": "[NEW] Renforcer le processus de gestion des incidents et de crise"
+        "numero": "4.5.1 [NEW]",
+        "description": "Renforcer le processus de gestion des incidents et de crise"
       },
       "orientation_strategique": {
         "numero": "4.5",
@@ -4518,8 +4518,8 @@
         "description": "- Structurer le processus de crise cyber de l'ensemble du réseau en définissant l'interface entre les différentes cellules de crise existantes (réseau, DSI et cyberdéfense) pour assurer la cohérence globale du dispositif"
       },
       "chantier": {
-        "numero": "[NEW] 4.6.1",
-        "description": "[NEW] Formaliser et tester l'organisation de crise"
+        "numero": "4.6.1 [NEW]",
+        "description": "Formaliser et tester l'organisation de crise"
       },
       "orientation_strategique": {
         "numero": "4.6",
@@ -4541,8 +4541,8 @@
         "description": "- Mettre en place un volet cybersécurité à l'organisation de crise existante au niveau direction générale du réseau"
       },
       "chantier": {
-        "numero": "[NEW] 4.6.1",
-        "description": "[NEW] Formaliser et tester l'organisation de crise"
+        "numero": "4.6.1 [NEW]",
+        "description": "Formaliser et tester l'organisation de crise"
       },
       "orientation_strategique": {
         "numero": "4.6",
@@ -4564,8 +4564,8 @@
         "description": "- Définir les processus décrivant modalités de communication interne et externe en cas de crise cybersécurité et identifier les outils nécessaires à la mise en œuvre de cette communication"
       },
       "chantier": {
-        "numero": "[NEW] 4.6.1",
-        "description": "[NEW] Formaliser et tester l'organisation de crise"
+        "numero": "4.6.1 [NEW]",
+        "description": "Formaliser et tester l'organisation de crise"
       },
       "orientation_strategique": {
         "numero": "4.6",
@@ -4587,8 +4587,8 @@
         "description": "Ces processus devront prendre en compte les interactions avec les autorités compétentes"
       },
       "chantier": {
-        "numero": "[NEW] 4.6.1",
-        "description": "[NEW] Formaliser et tester l'organisation de crise"
+        "numero": "4.6.1 [NEW]",
+        "description": "Formaliser et tester l'organisation de crise"
       },
       "orientation_strategique": {
         "numero": "4.6",
@@ -4610,8 +4610,8 @@
         "description": "- Déployer les outils nécessaires"
       },
       "chantier": {
-        "numero": "[NEW] 4.6.1",
-        "description": "[NEW] Formaliser et tester l'organisation de crise"
+        "numero": "4.6.1 [NEW]",
+        "description": "Formaliser et tester l'organisation de crise"
       },
       "orientation_strategique": {
         "numero": "4.6",
@@ -4633,8 +4633,8 @@
         "description": "- Formaliser les messages clés à transmettre en interne et en externe en cas de crise cybersécurité"
       },
       "chantier": {
-        "numero": "[NEW] 4.6.1",
-        "description": "[NEW] Formaliser et tester l'organisation de crise"
+        "numero": "4.6.1 [NEW]",
+        "description": "Formaliser et tester l'organisation de crise"
       },
       "orientation_strategique": {
         "numero": "4.6",
@@ -4656,8 +4656,8 @@
         "description": "- Mettre en place un outillage et des moyens de pilotage et de communication de crise indépendants du SI du réseau (ex : IREMOS, annuaire...) utilisables à tous les niveaux de cellule de crise (réseau, DSI, équipe cyberdéfense)"
       },
       "chantier": {
-        "numero": "[NEW] 4.6.1",
-        "description": "[NEW] Formaliser et tester l'organisation de crise"
+        "numero": "4.6.1 [NEW]",
+        "description": "Formaliser et tester l'organisation de crise"
       },
       "orientation_strategique": {
         "numero": "4.6",
@@ -4679,8 +4679,8 @@
         "description": "- Définir une stratégie d'exercices de crise graduels impliquant toutes les cellules de crise (réseau, DSI et équipe cyberdéfense)"
       },
       "chantier": {
-        "numero": "[NEW] 4.6.1",
-        "description": "[NEW] Formaliser et tester l'organisation de crise"
+        "numero": "4.6.1 [NEW]",
+        "description": "Formaliser et tester l'organisation de crise"
       },
       "orientation_strategique": {
         "numero": "4.6",
@@ -4702,8 +4702,8 @@
         "description": "- Appliquer la stratégie en réalisant des exercices réguliers"
       },
       "chantier": {
-        "numero": "[NEW] 4.6.1",
-        "description": "[NEW] Formaliser et tester l'organisation de crise"
+        "numero": "4.6.1 [NEW]",
+        "description": "Formaliser et tester l'organisation de crise"
       },
       "orientation_strategique": {
         "numero": "4.6",
@@ -4729,8 +4729,8 @@
         "description": "Définir une gouvernance dédiée à la continuité d'activité"
       },
       "orientation_strategique": {
-        "numero": "[NEW] 5.0",
-        "description": "[NEW] Assurer la résilience et la continuité des activités"
+        "numero": "5.0 [NEW]",
+        "description": "Assurer la résilience et la continuité des activités"
       },
       "mapping_iso_27002": {
         "domaine": "5. Mesures Organisationnelles",
@@ -4752,8 +4752,8 @@
         "description": "Définir une gouvernance dédiée à la continuité d'activité"
       },
       "orientation_strategique": {
-        "numero": "[NEW] 5.0",
-        "description": "[NEW] Assurer la résilience et la continuité des activités"
+        "numero": "5.0 [NEW]",
+        "description": "Assurer la résilience et la continuité des activités"
       },
       "mapping_iso_27002": {
         "domaine": "5. Mesures Organisationnelles",
@@ -4775,8 +4775,8 @@
         "description": "Définir une gouvernance dédiée à la continuité d'activité"
       },
       "orientation_strategique": {
-        "numero": "[NEW] 5.0",
-        "description": "[NEW] Assurer la résilience et la continuité des activités"
+        "numero": "5.0 [NEW]",
+        "description": "Assurer la résilience et la continuité des activités"
       },
       "mapping_iso_27002": {
         "domaine": "5. Mesures Organisationnelles",
@@ -4798,8 +4798,8 @@
         "description": "Définir une stratégie globale de résilience à l'échelle du réseau"
       },
       "orientation_strategique": {
-        "numero": "[NEW] 5.0",
-        "description": "[NEW] Assurer la résilience et la continuité des activités"
+        "numero": "5.0 [NEW]",
+        "description": "Assurer la résilience et la continuité des activités"
       },
       "mapping_iso_27002": {
         "domaine": "5. Mesures Organisationnelles",
@@ -4821,8 +4821,8 @@
         "description": "Définir une stratégie globale de résilience à l'échelle du réseau"
       },
       "orientation_strategique": {
-        "numero": "[NEW] 5.0",
-        "description": "[NEW] Assurer la résilience et la continuité des activités"
+        "numero": "5.0 [NEW]",
+        "description": "Assurer la résilience et la continuité des activités"
       },
       "mapping_iso_27002": {
         "domaine": "5. Mesures Organisationnelles",
@@ -4844,244 +4844,10 @@
         "description": "Renforcer la résilience des activités métiers DSI et cybersécurité du réseau en cas d'indisponibilité de leurs outils"
       },
       "orientation_strategique": {
-        "numero": "[NEW] 5.0",
-        "description": "[NEW] Assurer la résilience et la continuité des activités"
+        "numero": "5.0 [NEW]",
+        "description": "Assurer la résilience et la continuité des activités"
       },
       "mapping_iso_27002": {
         "domaine": "5. Mesures Organisationnelles",
         "numero_mesure": "5.30",
-        "synthese_mesure": "Élaborer et mettre en œuvre des plans de continuité pour les fonctions critiques."
-      }
-    },
-    {
-      "axe": {
-        "numero": "5",
-        "titre": "détection, réponse et résilience"
-      },
-      "objectif": {
-        "numero": "5.03.01.01",
-        "description": "- Mettre en oeuvre la feuille de route"
-      },
-      "chantier": {
-        "numero": "5.3",
-        "description": "Renforcer la résilience des activités métiers DSI et cybersécurité du réseau en cas d'indisponibilité de leurs outils"
-      },
-      "orientation_strategique": {
-        "numero": "[NEW] 5.0",
-        "description": "[NEW] Assurer la résilience et la continuité des activités"
-      },
-      "mapping_iso_27002": {
-        "domaine": "5. Mesures Organisationnelles",
-        "numero_mesure": "5.30",
-        "synthese_mesure": "Appliquer les plans de continuité d'activité."
-      }
-    },
-    {
-      "axe": {
-        "numero": "5",
-        "titre": "détection, réponse et résilience"
-      },
-      "objectif": {
-        "numero": "5.04.01.01",
-        "description": "- Définir une feuille de route en application de la stratégie afin de poursuivre la construction puis le maintien en conditions opérationnelle des plans de continuité informatiques des applications critiques identifiées"
-      },
-      "chantier": {
-        "numero": "5.4",
-        "description": "Renforcer la résilience du SI du réseau contre les accidents"
-      },
-      "orientation_strategique": {
-        "numero": "[NEW] 5.0",
-        "description": "[NEW] Assurer la résilience et la continuité des activités"
-      },
-      "mapping_iso_27002": {
-        "domaine": "5. Mesures Organisationnelles",
-        "numero_mesure": "5.30",
-        "synthese_mesure": "Mettre en œuvre des plans de continuité pour les TIC."
-      }
-    },
-    {
-      "axe": {
-        "numero": "5",
-        "titre": "détection, réponse et résilience"
-      },
-      "objectif": {
-        "numero": "5.04.01.01",
-        "description": "- Mettre en oeuvre la feuille de route"
-      },
-      "chantier": {
-        "numero": "5.4",
-        "description": "Renforcer la résilience du SI du réseau contre les accidents"
-      },
-      "orientation_strategique": {
-        "numero": "[NEW] 5.0",
-        "description": "[NEW] Assurer la résilience et la continuité des activités"
-      },
-      "mapping_iso_27002": {
-        "domaine": "8. Mesures Technologiques",
-        "numero_mesure": "8.14",
-        "synthese_mesure": "Mettre en œuvre une redondance des installations de traitement de l'information pour répondre aux exigences de disponibilité."
-      }
-    },
-    {
-      "axe": {
-        "numero": "5",
-        "titre": "détection, réponse et résilience"
-      },
-      "objectif": {
-        "numero": "5.05.01.01",
-        "description": "- Définir une feuille de route en application de la stratégie afin de construire et maintenir un plan de continuité informatique pour faire face à un incident cyber (attaques cyber diverses, ransomware…)"
-      },
-      "chantier": {
-        "numero": "5.5",
-        "description": "Renforcer la résilience du SI du réseau contre les cyber-attaques"
-      },
-      "orientation_strategique": {
-        "numero": "[NEW] 5.0",
-        "description": "[NEW] Assurer la résilience et la continuité des activités"
-      },
-      "mapping_iso_27002": {
-        "domaine": "5. Mesures Organisationnelles",
-        "numero_mesure": "5.29, 5.30",
-        "synthese_mesure": "Les plans de continuité doivent prendre en compte les scénarios de perturbation liés à la cybersécurité."
-      }
-    },
-    {
-      "axe": {
-        "numero": "5",
-        "titre": "détection, réponse et résilience"
-      },
-      "objectif": {
-        "numero": "5.05.01.01",
-        "description": "- Mettre en oeuvre la feuille de route"
-      },
-      "chantier": {
-        "numero": "5.5",
-        "description": "Renforcer la résilience du SI du réseau contre les cyber-attaques"
-      },
-      "orientation_strategique": {
-        "numero": "[NEW] 5.0",
-        "description": "[NEW] Assurer la résilience et la continuité des activités"
-      },
-      "mapping_iso_27002": {
-        "domaine": "8. Mesures Technologiques",
-        "numero_mesure": "8.13, 8.14",
-        "synthese_mesure": "Utiliser la sauvegarde et la redondance comme mesures techniques pour la reprise après une cyber-attaque."
-      }
-    },
-    {
-      "axe": {
-        "numero": "5",
-        "titre": "détection, réponse et résilience"
-      },
-      "objectif": {
-        "numero": "5.06.01.01",
-        "description": "- Formaliser puis maintenir une politique de sauvegarde (principes de rétention des données au niveau des sauvegardes, moyens de protection des sauvegardes -OS différents de ceux utilisés pour les infrastructures, accès renforcés, chiffrement -, principes de restauration, modalités de test…)"
-      },
-      "chantier": {
-        "numero": "5.6",
-        "description": "Réaliser des sauvegardes cohérentes"
-      },
-      "orientation_strategique": {
-        "numero": "[NEW] 5.0",
-        "description": "[NEW] Assurer la résilience et la continuité des activités"
-      },
-      "mapping_iso_27002": {
-        "domaine": "8. Mesures Technologiques",
-        "numero_mesure": "8.13",
-        "synthese_mesure": "Définir et mettre en œuvre une politique de sauvegarde complète."
-      }
-    },
-    {
-      "axe": {
-        "numero": "5",
-        "titre": "détection, réponse et résilience"
-      },
-      "objectif": {
-        "numero": "5.06.01.01",
-        "description": "- Définir un plan d'actions permettant de mettre en œuvre la politique et de répondre aux besoins des métiers"
-      },
-      "chantier": {
-        "numero": "5.6",
-        "description": "Réaliser des sauvegardes cohérentes"
-      },
-      "orientation_strategique": {
-        "numero": "[NEW] 5.0",
-        "description": "[NEW] Assurer la résilience et la continuité des activités"
-      },
-      "mapping_iso_27002": {
-        "domaine": "8. Mesures Technologiques",
-        "numero_mesure": "8.13",
-        "synthese_mesure": "Planifier la mise en œuvre de la solution de sauvegarde pour couvrir tous les actifs critiques."
-      }
-    },
-    {
-      "axe": {
-        "numero": "5",
-        "titre": "détection, réponse et résilience"
-      },
-      "objectif": {
-        "numero": "5.06.01.02",
-        "description": "- Appliquer le plan d'action en déclinaison de la politique de sauvegarde"
-      },
-      "chantier": {
-        "numero": "5.6",
-        "description": "Réaliser des sauvegardes cohérentes"
-      },
-      "orientation_strategique": {
-        "numero": "[NEW] 5.0",
-        "description": "[NEW] Assurer la résilience et la continuité des activités"
-      },
-      "mapping_iso_27002": {
-        "domaine": "8. Mesures Technologiques",
-        "numero_mesure": "8.13",
-        "synthese_mesure": "Effectuer des sauvegardes régulières des informations, des logiciels et des systèmes."
-      }
-    },
-    {
-      "axe": {
-        "numero": "5",
-        "titre": "détection, réponse et résilience"
-      },
-      "objectif": {
-        "numero": "5.07.01.01",
-        "description": "- Définir et maintenir une stratégie de test des dispositifs de continuité d'activité (périmètres couverts, fréquence...)"
-      },
-      "chantier": {
-        "numero": "5.7",
-        "description": "Tester les dispositifs de continuité d'activité et de crise existants"
-      },
-      "orientation_strategique": {
-        "numero": "[NEW] 5.0",
-        "description": "[NEW] Assurer la résilience et la continuité des activités"
-      },
-      "mapping_iso_27002": {
-        "domaine": "5. Mesures Organisationnelles",
-        "numero_mesure": "5.30",
-        "synthese_mesure": "Planifier un programme de test pour les plans de continuité d'activité."
-      }
-    },
-    {
-      "axe": {
-        "numero": "5",
-        "titre": "détection, réponse et résilience"
-      },
-      "objectif": {
-        "numero": "5.07.01.02",
-        "description": "- Mettre en œuvre le plan de test des dispositifs de continuité d'activité et les mettre à jour ces dispositifs en fonction des retours dans une logique d'amélioration continue"
-      },
-      "chantier": {
-        "numero": "5.7",
-        "description": "Tester les dispositifs de continuité d'activité et de crise existants"
-      },
-      "orientation_strategique": {
-        "numero": "[NEW] 5.0",
-        "description": "[NEW] Assurer la résilience et la continuité des activités"
-      },
-      "mapping_iso_27002": {
-        "domaine": "5. Mesures Organisationnelles",
-        "numero_mesure": "5.30",
-        "synthese_mesure": "Tester et revoir régulièrement les plans de continuité pour garantir leur efficacité et leur pertinence."
-      }
-    }
-  ]
-}
+        "synthese_mesure": "Élaborer et mettre

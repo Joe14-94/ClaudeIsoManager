@@ -25,7 +25,7 @@ interface DataContextType {
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
 // Version pour les données de référence. Incrémenter cette version forcera le rechargement du JSON.
-const REFERENCE_DATA_VERSION = '1.3';
+const REFERENCE_DATA_VERSION = '1.9';
 const VERSION_KEY = 'reference_data_version';
 
 
@@ -46,7 +46,6 @@ export const DataProvider = ({ children }: PropsWithChildren) => {
             setSecurityProcesses(loadFromLocalStorage('securityProcesses', initialSecurityProcesses));
 
             // Gérer les données de référence avec versionnement
-            // FIX: Explicitly set the generic type to string to prevent TypeScript from inferring a narrow literal type ('1.0'), which causes a type comparison error on the next line.
             const storedVersion = loadFromLocalStorage<string>(VERSION_KEY, '1.0');
 
             if (storedVersion !== REFERENCE_DATA_VERSION) {
@@ -87,11 +86,11 @@ export const DataProvider = ({ children }: PropsWithChildren) => {
     useEffect(() => { if (!isLoading) saveToLocalStorage('resources', resources); }, [resources, isLoading]);
     useEffect(() => { if (!isLoading) saveToLocalStorage('securityProcesses', securityProcesses); }, [securityProcesses, isLoading]);
     
-    // Les données de référence ne sont sauvegardées qu'au chargement initial pour éviter
-    // que l'utilisateur ne puisse les modifier accidentellement.
-    // useEffect(() => { if (!isLoading) saveToLocalStorage('orientations', orientations); }, [orientations, isLoading]);
-    // useEffect(() => { if (!isLoading) saveToLocalStorage('chantiers', chantiers); }, [chantiers, isLoading]);
-    // useEffect(() => { if (!isLoading) saveToLocalStorage('objectives', objectives); }, [objectives, isLoading]);
+    // Les données de référence sont chargées depuis un fichier, mais peuvent être modifiées
+    // par import, donc nous devons les persister.
+    useEffect(() => { if (!isLoading) saveToLocalStorage('orientations', orientations); }, [orientations, isLoading]);
+    useEffect(() => { if (!isLoading) saveToLocalStorage('chantiers', chantiers); }, [chantiers, isLoading]);
+    useEffect(() => { if (!isLoading) saveToLocalStorage('objectives', objectives); }, [objectives, isLoading]);
     
     const value = {
         activities, setActivities,

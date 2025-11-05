@@ -1,4 +1,3 @@
-
 import React, { useMemo, useState, useCallback, Fragment } from 'react';
 import { ReactFlow, MiniMap, Controls, Background, BackgroundVariant, Node, Edge, Position } from '@xyflow/react';
 import { useData } from '../contexts/DataContext';
@@ -352,16 +351,18 @@ const GraphView: React.FC = () => {
     }, [viewMode, nodeVisibility, orientationVisibility, isoMeasureVisibility, activities, objectives, orientations, chantiers]);
 
     const getModalTitle = (node: Node | null): string => {
-        // FIX: Explicitly cast `node.data` properties to string to resolve 'unknown' type errors.
-        if (!node || !node.type || node.type === 'root') return (node?.data as any)?.label || 'Détails';
+        if (!node || !node.type || node.type === 'root') {
+            const label = (node?.data as { label?: string })?.label;
+            return label ?? 'Détails';
+        }
         
-        const typeLabel = nodeTypeLabels[node.type as string] || 'Élément';
-        // FIX: Cast node.data to any to safely access properties that might be of type 'unknown'.
-        // FIX: Argument of type 'unknown' is not assignable to parameter of type 'string'.
-        const code = String((node.data as any)?.code || (node.data as any)?.activityId || '');
-        let title: string = (node.data as any)?.label || (node.data as any)?.title || '';
+        const typeLabel = nodeTypeLabels[node.type] || 'Élément';
+        const data = node.data as { code?: string; activityId?: string; label?: string; title?: string };
         
-        if (title.startsWith(`${code} - `)) {
+        const code = (data.code || data.activityId) ?? '';
+        let title: unknown = (data.label || data.title) ?? '';
+        
+        if (typeof title === 'string' && title.startsWith(`${code} - `)) {
             title = title.substring(code.length + 3);
         }
 

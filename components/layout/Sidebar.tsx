@@ -76,13 +76,13 @@ const Sidebar: React.FC = () => {
                       <TrendingUp size={18} className="mr-3" />
                       Orientations
                   </NavLink>
-                  <NavLink to="/objectives" className={getNavLinkClass}>
-                      <Target size={18} className="mr-3" />
-                      Objectifs
-                  </NavLink>
                   <NavLink to="/chantiers" className={getNavLinkClass}>
                       <Workflow size={18} className="mr-3" />
                       Chantiers
+                  </NavLink>
+                  <NavLink to="/objectives" className={getNavLinkClass}>
+                      <Target size={18} className="mr-3" />
+                      Objectifs
                   </NavLink>
                   <NavLink to="/processes" className={getNavLinkClass}>
                       <ClipboardCheck size={18} className="mr-3" />

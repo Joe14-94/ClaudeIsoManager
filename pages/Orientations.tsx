@@ -1,13 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useData } from '../contexts/DataContext';
-import { StrategicOrientation } from '../types';
+import { StrategicOrientation, Chantier, Objective } from '../types';
 import Card, { CardContent } from '../components/ui/Card';
 import Modal from '../components/ui/Modal';
-import { PlusCircle, Trash2, Edit } from 'lucide-react';
+import { PlusCircle, Trash2, Edit, TrendingUp, Workflow, Target } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import Tooltip from '../components/ui/Tooltip';
 
 const Orientations: React.FC = () => {
-  const { orientations, setOrientations } = useData();
+  const { orientations, setOrientations, chantiers, objectives } = useData();
   const { userRole } = useAuth();
   const isReadOnly = userRole === 'readonly';
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -93,21 +94,65 @@ const Orientations: React.FC = () => {
         Les orientations stratégiques qui cadrent la cybersécurité. Cliquez sur une carte pour la modifier.
       </p>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {orientations.slice().sort((a,b) => a.code.localeCompare(b.code, undefined, {numeric: true})).map((orientation) => (
-          <Card 
-            key={orientation.id} 
-            className="flex flex-col cursor-pointer hover:shadow-md transition-shadow duration-200" 
-            onClick={() => handleOpenModal(orientation)}
-          >
-            <CardContent className="flex-grow p-6">
-              <h3 className="font-semibold text-slate-900">
-                <span className="font-mono text-blue-600">{orientation.code}</span> - {orientation.label}
-              </h3>
-              <p className="text-sm text-slate-600 mt-2">{orientation.description || 'Aucune description fournie.'}</p>
-            </CardContent>
-          </Card>
-        ))}
+      <div className="space-y-4">
+        {orientations
+            .slice()
+            .sort((a,b) => a.code.localeCompare(b.code, undefined, {numeric: true}))
+            .map((orientation) => {
+                const linkedChantiersCount = chantiers.filter(c => c.strategicOrientationId === orientation.id).length;
+                const linkedObjectivesCount = objectives.filter(o => o.strategicOrientations.includes(orientation.id)).length;
+                
+                return (
+                    <Card 
+                        key={orientation.id} 
+                        className="cursor-pointer hover:shadow-md transition-shadow duration-200"
+                        onClick={() => handleOpenModal(orientation)}
+                    >
+                        <CardContent className="p-4">
+                            <div className="flex flex-col md:flex-row md:justify-between gap-4">
+                                <div className="flex-grow">
+                                    <div className="flex items-center">
+                                        <TrendingUp size={20} className="text-purple-600 mr-3 flex-shrink-0" />
+                                        <h3 className="font-semibold text-slate-900 text-base">
+                                            <span className="font-mono text-blue-600">{orientation.code}</span> - {orientation.label}
+                                        </h3>
+                                    </div>
+                                    <p className="text-sm text-slate-600 mt-2 md:pl-8 line-clamp-2">{orientation.description || 'Aucune description fournie.'}</p>
+                                </div>
+                                
+                                <div className="flex-shrink-0 md:ml-6 flex flex-col md:items-end gap-4">
+                                    {linkedChantiersCount > 0 && (
+                                        <div>
+                                            <h4 className="text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider">Chantiers liés</h4>
+                                            <div className="flex flex-wrap gap-1 justify-start md:justify-end">
+                                                <Tooltip text={`${linkedChantiersCount} chantier(s) directement lié(s) à cette orientation.`}>
+                                                    <span className="flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium rounded-full border bg-cyan-100 text-cyan-800 border-cyan-200">
+                                                        <Workflow size={12} />
+                                                        {linkedChantiersCount}
+                                                    </span>
+                                                </Tooltip>
+                                            </div>
+                                        </div>
+                                    )}
+                                    {linkedObjectivesCount > 0 && (
+                                        <div>
+                                            <h4 className="text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider">Objectifs liés</h4>
+                                            <div className="flex flex-wrap gap-1 justify-start md:justify-end">
+                                                <Tooltip text={`${linkedObjectivesCount} objectif(s) directement lié(s) à cette orientation.`}>
+                                                    <span className="flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium rounded-full border bg-green-100 text-green-800 border-green-200">
+                                                        <Target size={12} />
+                                                        {linkedObjectivesCount}
+                                                    </span>
+                                                </Tooltip>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                );
+        })}
       </div>
 
        {isModalOpen && currentItem && (
