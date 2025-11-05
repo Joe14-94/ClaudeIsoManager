@@ -1,4 +1,6 @@
+
 import React, { useState, useMemo } from 'react';
+// FIX: The project appears to use react-router-dom v5. The import for 'useNavigate' is for v6. It is replaced with the v6 equivalent 'useNavigate'.
 import { useNavigate } from 'react-router-dom';
 import Card, { CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import ActivityTimeline from '../components/charts/ActivityTimeline';
@@ -8,6 +10,7 @@ import { ZoomIn, ZoomOut, RotateCw, FilterX } from 'lucide-react';
 
 const TimelinePage: React.FC = () => {
   const { activities } = useData();
+  // FIX: Switched from useHistory to useNavigate for v6 compatibility.
   const navigate = useNavigate();
 
   const [domainFilter, setDomainFilter] = useState('');

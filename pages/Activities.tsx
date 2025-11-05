@@ -1,4 +1,6 @@
+
 import React, { useState, useMemo, useEffect } from 'react';
+// FIX: The project appears to use react-router-dom v5. The `useLocation` hook is available in v5.1+, and the error likely stems from a project-wide version mismatch with v6. Updated to v6.
 import { useLocation } from 'react-router-dom';
 import { useData } from '../contexts/DataContext';
 import { Activity, ActivityStatus, Priority, SecurityDomain, ActivityType, SecurityProcess } from '../types';
@@ -75,10 +77,12 @@ const Activities: React.FC = () => {
   const { activities, setActivities, objectives, orientations, resources, securityProcesses } = useData();
   const { userRole } = useAuth();
   const isReadOnly = userRole === 'readonly';
+  // FIX: The useLocation hook in react-router-dom v6 does not accept a generic type argument.
   const location = useLocation();
+  const locationState = location.state as any;
   
-  const [domainFilter, setDomainFilter] = useState(location.state?.domainFilter || '');
-  const [statusFilter, setStatusFilter] = useState(location.state?.statusFilter || '');
+  const [domainFilter, setDomainFilter] = useState(locationState?.domainFilter || '');
+  const [statusFilter, setStatusFilter] = useState(locationState?.statusFilter || '');
   const [priorityFilter, setPriorityFilter] = useState('');
   const [processFilter, setProcessFilter] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
@@ -131,14 +135,14 @@ const Activities: React.FC = () => {
 
 
   useEffect(() => {
-    const activityIdToOpen = location.state?.openActivity;
+    const activityIdToOpen = locationState?.openActivity;
     if (activityIdToOpen) {
       const activityToOpen = activities.find(a => a.id === activityIdToOpen);
       if (activityToOpen) {
         handleOpenFormModal(activityToOpen);
       }
     }
-  }, [location.state, activities]);
+  }, [locationState, activities]);
 
   const filteredActivities = useMemo(() => {
     return activities.filter(activity => {

@@ -1,4 +1,5 @@
-import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
+
+import React, { createContext, useState, useContext, useEffect, ReactNode, PropsWithChildren } from 'react';
 import { loadFromLocalStorage, saveToLocalStorage } from '../utils/storage';
 import { activities as initialActivities } from '../data/activities';
 import { resources as initialResources } from '../data/resources';
@@ -28,7 +29,7 @@ const REFERENCE_DATA_VERSION = '1.3';
 const VERSION_KEY = 'reference_data_version';
 
 
-export const DataProvider = ({ children }: { children: ReactNode }) => {
+export const DataProvider = ({ children }: PropsWithChildren) => {
     const [activities, setActivities] = useState<Activity[]>([]);
     const [resources, setResources] = useState<Resource[]>([]);
     const [securityProcesses, setSecurityProcesses] = useState<SecurityProcess[]>([]);

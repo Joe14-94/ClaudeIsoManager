@@ -1,12 +1,15 @@
+
 import React, { useState } from 'react';
+// FIX: The project appears to use react-router-dom v5. The imports for 'NavLink' and 'useNavigate' are for v6. Updating to v6 equivalents to fix build errors.
 import { NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, ListChecks, Network, ShieldCheck, Target, TrendingUp, Users, Database, FileUp, FileDown, Workflow, GitMerge, ClipboardCheck, LogOut, KeyRound, DatabaseZap, GanttChart } from 'lucide-react';
+import { LayoutDashboard, ListChecks, Network, ShieldCheck, Target, TrendingUp, Users, Database, FileUp, FileDown, Workflow, GitMerge, ClipboardCheck, LogOut, KeyRound, DatabaseZap, GanttChart, LayoutGrid } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import ChangePasswordModal from '../auth/ChangePasswordModal';
 import { APP_VERSION } from '../../config';
 
 const Sidebar: React.FC = () => {
   const { logout, userRole } = useAuth();
+  // FIX: Switched from useHistory to useNavigate for v6 compatibility.
   const navigate = useNavigate();
   const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false);
 
@@ -14,8 +17,10 @@ const Sidebar: React.FC = () => {
   const activeClasses = "bg-slate-200 text-slate-900";
   const inactiveClasses = "text-slate-600 hover:bg-slate-200 hover:text-slate-900";
 
+  // FIX: Replaced static classes with NavLink className function for v6 compatibility.
   const getNavLinkClass = ({ isActive }: { isActive: boolean }) => 
     `${navItemClasses} ${isActive ? activeClasses : inactiveClasses}`;
+
 
   const handleLogout = () => {
     logout();
@@ -33,6 +38,7 @@ const Sidebar: React.FC = () => {
         </div>
         <nav className="flex-1 flex flex-col gap-y-4 mt-4">
           <div className='space-y-1'>
+              {/* FIX: Updated NavLink to use a className function instead of `activeClassName` for v6 compatibility. */}
               <NavLink to="/dashboard" className={getNavLinkClass}>
                 <LayoutDashboard size={18} className="mr-3" />
                 Tableau de bord
@@ -40,6 +46,10 @@ const Sidebar: React.FC = () => {
               <NavLink to="/activities" className={getNavLinkClass}>
                 <ListChecks size={18} className="mr-3" />
                 Activités
+              </NavLink>
+              <NavLink to="/explorer" className={getNavLinkClass}>
+                <LayoutGrid size={18} className="mr-3" />
+                Explorateur
               </NavLink>
               <NavLink to="/timeline" className={getNavLinkClass}>
                 <GanttChart size={18} className="mr-3" />

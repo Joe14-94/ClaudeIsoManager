@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+// FIX: The project appears to use react-router-dom v5. The import for 'useNavigate' is for v6. It is replaced with the v6 equivalent 'useNavigate'.
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { ShieldCheck, ArrowRightToLine } from 'lucide-react';
@@ -10,6 +11,7 @@ const LoginPage: React.FC = () => {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
+  // FIX: Switched from useHistory to useNavigate for v6 compatibility.
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {

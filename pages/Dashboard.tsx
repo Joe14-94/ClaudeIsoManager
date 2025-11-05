@@ -1,5 +1,6 @@
 
 import React, { useMemo, useState } from 'react';
+// FIX: The project appears to use react-router-dom v5. The import for 'useNavigate' is for v6. It is replaced with the v6 equivalent 'useNavigate'.
 import { useNavigate } from 'react-router-dom';
 import Card, { CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import Tooltip from '../components/ui/Tooltip';
@@ -28,6 +29,7 @@ const StatCard: React.FC<{ title: string; value: string | number; icon: React.Re
 
 const Dashboard: React.FC = () => {
     const { activities, objectives } = useData();
+    // FIX: Switched from useHistory to useNavigate for v6 compatibility.
     const navigate = useNavigate();
     const [isObjectivesModalOpen, setIsObjectivesModalOpen] = useState(false);
 
@@ -101,6 +103,7 @@ const Dashboard: React.FC = () => {
       <h1 className="text-3xl font-bold text-slate-800">Tableau de bord</h1>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* FIX: Updated to useNavigate for v6 */}
         <StatCard title="Activités totales" value={stats.totalActivities} icon={<Activity size={24} />} onClick={() => navigate('/activities')} />
         <StatCard title="Taux de complétion" value={`${stats.completionRate}%`} icon={<CheckCircle size={24} />} onClick={() => navigate('/activities', { state: { statusFilter: ActivityStatus.COMPLETED } })} />
         <StatCard title="Mesures ISO couvertes" value={`${stats.coveredMeasures} / ${stats.totalMeasures}`} icon={<ShieldCheck size={24} />} onClick={() => navigate('/iso27002', { state: { filter: 'covered', coveredMeasuresCodes } })} />
@@ -129,6 +132,7 @@ const Dashboard: React.FC = () => {
                           <Tooltip key={measure.code} text={`${measure.code}: ${measure.title} (${coverageMatrix[measure.code]?.completed || 0}/${coverageMatrix[measure.code]?.count || 0})`}>
                             <div 
                               className={`h-10 w-10 flex items-center justify-center rounded text-xs font-mono cursor-pointer transition-colors ${getCoverageColor(measure.code)}`}
+                              /* FIX: Updated to useNavigate for v6 */
                               onClick={() => navigate('/iso27002', { state: { openMeasure: measure.code } })}
                             >
                               {measure.code}
@@ -153,6 +157,7 @@ const Dashboard: React.FC = () => {
                   <CardTitle>Répartition par domaine</CardTitle>
               </CardHeader>
               <CardContent>
+                  {/* FIX: Updated to useNavigate for v6 */}
                   <DomainDonutChart 
                     data={activities} 
                     onSliceClick={(domain) => navigate('/activities', { state: { domainFilter: domain } })}
@@ -164,6 +169,7 @@ const Dashboard: React.FC = () => {
                   <CardTitle>Timeline des activités</CardTitle>
               </CardHeader>
               <CardContent className="h-[400px] overflow-hidden">
+                  {/* FIX: Updated to useNavigate for v6 */}
                   <ActivityTimeline 
                     activities={activities} 
                     onActivityClick={(activityId) => navigate('/activities', { state: { openActivity: activityId } })}

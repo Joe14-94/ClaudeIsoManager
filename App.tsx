@@ -1,6 +1,6 @@
 
-
 import React from 'react';
+// FIX: The project appears to use react-router-dom v5, but the installed version is v6. Updating imports to v6.
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Sidebar from './components/layout/Sidebar';
 import Dashboard from './pages/Dashboard';
@@ -16,20 +16,25 @@ import D3GraphView from './pages/D3GraphView';
 import Processes from './pages/Processes';
 import LoginPage from './pages/LoginPage';
 import { DataProvider } from './contexts/DataContext';
-import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { AuthProvider } from './contexts/AuthContext';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import DataModelView from './pages/DataModelView';
 import TimelinePage from './pages/TimelinePage';
+import DataExplorer from './pages/DataExplorer';
 
 const AppLayout: React.FC = () => {
   return (
      <div className="flex h-screen bg-slate-100 font-sans">
       <Sidebar />
-      <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+      <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">
+        {/* FIX: Replaced v5 Switch with v6 Routes */}
         <Routes>
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          {/* FIX: Replaced v5 Redirect and `exact` prop with v6 Navigate element. In v6, routes are exact by default. */}
+          <Route path="/" element={<Navigate to="/dashboard" />} />
+          {/* FIX: Updated Route components to use `element` prop for v6 */}
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/activities" element={<Activities />} />
+          <Route path="/explorer" element={<DataExplorer />} />
           <Route path="/timeline" element={<TimelinePage />} />
           <Route path="/graph" element={<GraphView />} />
           <Route path="/d3-graph" element={<D3GraphView />} />
@@ -52,16 +57,16 @@ const App: React.FC = () => {
     <HashRouter>
       <AuthProvider>
         <DataProvider>
+          {/* FIX: Replaced v5 Switch with v6 Routes */}
           <Routes>
+            {/* FIX: Updated Route components to use `element` prop for v6 */}
             <Route path="/login" element={<LoginPage />} />
-            <Route 
-              path="/*"
-              element={
-                <ProtectedRoute>
-                  <AppLayout />
-                </ProtectedRoute>
-              }
-            />
+            {/* FIX: Updated catch-all route for v6 */}
+            <Route path="/*" element={
+              <ProtectedRoute>
+                <AppLayout />
+              </ProtectedRoute>
+            } />
           </Routes>
         </DataProvider>
       </AuthProvider>

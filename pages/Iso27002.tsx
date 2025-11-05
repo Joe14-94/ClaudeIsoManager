@@ -1,5 +1,6 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
+// FIX: The project appears to use react-router-dom v5. The `useLocation` hook is available in v5.1+, and the error likely stems from a project-wide version mismatch with v6. Updated to v6.
 import { useLocation } from 'react-router-dom';
 import { ISO_MEASURES_DATA, CHAPTER_COLORS } from '../constants';
 import { IsoChapter, IsoMeasure, IsoMeasureDetails } from '../types';
@@ -64,7 +65,9 @@ const MeasureDetails: React.FC<{ measure: IsoMeasure }> = ({ measure }) => {
 
 
 const Iso27002: React.FC = () => {
+  // FIX: The useLocation hook in react-router-dom v6 does not accept a generic type argument.
   const location = useLocation();
+  const locationState = location.state as any;
   const [selectedMeasure, setSelectedMeasure] = useState<IsoMeasure | null>(null);
   const [showFilters, setShowFilters] = useState(false);
   const [filterByCoverage, setFilterByCoverage] = useState(false);
@@ -72,7 +75,7 @@ const Iso27002: React.FC = () => {
   const allMeasures: IsoMeasure[] = useMemo(() => ISO_MEASURES_DATA.map(m => ({ ...m, id: m.code, details: (m as any).details })), []);
 
   useEffect(() => {
-    const measureCodeToOpen = location.state?.openMeasure;
+    const measureCodeToOpen = locationState?.openMeasure;
     if (measureCodeToOpen) {
       const measure = allMeasures.find(m => m.code === measureCodeToOpen);
       if (measure) {
@@ -81,12 +84,12 @@ const Iso27002: React.FC = () => {
         window.history.replaceState({}, document.title)
       }
     }
-    if (location.state?.filter === 'covered') {
+    if (locationState?.filter === 'covered') {
         setFilterByCoverage(true);
         setShowFilters(false);
         window.history.replaceState({}, document.title)
     }
-  }, [location.state, allMeasures]);
+  }, [locationState, allMeasures]);
 
   const filterOptions = useMemo((): Record<'type' | 'properties' | 'concepts' | 'processes' | 'functionalProcess' | 'domains', string[]> => {
     const options = {

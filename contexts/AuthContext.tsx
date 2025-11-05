@@ -1,4 +1,5 @@
-import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
+
+import React, { createContext, useState, useContext, useEffect, PropsWithChildren } from 'react';
 import { loadFromLocalStorage, saveToLocalStorage } from '../utils/storage';
 import { UserRole } from '../types';
 
@@ -15,7 +16,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const ADMIN_PASSWORD_KEY = 'admin_password';
 const READONLY_PASSWORD_KEY = 'readonly_password';
 
-export const AuthProvider = ({ children }: { children: ReactNode }) => {
+export const AuthProvider = ({ children }: PropsWithChildren) => {
   const [userRole, setUserRole] = useState<UserRole | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 

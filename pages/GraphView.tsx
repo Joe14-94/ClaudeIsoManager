@@ -353,11 +353,13 @@ const GraphView: React.FC = () => {
 
     const getModalTitle = (node: Node | null): string => {
         // FIX: Explicitly cast `node.data` properties to string to resolve 'unknown' type errors.
-        if (!node || !node.type || node.type === 'root') return (node?.data.label as string) || 'Détails';
+        if (!node || !node.type || node.type === 'root') return (node?.data as any)?.label || 'Détails';
         
         const typeLabel = nodeTypeLabels[node.type as string] || 'Élément';
-        const code = (node.data.code as string) || (node.data.activityId as string) || '';
-        let title: string = (node.data.label as string) || (node.data.title as string) || '';
+        // FIX: Cast node.data to any to safely access properties that might be of type 'unknown'.
+        // FIX: Argument of type 'unknown' is not assignable to parameter of type 'string'.
+        const code = String((node.data as any)?.code || (node.data as any)?.activityId || '');
+        let title: string = (node.data as any)?.label || (node.data as any)?.title || '';
         
         if (title.startsWith(`${code} - `)) {
             title = title.substring(code.length + 3);

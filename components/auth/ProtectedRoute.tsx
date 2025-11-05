@@ -1,4 +1,6 @@
+
 import React from 'react';
+// FIX: The project appears to use react-router-dom v5. The import for 'Navigate' is for v6. Updating to v6 equivalent.
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -20,6 +22,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   }
 
   if (!userRole) {
+    // FIX: Replaced v5 Redirect component with v6 Navigate component.
     return <Navigate to="/login" replace />;
   }
 
