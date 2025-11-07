@@ -3,7 +3,7 @@ import { useData } from '../contexts/DataContext';
 import { ISO_MEASURES_DATA } from '../constants';
 import Card, { CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import Modal from '../components/ui/Modal';
-import { LayoutGrid, FileDown, Filter, X, GripVertical, Info, ArrowUp, ArrowDown, ZoomIn, ZoomOut, RotateCw } from 'lucide-react';
+import { LayoutGrid, FileDown, Filter, X, GripVertical, Info, ArrowUp, ArrowDown, ZoomIn, ZoomOut, RotateCw, Search } from 'lucide-react';
 import { Activity, Chantier, IsoMeasure, Objective, StrategicOrientation, SecurityProcess } from '../types';
 
 type FieldKey = 'orientation' | 'chantier' | 'objectif' | 'activite' | 'mesure_iso' | 'statut_activite' | 'priorite_activite' | 'domaine_activite' | 'processus';
@@ -26,15 +26,15 @@ interface ProcessedRow {
 const PLACEHOLDER_NA = 'Non applicable';
 
 const AVAILABLE_FIELDS: Field[] = [
-  { key: 'orientation', label: 'Orientation', getValue: row => row.orientation ? `${row.orientation.code} - ${row.orientation.label}` : 'Pas d\'orientation liée' },
-  { key: 'chantier', label: 'Chantier', getValue: row => row.chantier ? `${row.chantier.code} - ${row.chantier.label}` : 'Pas de chantier lié' },
-  { key: 'objectif', label: 'Objectif', getValue: row => row.objectif ? `${row.objectif.code} - ${row.objectif.label}` : 'Pas d\'objectif lié' },
-  { key: 'activite', label: 'Activité', getValue: row => row.activite ? `${row.activite.activityId} - ${row.activite.title}` : 'Pas d\'activité liée' },
-  { key: 'mesure_iso', label: 'Mesure ISO', getValue: row => row.mesure_iso ? `${row.mesure_iso.code} - ${row.mesure_iso.title}` : 'Pas de mesure ISO liée' },
-  { key: 'statut_activite', label: 'Statut (Activité)', getValue: row => row.activite?.status ?? PLACEHOLDER_NA },
-  { key: 'priorite_activite', label: 'Priorité (Activité)', getValue: row => row.activite?.priority ?? PLACEHOLDER_NA },
-  { key: 'domaine_activite', label: 'Domaine (Activité)', getValue: row => row.activite?.securityDomain ?? PLACEHOLDER_NA },
-  { key: 'processus', label: 'Processus', getValue: row => row.processus?.name ?? 'Pas de processus lié' },
+  { key: 'orientation', label: 'Orientation', getValue: row => row.orientation ? `${row.orientation.code} - ${row.orientation.label}` : undefined },
+  { key: 'chantier', label: 'Chantier', getValue: row => row.chantier ? `${row.chantier.code} - ${row.chantier.label}` : undefined },
+  { key: 'objectif', label: 'Objectif', getValue: row => row.objectif ? `${row.objectif.code} - ${row.objectif.label}` : undefined },
+  { key: 'activite', label: 'Activité', getValue: row => row.activite ? `${row.activite.activityId} - ${row.activite.title}` : undefined },
+  { key: 'mesure_iso', label: 'Mesure ISO', getValue: row => row.mesure_iso ? `${row.mesure_iso.code} - ${row.mesure_iso.title}` : undefined },
+  { key: 'statut_activite', label: 'Statut (Activité)', getValue: row => row.activite?.status ?? (row.activite ? PLACEHOLDER_NA : undefined) },
+  { key: 'priorite_activite', label: 'Priorité (Activité)', getValue: row => row.activite?.priority ?? (row.activite ? PLACEHOLDER_NA : undefined) },
+  { key: 'domaine_activite', label: 'Domaine (Activité)', getValue: row => row.activite?.securityDomain ?? (row.activite ? PLACEHOLDER_NA : undefined) },
+  { key: 'processus', label: 'Processus', getValue: row => row.processus?.name ?? undefined },
 ];
 
 const DATA_EXPLORER_STATE_KEY = 'dataExplorerState';
@@ -98,114 +98,70 @@ const DataExplorer: React.FC = () => {
   }), [objectives, chantiers, orientations, securityProcesses, allIsoMeasures]);
 
   const processedData = useMemo<ProcessedRow[]>(() => {
-    if (columns.length === 0) return [];
-    
-    const columnKeys = new Set(columns.map(c => c.key));
-    let baseEntities: any[] = [];
-    let baseEntityType: FieldKey | null = null;
-    
-    const hierarchy: FieldKey[] = ['activite', 'objectif', 'chantier', 'orientation', 'mesure_iso', 'processus'];
-    for(const type of hierarchy) {
-        if (columnKeys.has(type) || columnKeys.has(`statut_${type}` as FieldKey) || columnKeys.has(`priorite_${type}` as FieldKey) || columnKeys.has(`domaine_${type}` as FieldKey)) {
-            baseEntityType = type;
-            break;
-        }
-    }
-
-    if (!baseEntityType) { // If only secondary attributes like status are selected, default to activite
-      if (columns.some(c => c.key.includes('activite'))) {
-        baseEntityType = 'activite';
-      } else {
-         baseEntityType = columns[0].key; // Fallback to first selected column
-      }
-    }
-
-    switch(baseEntityType) {
-        case 'activite': baseEntities = activities; break;
-        case 'objectif': baseEntities = objectives; break;
-        case 'chantier': baseEntities = chantiers; break;
-        case 'orientation': baseEntities = orientations; break;
-        case 'mesure_iso': baseEntities = allIsoMeasures; break;
-        case 'processus': baseEntities = securityProcesses; break;
-        default: baseEntities = activities; baseEntityType = 'activite'; // Default case
-    }
-    
     const flatData: ProcessedRow[] = [];
+    const { objectivesMap, chantiersMap, orientationsMap, processusMap, isoMeasuresMap } = dataMaps;
 
-    baseEntities.forEach(baseEntity => {
-        let rows: ProcessedRow[] = [];
-        
-        if (baseEntityType === 'activite') {
-            const activity = baseEntity as Activity;
-            rows.push({
-                activite: activity,
-                processus: dataMaps.processusMap.get(activity.functionalProcessId)
-            });
-        } else if (baseEntityType === 'objectif') {
-            rows.push({ objectif: baseEntity as Objective });
-        } else if (baseEntityType === 'chantier') {
-            rows.push({ chantier: baseEntity as Chantier });
-        } else if (baseEntityType === 'orientation') {
-            rows.push({ orientation: baseEntity as StrategicOrientation });
-        } else if (baseEntityType === 'mesure_iso') {
-            rows.push({ mesure_iso: baseEntity as IsoMeasure });
-        } else if (baseEntityType === 'processus') {
-            rows.push({ processus: baseEntity as SecurityProcess });
-        }
+    // The previous logic was activity-centric, causing unlinked entities to be missed.
+    // This new logic ensures every single entity from all master lists is included from the start.
 
-        // Expand relationships for each base row
-        const expandedRows: ProcessedRow[] = [];
-        rows.forEach(row => {
-            const toExpand = [row];
-            if (columnKeys.has('objectif') && row.activite && row.activite.objectives.length > 0) {
-                const newRows = row.activite.objectives.map(objId => ({ ...row, objectif: dataMaps.objectivesMap.get(objId) }));
-                toExpand.splice(0, 1, ...newRows);
-            }
-            if (columnKeys.has('chantier') && toExpand.some(r => r.objectif)) {
-                const newRows = toExpand.flatMap(r => {
-                    if (r.objectif) {
-                        return { ...r, chantier: dataMaps.chantiersMap.get(r.objectif.chantierId) };
-                    }
-                    return r;
-                });
-                toExpand.splice(0, toExpand.length, ...newRows);
-            }
-            if (columnKeys.has('orientation') && toExpand.some(r => r.chantier || r.objectif || r.activite)) {
-                const newRows = toExpand.flatMap(r => {
-                    const orientationIds = new Set<string>();
-                    if (r.chantier) orientationIds.add(r.chantier.strategicOrientationId);
-                    if (r.objectif) r.objectif.strategicOrientations.forEach(id => orientationIds.add(id));
-                    if (r.activite) r.activite.strategicOrientations.forEach(id => orientationIds.add(id));
-
-                    if (orientationIds.size > 0) {
-                        return Array.from(orientationIds).map(id => ({ ...r, orientation: dataMaps.orientationsMap.get(id) }));
-                    }
-                    return r;
-                });
-                toExpand.splice(0, toExpand.length, ...newRows);
-            }
-             if (columnKeys.has('mesure_iso') && toExpand.some(r => r.activite || r.objectif)) {
-                const newRows = toExpand.flatMap(r => {
-                    const isoCodes = new Set<string>();
-                    if (r.activite) r.activite.isoMeasures.forEach(code => isoCodes.add(code));
-                    if (r.objectif?.mesures_iso) r.objectif.mesures_iso.forEach(link => isoCodes.add(link.numero_mesure));
-                    
-                    if (isoCodes.size > 0) {
-                        return Array.from(isoCodes).map(code => ({ ...r, mesure_iso: dataMaps.isoMeasuresMap.get(code) }));
-                    }
-                    return r;
-                });
-                toExpand.splice(0, toExpand.length, ...newRows);
-            }
-            expandedRows.push(...toExpand);
+    // 1. Add a base row for every entity to guarantee its existence.
+    orientations.forEach(o => flatData.push({ orientation: o }));
+    chantiers.forEach(c => flatData.push({ chantier: c, orientation: orientationsMap.get(c.strategicOrientationId) }));
+    objectives.forEach(o => {
+        const chantier = chantiersMap.get(o.chantierId);
+        const orientation = chantier ? orientationsMap.get(chantier.strategicOrientationId) : undefined;
+        flatData.push({ objectif: o, chantier, orientation });
+        o.strategicOrientations.forEach(orId => {
+             if (!chantier || orId !== chantier.strategicOrientationId) {
+                flatData.push({ objectif: o, orientation: orientationsMap.get(orId) });
+             }
         });
+    });
+    allIsoMeasures.forEach(m => flatData.push({ mesure_iso: m }));
+    securityProcesses.forEach(p => flatData.push({ processus: p }));
 
-        flatData.push(...expandedRows);
+    // 2. Add fully linked rows from activities to represent all relationships.
+    // This creates redundancy, but the `finalTableData` logic correctly deduplicates it based on selected columns.
+    activities.forEach(activite => {
+      const processus = processusMap.get(activite.functionalProcessId);
+      const linkedObjectives = activite.objectives.length > 0 ? activite.objectives.map(id => objectivesMap.get(id)).filter((o): o is Objective => !!o) : [undefined];
+      const linkedIsos = activite.isoMeasures.length > 0 ? activite.isoMeasures.map(code => isoMeasuresMap.get(code)).filter((m): m is IsoMeasure => !!m) : [undefined];
+
+      linkedObjectives.forEach(objectif => {
+        const chantier = objectif ? chantiersMap.get(objectif.chantierId) : undefined;
+        
+        const allOrientationIds = new Set<string>();
+        if (chantier) allOrientationIds.add(chantier.strategicOrientationId);
+        if (objectif) objectif.strategicOrientations.forEach(id => allOrientationIds.add(id));
+        activite.strategicOrientations.forEach(id => allOrientationIds.add(id));
+        const linkedOrientations = allOrientationIds.size > 0 ? Array.from(allOrientationIds).map(id => orientationsMap.get(id)).filter((o): o is StrategicOrientation => !!o) : [undefined];
+
+        linkedOrientations.forEach(orientation => {
+          linkedIsos.forEach(mesure_iso => {
+            flatData.push({ activite, processus, objectif, chantier, orientation, mesure_iso });
+          });
+        });
+      });
     });
 
     return flatData;
+}, [activities, objectives, chantiers, orientations, securityProcesses, allIsoMeasures, dataMaps]);
 
-  }, [columns, activities, objectives, chantiers, orientations, securityProcesses, allIsoMeasures, dataMaps]);
+  const requestSort = useCallback((key: FieldKey) => {
+    let direction: 'asc' | 'desc' = 'asc';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  }, [sortConfig]);
+  
+  useEffect(() => {
+    if (columns.length > 0 && (!sortConfig || !columns.find(c => c.key === sortConfig.key))) {
+      requestSort(columns[0].key);
+    } else if (columns.length === 0) {
+      setSortConfig(null);
+    }
+  }, [columns, sortConfig, requestSort]);
 
   const filteredData = useMemo(() => {
     if (Object.keys(filters).length === 0) return processedData;
@@ -215,62 +171,73 @@ const DataExplorer: React.FC = () => {
         const field = AVAILABLE_FIELDS.find(f => f.key === key as FieldKey);
         if (!field) return true;
         const rowValue = field.getValue(row);
-        return rowValue !== undefined && values.includes(rowValue);
+        
+        if(rowValue === undefined) {
+          return false;
+        }
+        return values.includes(rowValue);
       });
     });
   }, [processedData, filters]);
   
-  const sortedData = useMemo(() => {
-    let items = [...filteredData];
+ const finalTableData = useMemo(() => {
+    if (columns.length === 0) return [];
+
+    const uniqueCombinations = new Map<string, ProcessedRow>();
     
-    if (columns.length > 0) {
-        const uniqueRows = new Map<string, ProcessedRow>();
-        items.forEach(row => {
-            const key = columns.map(c => c.getValue(row) ?? '___null___').join('||');
-            if (!uniqueRows.has(key)) {
-                uniqueRows.set(key, row);
-            }
-        });
-        items = Array.from(uniqueRows.values());
-    }
+    filteredData.forEach(row => {
+        const key = columns.map(c => c.getValue(row) ?? 'null').join('||');
+        
+        const isAllNull = columns.every(c => c.getValue(row) === undefined);
+
+        if (!isAllNull && !uniqueCombinations.has(key)) {
+            uniqueCombinations.set(key, row);
+        }
+    });
     
+    let items = Array.from(uniqueCombinations.values());
+
     if (sortConfig !== null) {
       const fieldToSort = AVAILABLE_FIELDS.find(f => f.key === sortConfig.key);
       if (fieldToSort) {
         items.sort((a, b) => {
           const valA = fieldToSort.getValue(a);
           const valB = fieldToSort.getValue(b);
-          if (valA == null && valB == null) return 0;
-          if (valA == null) return 1;
-          if (valB == null) return -1;
           
-          const comparison = String(valA).localeCompare(String(valB), undefined, { numeric: true, sensitivity: 'base' });
+          if (valA === undefined && valB === undefined) return 0;
+          if (valA === undefined) return 1;
+          if (valB === undefined) return -1;
+          
+          const comparison = String(valA).localeCompare(String(valB), 'fr', { numeric: true, sensitivity: 'base' });
           return sortConfig.direction === 'asc' ? comparison : -comparison;
         });
       }
     }
     return items;
-  }, [filteredData, sortConfig, columns]);
+  }, [filteredData, columns, sortConfig]);
+
 
   const uniqueValuesForFilter = useMemo(() => {
     if (!filterModalField) return [];
     const values = new Set<string>();
     processedData.forEach(row => {
         const value = filterModalField.getValue(row);
-        if (value) {
+        if (value !== undefined) {
             values.add(value);
         }
     });
-    return Array.from(values).sort((a, b) => a.localeCompare(b, undefined, {numeric: true}));
+    return Array.from(values).sort((a, b) => a.localeCompare(b, 'fr', {numeric: true}));
   }, [processedData, filterModalField]);
 
-  const requestSort = (key: FieldKey) => {
-    let direction: 'asc' | 'desc' = 'asc';
-    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
-      direction = 'desc';
+  const openFilterModal = useCallback((field: Field) => {
+    setFilterModalField(field);
+  }, []);
+
+  useEffect(() => {
+    if (filterModalField && filters[filterModalField.key] === undefined) {
+      setFilters(prev => ({ ...prev, [filterModalField.key]: uniqueValuesForFilter }));
     }
-    setSortConfig({ key, direction });
-  };
+  }, [filterModalField, filters, uniqueValuesForFilter]);
   
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -303,19 +270,14 @@ const DataExplorer: React.FC = () => {
         delete newWidths[key];
         return newWidths;
     });
-    if (sortConfig?.key === key) {
-        setSortConfig(null);
-    }
   };
   
   const handleFilterToggle = (field: Field, value: string) => {
     setFilters(prev => {
-      const current = prev[field.key];
-      const currentAsArray = Array.isArray(current) ? current : [];
-
-      const newValues = currentAsArray.includes(value)
-        ? currentAsArray.filter(v => v !== value)
-        : [...currentAsArray, value];
+      const current = prev[field.key] || [];
+      const newValues = current.includes(value)
+        ? current.filter(v => v !== value)
+        : [...current, value];
       return { ...prev, [field.key]: newValues };
     });
   };
@@ -323,7 +285,7 @@ const DataExplorer: React.FC = () => {
   const handleExport = () => {
     if (columns.length === 0) return;
     const headers = columns.map(c => c.label).join(',');
-    const rows = sortedData.map(row => 
+    const rows = finalTableData.map(row => 
         columns.map(col => {
             const value = col.getValue(row) || '';
             const escapedValue = `"${String(value).replace(/"/g, '""')}"`;
@@ -433,8 +395,8 @@ const DataExplorer: React.FC = () => {
                 {columns.map(col => (
                   <div key={col.key} className="flex items-center gap-1 bg-blue-100 text-blue-800 rounded-full px-3 py-1 text-sm font-medium">
                     <span>{col.label}</span>
-                    <button onClick={() => setFilterModalField(col)} className="p-0.5 rounded-full hover:bg-blue-200" title="Filtrer">
-                        <Filter size={14} className={filters[col.key]?.length ? 'text-blue-700' : 'text-blue-500'} />
+                    <button onClick={() => openFilterModal(col)} className="p-0.5 rounded-full hover:bg-blue-200" title="Filtrer">
+                        <Filter size={14} className={filters[col.key] && filters[col.key]?.length !== uniqueValuesForFilter.length ? 'text-blue-700' : 'text-blue-500'} />
                     </button>
                     <button onClick={() => removeColumn(col.key)} className="p-0.5 rounded-full hover:bg-blue-200" title="Retirer">
                         <X size={14} />
@@ -447,7 +409,7 @@ const DataExplorer: React.FC = () => {
 
           <Card className="grid grid-rows-[auto_1fr] min-h-0">
              <CardHeader className="flex justify-between items-center">
-                <CardTitle>Résultats ({sortedData.length} lignes)</CardTitle>
+                <CardTitle>Résultats ({finalTableData.length} lignes)</CardTitle>
                 <div className="flex items-center gap-1 text-slate-600">
                     <button onClick={handleZoomOut} title="Dézoomer" className="p-1 rounded-md hover:bg-slate-200 transition-colors disabled:opacity-50" disabled={zoomLevel <= 0.7}><ZoomOut size={18} /></button>
                     <span className="text-xs font-mono w-12 text-center select-none">{Math.round(zoomLevel * 100)}%</span>
@@ -482,7 +444,7 @@ const DataExplorer: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody className="bg-white">
-                    {sortedData.map((row, index) => (
+                    {finalTableData.map((row, index) => (
                       <tr key={index} className="border-b hover:bg-slate-50">
                         {columns.map(col => (
                           <td key={col.key} className="px-4 py-3 align-top break-words">{col.getValue(row)}</td>
@@ -497,30 +459,81 @@ const DataExplorer: React.FC = () => {
         </div>
       </div>
       
-      {filterModalField && (
-        <Modal isOpen={!!filterModalField} onClose={() => setFilterModalField(null)} title={`Filtrer par ${filterModalField.label}`}>
-          <div className="max-h-96 overflow-y-auto pr-2">
-            {uniqueValuesForFilter.map(value => (
-              <div key={value} className="flex items-center my-1">
-                <input
-                  type="checkbox"
-                  id={`filter-${value}`}
-                  checked={filters[filterModalField.key]?.includes(value) || false}
-                  onChange={() => handleFilterToggle(filterModalField, value)}
-                  className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
-                />
-                <label htmlFor={`filter-${value}`} className="ml-2 text-sm text-slate-700 cursor-pointer">{value}</label>
-              </div>
-            ))}
-          </div>
-           <div className="flex justify-end gap-2 pt-4 border-t mt-4">
-              <button onClick={() => setFilterModalField(null)} className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700">Fermer</button>
-            </div>
-        </Modal>
-      )}
+      {filterModalField && <FilterModal field={filterModalField} allValues={uniqueValuesForFilter} filters={filters} setFilters={setFilters} onClose={() => setFilterModalField(null)} />}
 
     </div>
   );
+};
+
+interface FilterModalProps {
+    field: Field;
+    allValues: string[];
+    filters: Partial<Record<FieldKey, string[]>>;
+    setFilters: React.Dispatch<React.SetStateAction<Partial<Record<FieldKey, string[]>>>>;
+    onClose: () => void;
+}
+
+const FilterModal: React.FC<FilterModalProps> = ({ field, allValues, filters, setFilters, onClose }) => {
+    const [searchTerm, setSearchTerm] = useState('');
+
+    const handleToggle = (value: string) => {
+        setFilters(prev => {
+            const current = prev[field.key] || [];
+            const newValues = current.includes(value) ? current.filter(v => v !== value) : [...current, value];
+            return { ...prev, [field.key]: newValues };
+        });
+    };
+    
+    const handleSelectAll = () => setFilters(prev => ({ ...prev, [field.key]: allValues }));
+    const handleDeselectAll = () => setFilters(prev => ({ ...prev, [field.key]: [] }));
+    
+    const displayedValues = useMemo(() => {
+        if (!searchTerm) return allValues;
+        return allValues.filter(v => v.toLowerCase().includes(searchTerm.toLowerCase()));
+    }, [allValues, searchTerm]);
+
+    return (
+        <Modal isOpen={true} onClose={onClose} title={`Filtrer par ${field.label}`}>
+            <div className="flex flex-col space-y-4">
+                <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                    <input
+                        type="text"
+                        placeholder="Rechercher..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg bg-white"
+                    />
+                </div>
+                <div className="flex items-center gap-4">
+                    <button onClick={handleSelectAll} className="text-sm text-blue-600 hover:underline">Tout cocher</button>
+                    <button onClick={handleDeselectAll} className="text-sm text-blue-600 hover:underline">Tout décocher</button>
+                </div>
+                <div className="max-h-80 overflow-y-auto pr-2 border rounded-md p-2 space-y-1">
+                    {displayedValues.map(value => (
+                        <label key={value} htmlFor={`filter-${field.key}-${value}`} className="flex items-center p-1.5 rounded-md hover:bg-slate-50 cursor-pointer">
+                            <input
+                                type="checkbox"
+                                id={`filter-${field.key}-${value}`}
+                                checked={filters[field.key]?.includes(value) || false}
+                                onChange={() => handleToggle(value)}
+                                className="sr-only peer"
+                            />
+                             <div className="w-4 h-4 bg-white border border-slate-400 rounded flex-shrink-0 flex items-center justify-center peer-checked:bg-blue-600 peer-checked:border-blue-600 peer-focus-visible:ring-2 peer-focus-visible:ring-offset-2 peer-focus-visible:ring-blue-500 transition-colors">
+                                <svg className="hidden peer-checked:block w-3 h-3 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
+                                    <path d="M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z" />
+                                </svg>
+                            </div>
+                            <span className="ml-2 text-sm text-slate-700">{value}</span>
+                        </label>
+                    ))}
+                </div>
+            </div>
+            <div className="flex justify-end gap-2 pt-4 border-t mt-4">
+                <button onClick={onClose} className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700">Fermer</button>
+            </div>
+        </Modal>
+    );
 };
 
 export default DataExplorer;

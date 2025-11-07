@@ -24,8 +24,8 @@ interface DataContextType {
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
-// Version pour les données de référence. Incrémenter cette version forcera le rechargement du JSON.
-const REFERENCE_DATA_VERSION = '2.0';
+// Version pour les données de référence. Incrémenter cette version forcera le rechargement.
+const REFERENCE_DATA_VERSION = '2.3';
 const VERSION_KEY = 'reference_data_version';
 
 
