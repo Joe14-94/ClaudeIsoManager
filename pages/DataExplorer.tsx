@@ -97,54 +97,97 @@ const DataExplorer: React.FC = () => {
     isoMeasuresMap: new Map(allIsoMeasures.map(m => [m.code, m])),
   }), [objectives, chantiers, orientations, securityProcesses, allIsoMeasures]);
 
-  const processedData = useMemo<ProcessedRow[]>(() => {
-    const flatData: ProcessedRow[] = [];
+ const processedData = useMemo<ProcessedRow[]>(() => {
+    const rows: ProcessedRow[] = [];
     const { objectivesMap, chantiersMap, orientationsMap, processusMap, isoMeasuresMap } = dataMaps;
 
-    // The previous logic was activity-centric, causing unlinked entities to be missed.
-    // This new logic ensures every single entity from all master lists is included from the start.
+    const addedIds = {
+        activities: new Set<string>(),
+        objectives: new Set<string>(),
+        chantiers: new Set<string>(),
+        orientations: new Set<string>(),
+        isoMeasures: new Set<string>(),
+        processes: new Set<string>(),
+    };
 
-    // 1. Add a base row for every entity to guarantee its existence.
-    orientations.forEach(o => flatData.push({ orientation: o }));
-    chantiers.forEach(c => flatData.push({ chantier: c, orientation: orientationsMap.get(c.strategicOrientationId) }));
-    objectives.forEach(o => {
-        const chantier = chantiersMap.get(o.chantierId);
-        const orientation = chantier ? orientationsMap.get(chantier.strategicOrientationId) : undefined;
-        flatData.push({ objectif: o, chantier, orientation });
-        o.strategicOrientations.forEach(orId => {
-             if (!chantier || orId !== chantier.strategicOrientationId) {
-                flatData.push({ objectif: o, orientation: orientationsMap.get(orId) });
-             }
-        });
-    });
-    allIsoMeasures.forEach(m => flatData.push({ mesure_iso: m }));
-    securityProcesses.forEach(p => flatData.push({ processus: p }));
-
-    // 2. Add fully linked rows from activities to represent all relationships.
-    // This creates redundancy, but the `finalTableData` logic correctly deduplicates it based on selected columns.
+    // 1. Start from activities, creating the most complete rows first.
     activities.forEach(activite => {
-      const processus = processusMap.get(activite.functionalProcessId);
-      const linkedObjectives = activite.objectives.length > 0 ? activite.objectives.map(id => objectivesMap.get(id)).filter((o): o is Objective => !!o) : [undefined];
-      const linkedIsos = activite.isoMeasures.length > 0 ? activite.isoMeasures.map(code => isoMeasuresMap.get(code)).filter((m): m is IsoMeasure => !!m) : [undefined];
+        addedIds.activities.add(activite.id);
 
-      linkedObjectives.forEach(objectif => {
-        const chantier = objectif ? chantiersMap.get(objectif.chantierId) : undefined;
+        const processus = processusMap.get(activite.functionalProcessId);
+        if (processus) addedIds.processes.add(processus.id);
         
-        const allOrientationIds = new Set<string>();
-        if (chantier) allOrientationIds.add(chantier.strategicOrientationId);
-        if (objectif) objectif.strategicOrientations.forEach(id => allOrientationIds.add(id));
-        activite.strategicOrientations.forEach(id => allOrientationIds.add(id));
-        const linkedOrientations = allOrientationIds.size > 0 ? Array.from(allOrientationIds).map(id => orientationsMap.get(id)).filter((o): o is StrategicOrientation => !!o) : [undefined];
+        const linkedObjectives = activite.objectives.length > 0 
+            ? activite.objectives.map(id => objectivesMap.get(id)).filter((o): o is Objective => !!o) 
+            : [undefined];
+            
+        const linkedIsos = activite.isoMeasures.length > 0
+            ? activite.isoMeasures.map(code => isoMeasuresMap.get(code)).filter((m): m is IsoMeasure => !!m)
+            : [undefined];
 
-        linkedOrientations.forEach(orientation => {
-          linkedIsos.forEach(mesure_iso => {
-            flatData.push({ activite, processus, objectif, chantier, orientation, mesure_iso });
-          });
+        linkedObjectives.forEach(objectif => {
+            if (objectif) addedIds.objectives.add(objectif.id);
+            const chantier = objectif ? chantiersMap.get(objectif.chantierId) : undefined;
+            if (chantier) addedIds.chantiers.add(chantier.id);
+            
+            const allOrientationIds = new Set<string>();
+            if (chantier) allOrientationIds.add(chantier.strategicOrientationId);
+            if (objectif) objectif.strategicOrientations.forEach(id => allOrientationIds.add(id));
+            activite.strategicOrientations.forEach(id => allOrientationIds.add(id));
+            
+            const linkedOrientations = allOrientationIds.size > 0 
+              ? Array.from(allOrientationIds).map(id => orientationsMap.get(id)).filter((o): o is StrategicOrientation => !!o) 
+              : [undefined];
+              
+            linkedOrientations.forEach(orientation => {
+                if (orientation) addedIds.orientations.add(orientation.id);
+                linkedIsos.forEach(mesure_iso => {
+                    if (mesure_iso) addedIds.isoMeasures.add(mesure_iso.id);
+                    rows.push({ activite, processus, objectif, chantier, orientation, mesure_iso });
+                });
+            });
         });
-      });
     });
 
-    return flatData;
+    // 2. Add objectives not linked to any activity yet.
+    objectives.forEach(objectif => {
+        if (addedIds.objectives.has(objectif.id)) return;
+        addedIds.objectives.add(objectif.id);
+
+        const chantier = chantiersMap.get(objectif.chantierId);
+        if (chantier) addedIds.chantiers.add(chantier.id);
+
+        const orientationIds = new Set<string>();
+        if (chantier) orientationIds.add(chantier.strategicOrientationId);
+        objectif.strategicOrientations.forEach(id => orientationIds.add(id));
+        
+        const linkedOrientations = Array.from(orientationIds).map(id => orientationsMap.get(id)).filter((o): o is StrategicOrientation => !!o);
+
+        if (linkedOrientations.length > 0) {
+            linkedOrientations.forEach(orientation => {
+                if (orientation) addedIds.orientations.add(orientation.id);
+                rows.push({ objectif, chantier, orientation });
+            });
+        } else {
+            rows.push({ objectif, chantier });
+        }
+    });
+
+    // 3. Add chantiers not linked to any objectives yet.
+    chantiers.forEach(chantier => {
+        if (addedIds.chantiers.has(chantier.id)) return;
+        addedIds.chantiers.add(chantier.id);
+        const orientation = orientationsMap.get(chantier.strategicOrientationId);
+        if (orientation) addedIds.orientations.add(orientation.id);
+        rows.push({ chantier, orientation });
+    });
+
+    // 4. Add remaining "orphan" entities.
+    orientations.forEach(o => { if (!addedIds.orientations.has(o.id)) rows.push({ orientation: o }); });
+    allIsoMeasures.forEach(m => { if (!addedIds.isoMeasures.has(m.id)) rows.push({ mesure_iso: m }); });
+    securityProcesses.forEach(p => { if (!addedIds.processes.has(p.id)) rows.push({ processus: p }); });
+
+    return rows;
 }, [activities, objectives, chantiers, orientations, securityProcesses, allIsoMeasures, dataMaps]);
 
   const requestSort = useCallback((key: FieldKey) => {
@@ -166,19 +209,22 @@ const DataExplorer: React.FC = () => {
   const filteredData = useMemo(() => {
     if (Object.keys(filters).length === 0) return processedData;
     return processedData.filter(row => {
-      return Object.entries(filters).every(([key, values]) => {
-        if (!values || !Array.isArray(values) || values.length === 0) return true;
-        const field = AVAILABLE_FIELDS.find(f => f.key === key as FieldKey);
-        if (!field) return true;
-        const rowValue = field.getValue(row);
-        
-        if(rowValue === undefined) {
-          return false;
-        }
-        return values.includes(rowValue);
-      });
+        return Object.entries(filters).every(([key, values]) => {
+            if (!values || !Array.isArray(values)) return true; // No active filter for this key
+            if (values.length === 0) return false; // User has deselected all, so nothing can match
+
+            const field = AVAILABLE_FIELDS.find(f => f.key === key as FieldKey);
+            if (!field) return true;
+            
+            const rowValue = field.getValue(row);
+            if(rowValue === undefined) {
+                return false; // Row must have a value in the filtered column to match
+            }
+            
+            return values.includes(rowValue);
+        });
     });
-  }, [processedData, filters]);
+}, [processedData, filters]);
   
  const finalTableData = useMemo(() => {
     if (columns.length === 0) return [];

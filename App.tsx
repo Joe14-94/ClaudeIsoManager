@@ -1,4 +1,3 @@
-
 import React from 'react';
 // FIX: The project appears to use react-router-dom v5, but the installed version is v6. Updating imports to v6.
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
@@ -7,6 +6,7 @@ import Dashboard from './pages/Dashboard';
 import Activities from './pages/Activities';
 import GraphView from './pages/GraphView';
 import Iso27002 from './pages/Iso27002';
+import Initiatives from './pages/Initiatives';
 import Orientations from './pages/Orientations';
 import Objectives from './pages/Objectives';
 import Resources from './pages/Resources';
@@ -21,6 +21,7 @@ import ProtectedRoute from './components/auth/ProtectedRoute';
 import DataModelView from './pages/DataModelView';
 import TimelinePage from './pages/TimelinePage';
 import DataExplorer from './pages/DataExplorer';
+import Projects from './pages/Projects';
 
 const AppLayout: React.FC = () => {
   return (
@@ -33,12 +34,14 @@ const AppLayout: React.FC = () => {
           <Route path="/" element={<Navigate to="/dashboard" />} />
           {/* FIX: Updated Route components to use `element` prop for v6 */}
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/projets" element={<Projects />} />
           <Route path="/activities" element={<Activities />} />
           <Route path="/explorer" element={<DataExplorer />} />
           <Route path="/timeline" element={<TimelinePage />} />
           <Route path="/graph" element={<GraphView />} />
           <Route path="/d3-graph" element={<D3GraphView />} />
           <Route path="/iso27002" element={<Iso27002 />} />
+          <Route path="/initiatives" element={<Initiatives />} />
           <Route path="/orientations" element={<Orientations />} />
           <Route path="/objectives" element={<Objectives />} />
           <Route path="/chantiers" element={<Chantiers />} />

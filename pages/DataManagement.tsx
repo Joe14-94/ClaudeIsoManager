@@ -1,12 +1,15 @@
 
 
+
+
+// FIX: The import statement was malformed and was missing the 'useState' hook import.
 import React, { useState } from 'react';
 import Card, { CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import { Upload, HelpCircle, DatabaseBackup, Info, AlertTriangle, Trash2, Workflow } from 'lucide-react';
 import { useData } from '../contexts/DataContext';
 import { useAuth } from '../contexts/AuthContext';
 import Tooltip from '../components/ui/Tooltip';
-import { Activity, Chantier, Objective, StrategicOrientation, Resource, SecurityProcess } from '../types';
+import { Activity, Chantier, Objective, StrategicOrientation, Resource, SecurityProcess, Project, ActivityStatus, TShirtSize } from '../types';
 
 const DataManagement: React.FC = () => {
   const { 
@@ -15,7 +18,8 @@ const DataManagement: React.FC = () => {
     orientations, setOrientations,
     resources, setResources,
     chantiers, setChantiers,
-    securityProcesses, setSecurityProcesses
+    securityProcesses, setSecurityProcesses,
+    projects, setProjects,
   } = useData();
   const { userRole } = useAuth();
   const isReadOnly = userRole === 'readonly';
@@ -35,7 +39,8 @@ const DataManagement: React.FC = () => {
       orientations,
       resources,
       chantiers,
-      securityProcesses
+      securityProcesses,
+      projects,
     };
     const blob = new Blob([JSON.stringify(allData, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -67,6 +72,10 @@ const DataManagement: React.FC = () => {
           }
 
           switch(dataType) {
+            case 'Projets':
+                setProjects(content as Project[]);
+                showFeedback('success', 'Projets importés avec succès.');
+                break;
             case 'Objectifs':
                 setObjectives(content as Objective[]);
                 showFeedback('success', 'Objectifs importés avec succès.');
@@ -95,6 +104,7 @@ const DataManagement: React.FC = () => {
                 if (Array.isArray(content.resources)) { setResources(content.resources); importedCount++; }
                 if (Array.isArray(content.chantiers)) { setChantiers(content.chantiers); importedCount++; }
                 if (Array.isArray(content.securityProcesses)) { setSecurityProcesses(content.securityProcesses); importedCount++; }
+                if (Array.isArray(content.projects)) { setProjects(content.projects); importedCount++; }
                 
                 if (importedCount > 0) {
                     showFeedback('success', `Sauvegarde restaurée avec succès. ${importedCount} type(s) de données importé(s).`);
@@ -116,6 +126,197 @@ const DataManagement: React.FC = () => {
           if(inputElement) inputElement.value = '';
       };
       reader.readAsText(file);
+    }
+  };
+
+  const handleFdrJhImport = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (isReadOnly) {
+        if(event.target) event.target.value = '';
+        return;
+    }
+    const file = event.target.files?.[0];
+    const inputElement = event.target;
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const content = e.target?.result as string;
+          const lines = content.split('\n').slice(2); // Skip header lines
+          
+          const updatedProjects: Project[] = [];
+          const newProjects: Project[] = [];
+          
+          const existingProjectsMap = new Map(projects.map(p => [p.projectId, p]));
+
+          lines.forEach(line => {
+            if (!line.trim()) return;
+            const columns = line.split(';');
+
+            const [idPart, titlePart] = (columns[0] || '').split(' : ');
+            if (!idPart || !titlePart) return;
+
+            const projectId = idPart.trim();
+            const title = titlePart.trim();
+            
+            const parseJH = (value: string) => value ? parseFloat(value.replace(' JH', '').replace(',', '.')) : 0;
+
+            const internalWorkloadRequested = parseJH(columns[1]);
+            const internalWorkloadEngaged = parseJH(columns[2]);
+            const internalWorkloadConsumed = parseJH(columns[3]);
+            const externalWorkloadRequested = parseJH(columns[5]);
+            const externalWorkloadEngaged = parseJH(columns[6]);
+            const externalWorkloadConsumed = parseJH(columns[7]);
+
+            const existingProject = existingProjectsMap.get(projectId);
+            
+            if (existingProject) {
+                updatedProjects.push({
+                    ...existingProject,
+                    internalWorkloadRequested,
+                    internalWorkloadEngaged,
+                    internalWorkloadConsumed,
+                    externalWorkloadRequested,
+                    externalWorkloadEngaged,
+                    externalWorkloadConsumed,
+                    updatedAt: new Date().toISOString(),
+                });
+            } else {
+                 newProjects.push({
+                    id: `proj-${Date.now()}-${Math.random()}`,
+                    projectId,
+                    title,
+                    status: ActivityStatus.NOT_STARTED,
+                    tShirtSize: TShirtSize.M,
+                    isTop30: false,
+                    internalWorkloadRequested,
+                    internalWorkloadEngaged,
+                    internalWorkloadConsumed,
+                    externalWorkloadRequested,
+                    externalWorkloadEngaged,
+                    externalWorkloadConsumed,
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                });
+            }
+          });
+
+          setProjects(prev => {
+            const prevMap = new Map(prev.map(p => [p.projectId, p]));
+            updatedProjects.forEach(p => prevMap.set(p.projectId, p));
+            newProjects.forEach(p => prevMap.set(p.projectId, p));
+            return Array.from(prevMap.values());
+          });
+
+          showFeedback('success', `${newProjects.length} projet(s) créé(s) et ${updatedProjects.length} projet(s) mis à jour.`);
+
+        } catch (error) {
+          console.error(error);
+          showFeedback('error', 'Erreur lors du traitement du fichier CSV.');
+        } finally {
+            if(inputElement) inputElement.value = '';
+        }
+      };
+      reader.onerror = () => {
+          showFeedback('error', 'Erreur de lecture du fichier.');
+          if(inputElement) inputElement.value = '';
+      };
+      reader.readAsText(file, 'ISO-8859-1'); // Or 'UTF-8' if that's the encoding
+    }
+  };
+  
+  const handleFdrEurosImport = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (isReadOnly) {
+        if(event.target) event.target.value = '';
+        return;
+    }
+    const file = event.target.files?.[0];
+    const inputElement = event.target;
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const content = e.target?.result as string;
+          const lines = content.split('\n').slice(1); // Skip header line
+
+          const updatedProjects: Project[] = [];
+          const newProjects: Project[] = [];
+          
+          const existingProjectsMap = new Map(projects.map(p => [p.projectId, p]));
+
+          const parseEuros = (value: string): number | undefined => {
+              if (!value || !value.trim()) return undefined;
+              const cleanedValue = value.replace(/K€/g, '').replace(/€/g, '').trim();
+              const number = parseFloat(cleanedValue.replace(',', '.'));
+              return isNaN(number) ? undefined : number * 1000;
+          };
+
+          lines.forEach(line => {
+              if (!line.trim()) return;
+              const columns = line.split(';');
+
+              let idTitlePart = columns[0] || '';
+              if (idTitlePart.startsWith('\"') && idTitlePart.endsWith('\"')) {
+                  idTitlePart = idTitlePart.substring(1, idTitlePart.length - 1);
+              }
+              const [idPart, titlePart] = idTitlePart.split(' : ');
+              if (!idPart || !titlePart) return;
+
+              const projectId = idPart.trim();
+              const title = titlePart.trim();
+
+              const budgetData = {
+                  budgetRequested: parseEuros(columns[1]),
+                  budgetCommitted: parseEuros(columns[2]),
+                  budgetApproved: parseEuros(columns[3]),
+                  validatedPurchaseOrders: parseEuros(columns[4]),
+                  completedPV: parseEuros(columns[5]),
+                  forecastedPurchaseOrders: parseEuros(columns[9]),
+              };
+
+              const existingProject = existingProjectsMap.get(projectId);
+              
+              if (existingProject) {
+                  updatedProjects.push({
+                      ...existingProject,
+                      ...budgetData,
+                      updatedAt: new Date().toISOString(),
+                  });
+              } else {
+                   newProjects.push({
+                      id: `proj-${Date.now()}-${Math.random()}`,
+                      projectId,
+                      title,
+                      status: ActivityStatus.NOT_STARTED,
+                      tShirtSize: TShirtSize.M,
+                      isTop30: false,
+                      ...budgetData,
+                      createdAt: new Date().toISOString(),
+                      updatedAt: new Date().toISOString(),
+                  });
+              }
+          });
+
+          setProjects(prev => {
+            const prevMap = new Map(prev.map(p => [p.projectId, p]));
+            updatedProjects.forEach(p => prevMap.set(p.projectId, p));
+            newProjects.forEach(p => prevMap.set(p.projectId, p));
+            return Array.from(prevMap.values());
+          });
+
+          showFeedback('success', `${newProjects.length} projet(s) créé(s) et ${updatedProjects.length} projet(s) mis à jour.`);
+
+        } catch (error) {
+          console.error(error);
+          showFeedback('error', 'Erreur lors du traitement du fichier CSV budgétaire.');
+        } finally {
+            if(inputElement) inputElement.value = '';
+        }
+      };
+      reader.onerror = () => {
+          showFeedback('error', 'Erreur de lecture du fichier.');
+          if(inputElement) inputElement.value = '';
+      };
+      reader.readAsText(file, 'UTF-8');
     }
   };
 
@@ -156,7 +357,7 @@ const DataManagement: React.FC = () => {
       <Card>
         <CardHeader className="flex items-center justify-between">
           <CardTitle>Sauvegarde et restauration</CardTitle>
-           <Tooltip text="La sauvegarde complète inclut : activités, objectifs, orientations, chantiers, ressources et processus de sécurité.">
+           <Tooltip text="La sauvegarde complète inclut : projets, activités, objectifs, orientations, chantiers, ressources et processus de sécurité.">
             <Info size={18} className="text-slate-500 cursor-help" />
           </Tooltip>
         </CardHeader>
@@ -181,12 +382,12 @@ const DataManagement: React.FC = () => {
       <Card>
         <CardHeader>
           <CardTitle>Import de données</CardTitle>
-          <p className="text-sm text-slate-500 mt-1">Importez des listes spécifiques au format JSON. L'importation remplacera les données existantes pour le type sélectionné.</p>
+          <p className="text-sm text-slate-500 mt-1">Importez des listes spécifiques. L'importation remplacera les données existantes pour le type sélectionné, sauf pour les imports FDR.</p>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
           
           <div className="p-4 border rounded-lg">
-            <h3 className="font-semibold">Importer des objectifs</h3>
+            <h3 className="font-semibold">Importer des objectifs (JSON)</h3>
             <div className="flex items-center text-sm text-slate-500 mt-1 mb-2">
               <HelpCircle size={16} className="mr-2"/>
               <span>Le fichier JSON doit être un tableau d'objets `Objective`.</span>
@@ -198,7 +399,7 @@ const DataManagement: React.FC = () => {
           </div>
           
           <div className="p-4 border rounded-lg">
-            <h3 className="font-semibold">Importer des orientations stratégiques</h3>
+            <h3 className="font-semibold">Importer des orientations (JSON)</h3>
             <div className="flex items-center text-sm text-slate-500 mt-1 mb-2">
               <HelpCircle size={16} className="mr-2"/>
               <span>Le fichier JSON doit être un tableau d'objets `StrategicOrientation`.</span>
@@ -210,7 +411,7 @@ const DataManagement: React.FC = () => {
           </div>
 
           <div className="p-4 border rounded-lg">
-            <h3 className="font-semibold">Importer des chantiers</h3>
+            <h3 className="font-semibold">Importer des chantiers (JSON)</h3>
             <div className="flex items-center text-sm text-slate-500 mt-1 mb-2">
               <HelpCircle size={16} className="mr-2"/>
               <span>Le fichier JSON doit être un tableau d'objets `Chantier`.</span>
@@ -222,7 +423,7 @@ const DataManagement: React.FC = () => {
           </div>
           
           <div className="p-4 border rounded-lg">
-            <h3 className="font-semibold">Importer des activités</h3>
+            <h3 className="font-semibold">Importer des activités (JSON)</h3>
             <div className="flex items-center text-sm text-slate-500 mt-1 mb-2">
               <HelpCircle size={16} className="mr-2"/>
               <span>Le fichier JSON doit être un tableau d'objets `Activity`.</span>
@@ -232,9 +433,21 @@ const DataManagement: React.FC = () => {
               <input type="file" className="hidden" accept=".json" onChange={(e) => handleFileImport(e, 'Activités')} disabled={isReadOnly}/>
             </label>
           </div>
+
+          <div className="p-4 border rounded-lg">
+            <h3 className="font-semibold">Importer des projets (JSON)</h3>
+            <div className="flex items-center text-sm text-slate-500 mt-1 mb-2">
+              <HelpCircle size={16} className="mr-2"/>
+              <span>Le fichier JSON doit être un tableau d'objets `Project`.</span>
+            </div>
+            <label className={`${buttonClasses} text-sm w-fit ${isReadOnly ? disabledClasses : 'bg-green-600 text-white hover:bg-green-700 cursor-pointer'}`}>
+              <Upload size={16} className="mr-2" /> Importer
+              <input type="file" className="hidden" accept=".json" onChange={(e) => handleFileImport(e, 'Projets')} disabled={isReadOnly}/>
+            </label>
+          </div>
           
           <div className="p-4 border rounded-lg">
-            <h3 className="font-semibold">Importer des processus de sécurité</h3>
+            <h3 className="font-semibold">Importer des processus (JSON)</h3>
             <div className="flex items-center text-sm text-slate-500 mt-1 mb-2">
               <HelpCircle size={16} className="mr-2"/>
               <span>Le fichier JSON doit être un tableau d'objets `SecurityProcess`.</span>
@@ -244,6 +457,31 @@ const DataManagement: React.FC = () => {
               <input type="file" className="hidden" accept=".json" onChange={(e) => handleFileImport(e, 'Processus de sécurité')} disabled={isReadOnly}/>
             </label>
           </div>
+          
+          <div className="p-4 border rounded-lg md:col-span-1">
+            <h3 className="font-semibold">Import FDR JH (CSV)</h3>
+            <div className="flex items-center text-sm text-slate-500 mt-1 mb-2">
+              <HelpCircle size={16} className="mr-2"/>
+              <span>Import spécifique pour la mise à jour des charges projets (J/H).</span>
+            </div>
+            <label className={`${buttonClasses} text-sm w-fit ${isReadOnly ? disabledClasses : 'bg-teal-600 text-white hover:bg-teal-700 cursor-pointer'}`}>
+              <Upload size={16} className="mr-2" /> Importer le CSV des charges
+              <input type="file" className="hidden" accept=".csv" onChange={handleFdrJhImport} disabled={isReadOnly}/>
+            </label>
+          </div>
+
+          <div className="p-4 border rounded-lg md:col-span-1">
+            <h3 className="font-semibold">Import FDR Euros (CSV)</h3>
+            <div className="flex items-center text-sm text-slate-500 mt-1 mb-2">
+              <HelpCircle size={16} className="mr-2"/>
+              <span>Import spécifique pour la mise à jour des budgets projets (€).</span>
+            </div>
+            <label className={`${buttonClasses} text-sm w-fit ${isReadOnly ? disabledClasses : 'bg-teal-600 text-white hover:bg-teal-700 cursor-pointer'}`}>
+              <Upload size={16} className="mr-2" /> Importer le CSV des budgets
+              <input type="file" className="hidden" accept=".csv" onChange={handleFdrEurosImport} disabled={isReadOnly}/>
+            </label>
+          </div>
+
 
         </CardContent>
       </Card>

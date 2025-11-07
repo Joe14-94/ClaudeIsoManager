@@ -1,8 +1,7 @@
-
 import React, { useState } from 'react';
 // FIX: The project appears to use react-router-dom v5. The imports for 'NavLink' and 'useNavigate' are for v6. Updating to v6 equivalents to fix build errors.
 import { NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, ListChecks, Network, ShieldCheck, Target, TrendingUp, Users, Database, FileUp, FileDown, Workflow, GitMerge, ClipboardCheck, LogOut, KeyRound, DatabaseZap, GanttChart, LayoutGrid } from 'lucide-react';
+import { LayoutDashboard, ListChecks, Network, ShieldCheck, Target, TrendingUp, Users, Database, FileUp, FileDown, Workflow, GitMerge, ClipboardCheck, LogOut, KeyRound, DatabaseZap, GanttChart, LayoutGrid, Flag, ClipboardList } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import ChangePasswordModal from '../auth/ChangePasswordModal';
 import { APP_VERSION } from '../../config';
@@ -43,6 +42,10 @@ const Sidebar: React.FC = () => {
                 <LayoutDashboard size={18} className="mr-3" />
                 Tableau de bord
               </NavLink>
+               <NavLink to="/projets" className={getNavLinkClass}>
+                <ClipboardList size={18} className="mr-3" />
+                Projets
+              </NavLink>
               <NavLink to="/activities" className={getNavLinkClass}>
                 <ListChecks size={18} className="mr-3" />
                 Activités
@@ -71,6 +74,10 @@ const Sidebar: React.FC = () => {
                   <NavLink to="/iso27002" className={getNavLinkClass}>
                       <ShieldCheck size={18} className="mr-3" />
                       ISO 27002
+                  </NavLink>
+                  <NavLink to="/initiatives" className={getNavLinkClass}>
+                      <Flag size={18} className="mr-3" />
+                      Initiatives
                   </NavLink>
                   <NavLink to="/orientations" className={getNavLinkClass}>
                       <TrendingUp size={18} className="mr-3" />

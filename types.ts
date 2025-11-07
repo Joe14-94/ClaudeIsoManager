@@ -51,6 +51,15 @@ export interface StrategicOrientation {
   createdAt: DateTime;
 }
 
+export interface Initiative {
+  id: string;
+  code: string;
+  label: string;
+  description?: string;
+  isoMeasureIds: string[]; // Array of ISO measure codes
+  createdAt: DateTime;
+}
+
 export interface Chantier {
   id: string;
   code: string;
@@ -161,6 +170,46 @@ export interface Resource {
     id: string;
     name: string;
     entity: string;
+}
+
+export enum TShirtSize {
+  XS = "XS",
+  S = "S",
+  M = "M",
+  L = "L",
+  XL = "XL",
+}
+
+export interface Project {
+  id: string;
+  projectId: string; // e.g., P25-123
+  title: string;
+  description?: string;
+  status: ActivityStatus; // Re-using ActivityStatus as it fits well
+  tShirtSize: TShirtSize;
+  projectManagerMOA?: string; // Resource ID
+  projectManagerMOE?: string; // Resource ID
+  projectStartDate?: DateTime;
+  projectEndDate?: DateTime;
+  goLiveDate?: DateTime; // Date de passage en NO
+  endDate?: DateTime; // Date de passage en NF
+  internalWorkloadRequested?: number;
+  internalWorkloadEngaged?: number;
+  internalWorkloadConsumed?: number;
+  externalWorkloadRequested?: number;
+  externalWorkloadEngaged?: number;
+  externalWorkloadConsumed?: number;
+  isTop30: boolean;
+  createdAt: DateTime;
+  updatedAt: DateTime;
+
+  // Budget fields
+  budgetRequested?: number;
+  budgetApproved?: number;
+  budgetCommitted?: number;
+  validatedPurchaseOrders?: number;
+  completedPV?: number;
+  forecastedPurchaseOrders?: number;
 }
 
 export interface DashboardStats {

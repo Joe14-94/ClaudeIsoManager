@@ -1,10 +1,11 @@
-
 import React, { createContext, useState, useContext, useEffect, ReactNode, PropsWithChildren } from 'react';
 import { loadFromLocalStorage, saveToLocalStorage } from '../utils/storage';
 import { activities as initialActivities } from '../data/activities';
 import { resources as initialResources } from '../data/resources';
 import { securityProcesses as initialSecurityProcesses } from '../data/securityProcesses';
-import { Activity, Chantier, Objective, StrategicOrientation, Resource, SecurityProcess } from '../types';
+import { initiatives as initialInitiatives } from '../data/initiatives';
+import { projects as initialProjects } from '../data/projects';
+import { Activity, Chantier, Objective, StrategicOrientation, Resource, SecurityProcess, Initiative, Project } from '../types';
 import { loadReferenceData } from '../utils/referenceData';
 
 interface DataContextType {
@@ -16,6 +17,10 @@ interface DataContextType {
     setObjectives: React.Dispatch<React.SetStateAction<Objective[]>>;
     orientations: StrategicOrientation[];
     setOrientations: React.Dispatch<React.SetStateAction<StrategicOrientation[]>>;
+    initiatives: Initiative[];
+    setInitiatives: React.Dispatch<React.SetStateAction<Initiative[]>>;
+    projects: Project[];
+    setProjects: React.Dispatch<React.SetStateAction<Project[]>>;
     resources: Resource[];
     setResources: React.Dispatch<React.SetStateAction<Resource[]>>;
     securityProcesses: SecurityProcess[];
@@ -36,6 +41,8 @@ export const DataProvider = ({ children }: PropsWithChildren) => {
     const [orientations, setOrientations] = useState<StrategicOrientation[]>([]);
     const [chantiers, setChantiers] = useState<Chantier[]>([]);
     const [objectives, setObjectives] = useState<Objective[]>([]);
+    const [initiatives, setInitiatives] = useState<Initiative[]>([]);
+    const [projects, setProjects] = useState<Project[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
@@ -44,6 +51,8 @@ export const DataProvider = ({ children }: PropsWithChildren) => {
             setActivities(loadFromLocalStorage('activities', initialActivities));
             setResources(loadFromLocalStorage('resources', initialResources));
             setSecurityProcesses(loadFromLocalStorage('securityProcesses', initialSecurityProcesses));
+            setInitiatives(loadFromLocalStorage('initiatives', initialInitiatives));
+            setProjects(loadFromLocalStorage('projects', initialProjects));
 
             // Gérer les données de référence avec versionnement
             const storedVersion = loadFromLocalStorage<string>(VERSION_KEY, '1.0');
@@ -85,6 +94,8 @@ export const DataProvider = ({ children }: PropsWithChildren) => {
     useEffect(() => { if (!isLoading) saveToLocalStorage('activities', activities); }, [activities, isLoading]);
     useEffect(() => { if (!isLoading) saveToLocalStorage('resources', resources); }, [resources, isLoading]);
     useEffect(() => { if (!isLoading) saveToLocalStorage('securityProcesses', securityProcesses); }, [securityProcesses, isLoading]);
+    useEffect(() => { if (!isLoading) saveToLocalStorage('initiatives', initiatives); }, [initiatives, isLoading]);
+    useEffect(() => { if (!isLoading) saveToLocalStorage('projects', projects); }, [projects, isLoading]);
     
     // Les données de référence sont chargées depuis un fichier, mais peuvent être modifiées
     // par import, donc nous devons les persister.
@@ -97,6 +108,8 @@ export const DataProvider = ({ children }: PropsWithChildren) => {
         chantiers, setChantiers,
         objectives, setObjectives,
         orientations, setOrientations,
+        initiatives, setInitiatives,
+        projects, setProjects,
         resources, setResources,
         securityProcesses, setSecurityProcesses,
     };

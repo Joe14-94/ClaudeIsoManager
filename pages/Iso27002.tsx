@@ -72,6 +72,7 @@ const Iso27002: React.FC = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [filterByCoverage, setFilterByCoverage] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [codeFilter, setCodeFilter] = useState<string[] | null>(null);
 
   const allMeasures: IsoMeasure[] = useMemo(() => ISO_MEASURES_DATA.map(m => ({ ...m, id: m.code, details: (m as any).details })), []);
 
@@ -81,14 +82,19 @@ const Iso27002: React.FC = () => {
       const measure = allMeasures.find(m => m.code === measureCodeToOpen);
       if (measure) {
         setSelectedMeasure(measure);
-        // Clear state to prevent modal from re-opening on navigation
-        window.history.replaceState({}, document.title)
       }
+      window.history.replaceState({}, document.title)
     }
-    if (locationState?.filter === 'covered') {
+    
+    if (locationState?.filter === 'covered' && locationState?.coveredMeasuresCodes) {
+        setCodeFilter(locationState.coveredMeasuresCodes);
+        setFilterByCoverage(false);
+        window.history.replaceState({}, document.title);
+    } else if (locationState?.filter === 'covered') {
         setFilterByCoverage(true);
+        setCodeFilter(null);
         setShowFilters(false);
-        setSearchTerm(''); // Clear search when applying coverage filter
+        setSearchTerm('');
         window.history.replaceState({}, document.title)
     }
   }, [locationState, allMeasures]);
@@ -145,6 +151,11 @@ const Iso27002: React.FC = () => {
   const filteredMeasures = useMemo(() => {
     let measures = allMeasures;
 
+    if (codeFilter) {
+      const codeSet = new Set(codeFilter);
+      measures = measures.filter(measure => codeSet.has(measure.code));
+    }
+
     if (searchTerm) {
         const lowercasedTerm = searchTerm.toLowerCase();
         return measures.filter(measure => {
@@ -195,7 +206,7 @@ const Iso27002: React.FC = () => {
             return selectedValues.includes(measureValues as string);
         });
     });
-  }, [allMeasures, activeFilters, filterByCoverage, coveredMeasuresCodes, searchTerm]);
+  }, [allMeasures, activeFilters, filterByCoverage, coveredMeasuresCodes, searchTerm, codeFilter]);
 
   const filterCounts = useMemo(() => {
     const counts: Record<string, Record<string, number>> = {};
@@ -222,7 +233,8 @@ const Iso27002: React.FC = () => {
 
   const handleFilterChange = (category: FilterableDetailKey, value: string) => {
     setSearchTerm(''); // Clear search when applying detail filters
-    setFilterByCoverage(false); 
+    setFilterByCoverage(false);
+    setCodeFilter(null);
     setActiveFilters(prev => {
         const currentCategoryFilters = prev[category] || [];
         const newCategoryFilters = currentCategoryFilters.includes(value)
@@ -241,6 +253,7 @@ const Iso27002: React.FC = () => {
     if (term) {
         // Reset other filters when searching
         setFilterByCoverage(false);
+        setCodeFilter(null);
         setActiveFilters({ type: [], properties: [], concepts: [], processes: [], functionalProcess: [], domains: [] });
         setShowFilters(false);
     }
@@ -249,6 +262,7 @@ const Iso27002: React.FC = () => {
   const resetFilters = () => {
       setSearchTerm('');
       setFilterByCoverage(false);
+      setCodeFilter(null);
       setActiveFilters({
         type: [],
         properties: [],
@@ -298,7 +312,7 @@ const Iso27002: React.FC = () => {
                 />
             </div>
             <button 
-                onClick={() => { setShowFilters(!showFilters); setSearchTerm(''); }} 
+                onClick={() => { setShowFilters(!showFilters); setSearchTerm(''); setCodeFilter(null); }} 
                 className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-100 transition-colors shadow-sm"
                 aria-expanded={showFilters}
             >
@@ -365,6 +379,7 @@ const Iso27002: React.FC = () => {
             : `${totalFilteredMeasures} sur ${allMeasures.length} mesure(s) affichée(s).`
         }
         {filterByCoverage && !searchTerm && <span className="ml-2 font-semibold text-blue-600">(Filtre "mesures couvertes" actif)</span>}
+        {codeFilter && !searchTerm && <span className="ml-2 font-semibold text-blue-600">({codeFilter.length} mesure(s) spécifique(s) affichée(s))</span>}
       </div>
 
 
