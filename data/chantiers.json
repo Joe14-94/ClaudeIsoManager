@@ -56,22 +56,6 @@
     "createdAt": "2025-11-01T10:00:00Z"
   },
   {
-    "id": "ch-1.4.1",
-    "code": "1.4.1",
-    "label": "Mettre en place un processus d'intégration de la sécurité dans les projets",
-    "description": "",
-    "strategicOrientationId": "so-1.4",
-    "createdAt": "2025-11-01T10:00:00Z"
-  },
-  {
-    "id": "ch-1.4.3",
-    "code": "1.4.3",
-    "label": "Mettre en place une organisation efficace pour appliquer l'ISP aux principes DevOps",
-    "description": "",
-    "strategicOrientationId": "so-1.4",
-    "createdAt": "2025-11-01T10:00:00Z"
-  },
-  {
     "id": "ch-1.5.1",
     "code": "1.5.1",
     "label": "Garantir que les nouveaux individus intervenant au sein du réseau ne soient pas des menaces",
@@ -144,6 +128,22 @@
     "createdAt": "2025-11-01T10:00:00Z"
   },
   {
+    "id": "ch-1.4.1",
+    "code": "1.4.1",
+    "label": "Mettre en place un processus d'intégration de la sécurité dans les projets",
+    "description": "",
+    "strategicOrientationId": "so-1.4",
+    "createdAt": "2025-11-01T10:00:00Z"
+  },
+  {
+    "id": "ch-1.4.3",
+    "code": "1.4.3",
+    "label": "Mettre en place une organisation efficace pour appliquer l'ISP aux principes DevOps",
+    "description": "",
+    "strategicOrientationId": "so-1.4",
+    "createdAt": "2025-11-01T10:00:00Z"
+  },
+  {
     "id": "ch-3.1.1",
     "code": "3.1.1",
     "label": "Définir une stratégie de protection et de maintien en conditions de sécurité des infrastructures et des socles",
@@ -181,38 +181,6 @@
     "label": "Renforcer la gestion de l'obsolescence des infrastructures et des socles",
     "description": "",
     "strategicOrientationId": "so-3.1",
-    "createdAt": "2025-11-01T10:00:00Z"
-  },
-  {
-    "id": "ch-3.10.1",
-    "code": "3.10.1",
-    "label": "Rendre les sites plus résistant aux attaques physiques",
-    "description": "",
-    "strategicOrientationId": "so-3.10",
-    "createdAt": "2025-11-01T10:00:00Z"
-  },
-  {
-    "id": "ch-3.10.2",
-    "code": "3.10.2",
-    "label": "Homogénéiser le suivi des accès aux sites physiques",
-    "description": "",
-    "strategicOrientationId": "so-3.10",
-    "createdAt": "2025-11-01T10:00:00Z"
-  },
-  {
-    "id": "ch-3.11.1",
-    "code": "3.11.1",
-    "label": "Dédier des ressources à l'administration",
-    "description": "",
-    "strategicOrientationId": "so-3.11",
-    "createdAt": "2025-11-01T10:00:00Z"
-  },
-  {
-    "id": "ch-3.11.2",
-    "code": "3.11.2",
-    "label": "Améliorer la gestion des droits d'administration sur les postes de travail",
-    "description": "",
-    "strategicOrientationId": "so-3.11",
     "createdAt": "2025-11-01T10:00:00Z"
   },
   {
@@ -320,7 +288,7 @@
     "createdAt": "2025-11-01T10:00:00Z"
   },
   {
-    "id": "ch-3.7.1",
+    "id": "ch-3.7.1 [NEW]",
     "code": "3.7.1",
     "label": "Mettre en place des solutions de sécurité adaptées aux métiers",
     "description": "",
@@ -376,7 +344,39 @@
     "createdAt": "2025-11-01T10:00:00Z"
   },
   {
-    "id": "ch-4.1.1",
+    "id": "ch-3.10.1",
+    "code": "3.10.1",
+    "label": "Rendre les sites plus résistant aux attaques physiques",
+    "description": "",
+    "strategicOrientationId": "so-3.10",
+    "createdAt": "2025-11-01T10:00:00Z"
+  },
+  {
+    "id": "ch-3.10.2",
+    "code": "3.10.2",
+    "label": "Homogénéiser le suivi des accès aux sites physiques",
+    "description": "",
+    "strategicOrientationId": "so-3.10",
+    "createdAt": "2025-11-01T10:00:00Z"
+  },
+  {
+    "id": "ch-3.11.1",
+    "code": "3.11.1",
+    "label": "Dédier des ressources à l'administration",
+    "description": "",
+    "strategicOrientationId": "so-3.11",
+    "createdAt": "2025-11-01T10:00:00Z"
+  },
+  {
+    "id": "ch-3.11.2",
+    "code": "3.11.2",
+    "label": "Améliorer la gestion des droits d'administration sur les postes de travail",
+    "description": "",
+    "strategicOrientationId": "so-3.11",
+    "createdAt": "2025-11-01T10:00:00Z"
+  },
+  {
+    "id": "ch-4.1.1 [NEW]",
     "code": "4.1.1",
     "label": "Établir une stratégie de journalisation et de détection",
     "description": "",
@@ -384,7 +384,7 @@
     "createdAt": "2025-11-01T10:00:00Z"
   },
   {
-    "id": "ch-4.2.1",
+    "id": "ch-4.2.1 [NEW]",
     "code": "4.2.1",
     "label": "Mettre en œuvre la stratégie de journalisation et de détection",
     "description": "",
@@ -392,7 +392,7 @@
     "createdAt": "2025-11-01T10:00:00Z"
   },
   {
-    "id": "ch-4.3.1",
+    "id": "ch-4.3.1 [NEW]",
     "code": "4.3.1",
     "label": "Définir et implémenter les cas d'usage de détection",
     "description": "",
@@ -400,7 +400,7 @@
     "createdAt": "2025-11-01T10:00:00Z"
   },
   {
-    "id": "ch-4.4.1",
+    "id": "ch-4.4.1 [NEW]",
     "code": "4.4.1",
     "label": "Mettre en place et exécuter une stratégie de test de la détection",
     "description": "",
@@ -408,7 +408,7 @@
     "createdAt": "2025-11-01T10:00:00Z"
   },
   {
-    "id": "ch-4.5.1",
+    "id": "ch-4.5.1 [NEW]",
     "code": "4.5.1",
     "label": "Renforcer le processus de gestion des incidents et de crise",
     "description": "",
@@ -416,7 +416,7 @@
     "createdAt": "2025-11-01T10:00:00Z"
   },
   {
-    "id": "ch-4.6.1",
+    "id": "ch-4.6.1 [NEW]",
     "code": "4.6.1",
     "label": "Formaliser et tester l'organisation de crise",
     "description": "",

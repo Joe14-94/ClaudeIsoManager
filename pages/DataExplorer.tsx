@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { useData } from '../contexts/DataContext';
 import { ISO_MEASURES_DATA } from '../constants';
@@ -24,16 +23,18 @@ interface ProcessedRow {
     processus?: SecurityProcess;
 }
 
+const PLACEHOLDER_NA = 'Non applicable';
+
 const AVAILABLE_FIELDS: Field[] = [
-  { key: 'orientation', label: 'Orientation', getValue: row => row.orientation ? `${row.orientation.code} - ${row.orientation.label}` : undefined },
-  { key: 'chantier', label: 'Chantier', getValue: row => row.chantier ? `${row.chantier.code} - ${row.chantier.label}` : undefined },
-  { key: 'objectif', label: 'Objectif', getValue: row => row.objectif ? `${row.objectif.code} - ${row.objectif.label}` : undefined },
-  { key: 'activite', label: 'Activité', getValue: row => row.activite ? `${row.activite.activityId} - ${row.activite.title}` : undefined },
-  { key: 'mesure_iso', label: 'Mesure ISO', getValue: row => row.mesure_iso ? `${row.mesure_iso.code} - ${row.mesure_iso.title}` : undefined },
-  { key: 'statut_activite', label: 'Statut (Activité)', getValue: row => row.activite?.status },
-  { key: 'priorite_activite', label: 'Priorité (Activité)', getValue: row => row.activite?.priority },
-  { key: 'domaine_activite', label: 'Domaine (Activité)', getValue: row => row.activite?.securityDomain },
-  { key: 'processus', label: 'Processus', getValue: row => row.processus?.name },
+  { key: 'orientation', label: 'Orientation', getValue: row => row.orientation ? `${row.orientation.code} - ${row.orientation.label}` : 'Pas d\'orientation liée' },
+  { key: 'chantier', label: 'Chantier', getValue: row => row.chantier ? `${row.chantier.code} - ${row.chantier.label}` : 'Pas de chantier lié' },
+  { key: 'objectif', label: 'Objectif', getValue: row => row.objectif ? `${row.objectif.code} - ${row.objectif.label}` : 'Pas d\'objectif lié' },
+  { key: 'activite', label: 'Activité', getValue: row => row.activite ? `${row.activite.activityId} - ${row.activite.title}` : 'Pas d\'activité liée' },
+  { key: 'mesure_iso', label: 'Mesure ISO', getValue: row => row.mesure_iso ? `${row.mesure_iso.code} - ${row.mesure_iso.title}` : 'Pas de mesure ISO liée' },
+  { key: 'statut_activite', label: 'Statut (Activité)', getValue: row => row.activite?.status ?? PLACEHOLDER_NA },
+  { key: 'priorite_activite', label: 'Priorité (Activité)', getValue: row => row.activite?.priority ?? PLACEHOLDER_NA },
+  { key: 'domaine_activite', label: 'Domaine (Activité)', getValue: row => row.activite?.securityDomain ?? PLACEHOLDER_NA },
+  { key: 'processus', label: 'Processus', getValue: row => row.processus?.name ?? 'Pas de processus lié' },
 ];
 
 const DATA_EXPLORER_STATE_KEY = 'dataExplorerState';
@@ -87,120 +88,129 @@ const DataExplorer: React.FC = () => {
   }, [columns, filters, sortConfig, columnWidths, zoomLevel]);
 
   const allIsoMeasures = useMemo(() => ISO_MEASURES_DATA.map(m => ({...m, id: m.code}) as IsoMeasure), []);
+  
+  const dataMaps = useMemo(() => ({
+    objectivesMap: new Map(objectives.map(o => [o.id, o])),
+    chantiersMap: new Map(chantiers.map(c => [c.id, c])),
+    orientationsMap: new Map(orientations.map(o => [o.id, o])),
+    processusMap: new Map(securityProcesses.map(p => [p.id, p])),
+    isoMeasuresMap: new Map(allIsoMeasures.map(m => [m.code, m])),
+  }), [objectives, chantiers, orientations, securityProcesses, allIsoMeasures]);
 
   const processedData = useMemo<ProcessedRow[]>(() => {
+    if (columns.length === 0) return [];
+    
+    const columnKeys = new Set(columns.map(c => c.key));
+    let baseEntities: any[] = [];
+    let baseEntityType: FieldKey | null = null;
+    
+    const hierarchy: FieldKey[] = ['activite', 'objectif', 'chantier', 'orientation', 'mesure_iso', 'processus'];
+    for(const type of hierarchy) {
+        if (columnKeys.has(type) || columnKeys.has(`statut_${type}` as FieldKey) || columnKeys.has(`priorite_${type}` as FieldKey) || columnKeys.has(`domaine_${type}` as FieldKey)) {
+            baseEntityType = type;
+            break;
+        }
+    }
+
+    if (!baseEntityType) { // If only secondary attributes like status are selected, default to activite
+      if (columns.some(c => c.key.includes('activite'))) {
+        baseEntityType = 'activite';
+      } else {
+         baseEntityType = columns[0].key; // Fallback to first selected column
+      }
+    }
+
+    switch(baseEntityType) {
+        case 'activite': baseEntities = activities; break;
+        case 'objectif': baseEntities = objectives; break;
+        case 'chantier': baseEntities = chantiers; break;
+        case 'orientation': baseEntities = orientations; break;
+        case 'mesure_iso': baseEntities = allIsoMeasures; break;
+        case 'processus': baseEntities = securityProcesses; break;
+        default: baseEntities = activities; baseEntityType = 'activite'; // Default case
+    }
+    
     const flatData: ProcessedRow[] = [];
-    const coveredObjectives = new Set<string>();
-    const coveredChantiers = new Set<string>();
-    const coveredOrientations = new Set<string>();
-    const coveredIsoMeasures = new Set<string>();
-    const coveredProcesses = new Set<string>();
 
-    activities.forEach(activity => {
-        if (activity.functionalProcessId) coveredProcesses.add(activity.functionalProcessId);
+    baseEntities.forEach(baseEntity => {
+        let rows: ProcessedRow[] = [];
         
-        const objectiveIds = activity.objectives.length > 0 ? activity.objectives : [null];
-        objectiveIds.forEach(objId => {
-            const objective = objId ? objectives.find(o => o.id === objId) : undefined;
-            if (objective) coveredObjectives.add(objective.id);
-            
-            let chantier: Chantier | undefined;
-            if (objective) {
-                const objCodeParts = objective.code.split('.');
-                if (objCodeParts.length >= 3) {
-                   const chantierCodeGuess = `${objCodeParts[0]}.${parseInt(objCodeParts[1])}.${parseInt(objCodeParts[2])}`;
-                   chantier = chantiers.find(c => c.code === chantierCodeGuess);
-                   if (chantier) coveredChantiers.add(chantier.id);
-                }
-            }
-
-            const orientationIds = new Set<string>();
-            if (activity.strategicOrientations) activity.strategicOrientations.forEach(id => orientationIds.add(id));
-            if (objective?.strategicOrientations) objective.strategicOrientations.forEach(id => orientationIds.add(id));
-            if (chantier) orientationIds.add(chantier.strategicOrientationId);
-
-            const finalOrientationIds = orientationIds.size > 0 ? Array.from(orientationIds) : [null];
-            
-            finalOrientationIds.forEach(orId => {
-                const orientation = orId ? orientations.find(o => o.id === orId) : undefined;
-                if (orientation) coveredOrientations.add(orientation.id);
-
-                const isoCodes = new Set<string>();
-                if(activity.isoMeasures) activity.isoMeasures.forEach(code => isoCodes.add(code));
-                if(objective?.mesures_iso) objective.mesures_iso.forEach(link => isoCodes.add(link.numero_mesure));
-
-                const finalIsoCodes = isoCodes.size > 0 ? Array.from(isoCodes) : [null];
-
-                finalIsoCodes.forEach(isoCode => {
-                    const mesure_iso = isoCode ? allIsoMeasures.find(m => m.code === isoCode) : undefined;
-                    if(mesure_iso) coveredIsoMeasures.add(mesure_iso.code);
-
-                    const processus = securityProcesses.find(p => p.id === activity.functionalProcessId);
-
-                    flatData.push({
-                        activite: activity,
-                        objectif: objective,
-                        chantier,
-                        orientation,
-                        mesure_iso,
-                        processus
-                    });
-                });
+        if (baseEntityType === 'activite') {
+            const activity = baseEntity as Activity;
+            rows.push({
+                activite: activity,
+                processus: dataMaps.processusMap.get(activity.functionalProcessId)
             });
-        });
-    });
+        } else if (baseEntityType === 'objectif') {
+            rows.push({ objectif: baseEntity as Objective });
+        } else if (baseEntityType === 'chantier') {
+            rows.push({ chantier: baseEntity as Chantier });
+        } else if (baseEntityType === 'orientation') {
+            rows.push({ orientation: baseEntity as StrategicOrientation });
+        } else if (baseEntityType === 'mesure_iso') {
+            rows.push({ mesure_iso: baseEntity as IsoMeasure });
+        } else if (baseEntityType === 'processus') {
+            rows.push({ processus: baseEntity as SecurityProcess });
+        }
 
-    // Add orphan entities with their relationships
-    objectives.forEach(objective => {
-        if (!coveredObjectives.has(objective.id)) {
-            const chantier = chantiers.find(c => objective.code.startsWith(c.code.substring(0, c.code.lastIndexOf('.') > -1 ? c.code.lastIndexOf('.') : c.code.length)));
-            const orientation = chantier ? orientations.find(o => o.id === chantier.strategicOrientationId) : (objective.strategicOrientations.length > 0 ? orientations.find(o => o.id === objective.strategicOrientations[0]) : undefined);
-
-            if (objective.mesures_iso && objective.mesures_iso.length > 0) {
-                objective.mesures_iso.forEach(isoLink => {
-                    const mesure_iso = allIsoMeasures.find(m => m.code === isoLink.numero_mesure);
-                    flatData.push({ objectif: objective, mesure_iso, chantier, orientation });
-                });
-            } else {
-                flatData.push({ objectif: objective, chantier, orientation });
+        // Expand relationships for each base row
+        const expandedRows: ProcessedRow[] = [];
+        rows.forEach(row => {
+            const toExpand = [row];
+            if (columnKeys.has('objectif') && row.activite && row.activite.objectives.length > 0) {
+                const newRows = row.activite.objectives.map(objId => ({ ...row, objectif: dataMaps.objectivesMap.get(objId) }));
+                toExpand.splice(0, 1, ...newRows);
             }
-        }
+            if (columnKeys.has('chantier') && toExpand.some(r => r.objectif)) {
+                const newRows = toExpand.flatMap(r => {
+                    if (r.objectif) {
+                        return { ...r, chantier: dataMaps.chantiersMap.get(r.objectif.chantierId) };
+                    }
+                    return r;
+                });
+                toExpand.splice(0, toExpand.length, ...newRows);
+            }
+            if (columnKeys.has('orientation') && toExpand.some(r => r.chantier || r.objectif || r.activite)) {
+                const newRows = toExpand.flatMap(r => {
+                    const orientationIds = new Set<string>();
+                    if (r.chantier) orientationIds.add(r.chantier.strategicOrientationId);
+                    if (r.objectif) r.objectif.strategicOrientations.forEach(id => orientationIds.add(id));
+                    if (r.activite) r.activite.strategicOrientations.forEach(id => orientationIds.add(id));
+
+                    if (orientationIds.size > 0) {
+                        return Array.from(orientationIds).map(id => ({ ...r, orientation: dataMaps.orientationsMap.get(id) }));
+                    }
+                    return r;
+                });
+                toExpand.splice(0, toExpand.length, ...newRows);
+            }
+             if (columnKeys.has('mesure_iso') && toExpand.some(r => r.activite || r.objectif)) {
+                const newRows = toExpand.flatMap(r => {
+                    const isoCodes = new Set<string>();
+                    if (r.activite) r.activite.isoMeasures.forEach(code => isoCodes.add(code));
+                    if (r.objectif?.mesures_iso) r.objectif.mesures_iso.forEach(link => isoCodes.add(link.numero_mesure));
+                    
+                    if (isoCodes.size > 0) {
+                        return Array.from(isoCodes).map(code => ({ ...r, mesure_iso: dataMaps.isoMeasuresMap.get(code) }));
+                    }
+                    return r;
+                });
+                toExpand.splice(0, toExpand.length, ...newRows);
+            }
+            expandedRows.push(...toExpand);
+        });
+
+        flatData.push(...expandedRows);
     });
 
-    chantiers.forEach(chantier => {
-        if (!coveredChantiers.has(chantier.id)) {
-             const orientation = orientations.find(o => o.id === chantier.strategicOrientationId);
-            flatData.push({ chantier, orientation });
-        }
-    });
-    
-    orientations.forEach(orientation => {
-        if (!coveredOrientations.has(orientation.id)) {
-            flatData.push({ orientation });
-        }
-    });
-
-    allIsoMeasures.forEach(mesure_iso => {
-        if (!coveredIsoMeasures.has(mesure_iso.id)) {
-            flatData.push({ mesure_iso });
-        }
-    });
-
-    securityProcesses.forEach(processus => {
-        if (!coveredProcesses.has(processus.id)) {
-            flatData.push({ processus });
-        }
-    });
-    
     return flatData;
-  }, [activities, objectives, chantiers, orientations, securityProcesses, allIsoMeasures]);
+
+  }, [columns, activities, objectives, chantiers, orientations, securityProcesses, allIsoMeasures, dataMaps]);
 
   const filteredData = useMemo(() => {
     if (Object.keys(filters).length === 0) return processedData;
     return processedData.filter(row => {
       return Object.entries(filters).every(([key, values]) => {
-        // FIX: `values` from `Object.entries` on a partially typed object can be inferred as `unknown`.
-        // We use a type guard to ensure it's an array before accessing array properties like `.length` and `.includes`.
         if (!values || !Array.isArray(values) || values.length === 0) return true;
         const field = AVAILABLE_FIELDS.find(f => f.key === key as FieldKey);
         if (!field) return true;
@@ -300,7 +310,6 @@ const DataExplorer: React.FC = () => {
   
   const handleFilterToggle = (field: Field, value: string) => {
     setFilters(prev => {
-      // FIX: Guard against 'unknown' type by ensuring 'current' is an array before using array methods.
       const current = prev[field.key];
       const currentAsArray = Array.isArray(current) ? current : [];
 

@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect, useMemo, useState } from 'react';
 import * as d3 from 'd3';
 import { useData } from '../contexts/DataContext';
@@ -55,18 +54,10 @@ const buildStrategicTreeData = (
     });
 
     const chantierNodes = new Map(chantiers.map(c => ([c.id, { id: `ch-${c.id}`, name: c.code, type: 'chantier', data: c, children: [] as D3Node[] }])));
-    const chantierCodeMap = new Map(chantiers.map(c => [c.code, c.id]));
 
     objectives.forEach(o => {
-        const objCodeParts = o.code.split('.');
-        if (objCodeParts.length >= 3) {
-            const chantierCodeGuess = `${objCodeParts[0]}.${parseInt(objCodeParts[1])}.${parseInt(objCodeParts[2])}`;
-            if (chantierCodeMap.has(chantierCodeGuess)) {
-                const chantierId = chantierCodeMap.get(chantierCodeGuess)!;
-                if (chantierNodes.has(chantierId) && objectiveNodes.has(o.id)) {
-                    chantierNodes.get(chantierId)!.children!.push(JSON.parse(JSON.stringify(objectiveNodes.get(o.id)!)));
-                }
-            }
+        if (o.chantierId && chantierNodes.has(o.chantierId) && objectiveNodes.has(o.id)) {
+            chantierNodes.get(o.chantierId)!.children!.push(JSON.parse(JSON.stringify(objectiveNodes.get(o.id)!)));
         }
     });
     
@@ -111,7 +102,7 @@ const buildIsoTreeData = (
 
     const objectiveMap = new Map(objectives.map(o => [o.id, o]));
     const orientationMap = new Map(orientations.map(o => [o.id, o]));
-    const chantierCodeMap = new Map(chantiers.map(c => [c.code, c]));
+    const chantierMap = new Map(chantiers.map(c => [c.id, c]));
 
     root.children = visibleMeasures.map(measure => {
         const isoNode: D3Node = {
@@ -165,18 +156,14 @@ const buildIsoTreeData = (
                         }
                     });
 
-                    const objCodeParts = objective.code.split('.');
-                    if (objCodeParts.length >= 3) {
-                        const chantierCodeGuess = `${objCodeParts[0]}.${parseInt(objCodeParts[1])}.${parseInt(objCodeParts[2])}`;
-                        const chantier = chantierCodeMap.get(chantierCodeGuess);
-                        if (chantier && !finalChildren.has(`ch-${chantier.id}`)) {
-                             finalChildren.set(`ch-${chantier.id}`, {
-                                id: `${objectiveNode.id}_ch-${chantier.id}`,
-                                name: chantier.code,
-                                type: 'chantier',
-                                data: chantier
-                            });
-                        }
+                    const chantier = chantierMap.get(objective.chantierId);
+                    if (chantier && !finalChildren.has(`ch-${chantier.id}`)) {
+                        finalChildren.set(`ch-${chantier.id}`, {
+                            id: `${objectiveNode.id}_ch-${chantier.id}`,
+                            name: chantier.code,
+                            type: 'chantier',
+                            data: chantier
+                        });
                     }
 
                     objectiveNode.children = Array.from(finalChildren.values());

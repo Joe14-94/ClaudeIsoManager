@@ -179,22 +179,16 @@ const GraphView: React.FC = () => {
                     allEdges.push({ id: `e-so-${c.strategicOrientationId}-ch-${c.id}`, source: `so-${c.strategicOrientationId}`, target: `ch-${c.id}`, type: 'smoothstep' });
                 }
             });
-            const chantierCodeMap = new Map(chantiers.map(ch => [ch.code, ch.id]));
 
             objectives.forEach(o => {
-                const objCodeParts = o.code.split('.');
                 let isLinked = false;
-                if (objCodeParts.length >= 3) {
-                    const chantierCodeGuess = `${objCodeParts[0]}.${parseInt(objCodeParts[1])}.${parseInt(objCodeParts[2])}`;
-                    if (chantierCodeMap.has(chantierCodeGuess)) {
-                        const parentChantierId = chantierCodeMap.get(chantierCodeGuess)!;
-                        const parentChantier = chantiers.find(c => c.id === parentChantierId);
-                        if (parentChantier && visibleOrientationIds.has(parentChantier.strategicOrientationId)) {
-                            isLinked = true;
-                            allEdges.push({ id: `e-ch-${parentChantierId}-obj-${o.id}`, source: `ch-${parentChantierId}`, target: `obj-${o.id}`, type: 'smoothstep' });
-                        }
-                    }
+                const parentChantier = chantiers.find(c => c.id === o.chantierId);
+
+                if (parentChantier && visibleOrientationIds.has(parentChantier.strategicOrientationId)) {
+                    isLinked = true;
+                    allEdges.push({ id: `e-ch-${o.chantierId}-obj-${o.id}`, source: `ch-${o.chantierId}`, target: `obj-${o.id}`, type: 'smoothstep' });
                 }
+                
                 if (o.strategicOrientations.some(soId => visibleOrientationIds.has(soId))) {
                     isLinked = true;
                     o.strategicOrientations.forEach(soId => {
@@ -203,6 +197,7 @@ const GraphView: React.FC = () => {
                         }
                     });
                 }
+
                  if(isLinked) {
                     allNodes.push({ id: `obj-${o.id}`, data: { label: `${o.code} - ${o.label}`, ...o }, position: { x: columnX.objectives, y: yCounters.objectives }, ...nodeDefaults, style: { ...nodeDefaults.style, ...nodeStyles.objectives }, type: 'objectives' });
                     yCounters.objectives += ySpacing.objectives;
@@ -282,21 +277,14 @@ const GraphView: React.FC = () => {
             });
             
             const relatedChantiers = new Map<string, Chantier>();
-            const chantierCodeMap = new Map(chantiers.map(ch => [ch.code, ch.id]));
             const relatedOrientations = new Map<string, StrategicOrientation>();
 
             relatedObjectives.forEach(o => {
-                const objCodeParts = o.code.split('.');
-                if (objCodeParts.length >= 3) {
-                    const chantierCodeGuess = `${objCodeParts[0]}.${parseInt(objCodeParts[1])}.${parseInt(objCodeParts[2])}`;
-                    if (chantierCodeMap.has(chantierCodeGuess)) {
-                        const chantierId = chantierCodeMap.get(chantierCodeGuess)!;
-                        const chantier = chantiers.find(c => c.id === chantierId);
-                        if (chantier && !relatedChantiers.has(chantier.id)) {
-                            relatedChantiers.set(chantier.id, chantier);
-                        }
-                    }
+                const chantier = chantiers.find(c => c.id === o.chantierId);
+                if (chantier && !relatedChantiers.has(chantier.id)) {
+                    relatedChantiers.set(chantier.id, chantier);
                 }
+                
                 o.strategicOrientations.forEach(soId => {
                     const orientation = orientations.find(or => or.id === soId);
                     if (orientation && !relatedOrientations.has(orientation.id)) {
@@ -311,15 +299,8 @@ const GraphView: React.FC = () => {
             });
             
             relatedObjectives.forEach(o => {
-                const objCodeParts = o.code.split('.');
-                if (objCodeParts.length >= 3) {
-                    const chantierCodeGuess = `${objCodeParts[0]}.${parseInt(objCodeParts[1])}.${parseInt(objCodeParts[2])}`;
-                    if (chantierCodeMap.has(chantierCodeGuess)) {
-                        const chantierId = chantierCodeMap.get(chantierCodeGuess)!;
-                        if(relatedChantiers.has(chantierId)) {
-                             allEdges.push({ id: `e-obj-${o.id}-ch-${chantierId}`, source: `obj-${o.id}`, target: `ch-${chantierId}`, type: 'smoothstep' });
-                        }
-                    }
+                if (o.chantierId && relatedChantiers.has(o.chantierId)) {
+                    allEdges.push({ id: `e-obj-${o.id}-ch-${o.chantierId}`, source: `obj-${o.id}`, target: `ch-${o.chantierId}`, type: 'smoothstep' });
                 }
             });
 

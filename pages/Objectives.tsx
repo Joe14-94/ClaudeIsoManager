@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useData } from '../contexts/DataContext';
-import { Objective, StrategicOrientation } from '../types';
+import { Objective, StrategicOrientation, Chantier } from '../types';
 import Card, { CardContent } from '../components/ui/Card';
 import Modal from '../components/ui/Modal';
-import { PlusCircle, Trash2, Edit, Target } from 'lucide-react';
+import { PlusCircle, Trash2, Edit, Target, Workflow } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import CustomMultiSelect from '../components/ui/CustomMultiSelect';
 import Tooltip from '../components/ui/Tooltip';
@@ -55,7 +55,7 @@ const ObjectiveDetails: React.FC<{
 };
 
 const Objectives: React.FC = () => {
-  const { objectives, setObjectives, orientations } = useData();
+  const { objectives, setObjectives, orientations, chantiers } = useData();
   const { userRole } = useAuth();
   const isReadOnly = userRole === 'readonly';
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -63,6 +63,7 @@ const Objectives: React.FC = () => {
   const [isEditing, setIsEditing] = useState(false);
   
   const orientationsMap = new Map<string, StrategicOrientation>(orientations.map(o => [o.id, o]));
+  const chantiersMap = new Map<string, Chantier>(chantiers.map(c => [c.id, c]));
 
   const handleOpenModal = (item?: Objective) => {
     if (item) { // View/edit existing
@@ -70,7 +71,7 @@ const Objectives: React.FC = () => {
       setIsEditing(false);
     } else { // New item
       if (isReadOnly) return;
-      setCurrentItem({ code: '', label: '', description: '', strategicOrientations: [] });
+      setCurrentItem({ code: '', label: '', description: '', strategicOrientations: [], chantierId: chantiers[0]?.id || '' });
       setIsEditing(true);
     }
     setIsModalOpen(true);
@@ -94,7 +95,19 @@ const Objectives: React.FC = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     if (currentItem) {
-      setCurrentItem({ ...currentItem, [e.target.name]: e.target.value });
+      const { name, value } = e.target;
+      const updatedItem = { ...currentItem, [name]: value };
+
+      if (name === 'chantierId') {
+        const selectedChantier = chantiers.find(c => c.id === value);
+        if (selectedChantier) {
+          updatedItem.strategicOrientations = [selectedChantier.strategicOrientationId];
+        } else {
+          updatedItem.strategicOrientations = [];
+        }
+      }
+
+      setCurrentItem(updatedItem);
     }
   };
 
@@ -106,8 +119,8 @@ const Objectives: React.FC = () => {
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
-    if (isReadOnly || !currentItem || !currentItem.code || !currentItem.label) {
-      if(!isReadOnly) alert("Le code et le libellé sont obligatoires.");
+    if (isReadOnly || !currentItem || !currentItem.code || !currentItem.label || !currentItem.chantierId) {
+      if(!isReadOnly) alert("Le code, le libellé et le chantier sont obligatoires.");
       return;
     }
 
@@ -153,61 +166,59 @@ const Objectives: React.FC = () => {
         {objectives
           .slice()
           .sort((a,b) => a.code.localeCompare(b.code, undefined, { numeric: true }))
-          .map((objective) => (
-          <Card 
-            key={objective.id} 
-            className="cursor-pointer hover:shadow-md transition-shadow duration-200"
-            onClick={() => handleOpenModal(objective)}
-          >
-            <CardContent className="p-4">
-               <div className="flex flex-col md:flex-row md:justify-between gap-4">
-                  <div className="flex-grow">
-                    <div className="flex items-center">
-                      <Target size={20} className="text-green-600 mr-3 flex-shrink-0" />
-                      <h3 className="font-semibold text-slate-900 text-base">
-                        <span className="font-mono text-blue-600">{objective.code}</span> - {objective.label}
-                      </h3>
-                    </div>
-                    <p className="text-sm text-slate-600 mt-2 md:pl-8 line-clamp-2">{objective.description || 'Aucune description fournie.'}</p>
-                  </div>
-                  
-                  <div className="flex-shrink-0 md:ml-6 flex flex-col md:items-end gap-4">
-                    {objective.strategicOrientations && objective.strategicOrientations.length > 0 && (
-                      <div>
-                          <h4 className="text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider">Orientations</h4>
-                          <div className="flex flex-wrap gap-1 justify-start md:justify-end">
-                            {objective.strategicOrientations.map(soId => {
-                                const orientation = orientationsMap.get(soId);
-                                return orientation ? (
-                                    <Tooltip key={soId} text={orientation.label}>
-                                      <span className="px-2 py-0.5 text-xs font-medium rounded-full border bg-purple-100 text-purple-800 border-purple-200">
-                                          {orientation.code}
+          .map((objective) => {
+            const chantier = chantiersMap.get(objective.chantierId);
+            return (
+              <Card 
+                key={objective.id} 
+                className="cursor-pointer hover:shadow-md transition-shadow duration-200"
+                onClick={() => handleOpenModal(objective)}
+              >
+                <CardContent className="p-4">
+                  <div className="flex flex-col md:flex-row md:justify-between gap-4">
+                      <div className="flex-grow">
+                        <div className="flex items-center">
+                          <Target size={20} className="text-green-600 mr-3 flex-shrink-0" />
+                          <h3 className="font-semibold text-slate-900 text-base">
+                            <span className="font-mono text-blue-600">{objective.code}</span> - {objective.label}
+                          </h3>
+                        </div>
+                        <p className="text-sm text-slate-600 mt-2 md:pl-8 line-clamp-2">{objective.description || 'Aucune description fournie.'}</p>
+                      </div>
+                      
+                      <div className="flex-shrink-0 md:ml-6 flex flex-col md:items-end gap-4">
+                        {chantier && (
+                          <div>
+                            <h4 className="text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider">Chantier</h4>
+                            <div className="flex flex-wrap gap-1 justify-start md:justify-end">
+                              <Tooltip text={chantier.label}>
+                                <span className="flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium rounded-full border bg-cyan-100 text-cyan-800 border-cyan-200">
+                                  <Workflow size={12} />
+                                  {chantier.code}
+                                </span>
+                              </Tooltip>
+                            </div>
+                          </div>
+                        )}
+                        {objective.mesures_iso && objective.mesures_iso.length > 0 && (
+                          <div>
+                              <h4 className="text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider">Mesures ISO</h4>
+                              <div className="flex flex-wrap gap-1 justify-start md:justify-end">
+                                {objective.mesures_iso.map((mesure, index) => (
+                                    <Tooltip key={index} text={mesure.titre}>
+                                      <span className="px-2 py-0.5 text-xs font-mono bg-red-100 text-red-700 rounded">
+                                          {mesure.numero_mesure}
                                       </span>
                                     </Tooltip>
-                                ) : null;
-                            })}
+                                ))}
+                              </div>
                           </div>
+                        )}
                       </div>
-                    )}
-                    {objective.mesures_iso && objective.mesures_iso.length > 0 && (
-                      <div>
-                          <h4 className="text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider">Mesures ISO</h4>
-                           <div className="flex flex-wrap gap-1 justify-start md:justify-end">
-                            {objective.mesures_iso.map((mesure, index) => (
-                                <Tooltip key={index} text={mesure.titre}>
-                                  <span className="px-2 py-0.5 text-xs font-mono bg-red-100 text-red-700 rounded">
-                                      {mesure.numero_mesure}
-                                  </span>
-                                </Tooltip>
-                            ))}
-                          </div>
-                      </div>
-                    )}
                   </div>
-               </div>
-            </CardContent>
-          </Card>
-        ))}
+                </CardContent>
+              </Card>
+          )})}
       </div>
 
        {isModalOpen && currentItem && (
@@ -240,18 +251,25 @@ const Objectives: React.FC = () => {
               <label htmlFor="description" className="block text-sm font-medium text-slate-700">Description</label>
               <textarea name="description" id="description" value={currentItem.description || ''} onChange={handleChange} rows={3} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" readOnly={isReadOnly || !isEditing}/>
             </div>
+             <div>
+              <label htmlFor="chantierId" className="block text-sm font-medium text-slate-700">Chantier</label>
+              <select name="chantierId" id="chantierId" value={currentItem.chantierId} onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" required disabled={isReadOnly || !isEditing}>
+                <option value="">Sélectionner un chantier</option>
+                {chantiers.map(c => <option key={c.id} value={c.id}>{c.code} - {c.label}</option>)}
+              </select>
+            </div>
             <div>
               <label htmlFor="targetDate" className="block text-sm font-medium text-slate-700">Date cible</label>
               <input type="date" name="targetDate" id="targetDate" value={currentItem.targetDate ? currentItem.targetDate.split('T')[0] : ''} onChange={handleChange} className="mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm" readOnly={isReadOnly || !isEditing}/>
             </div>
             
             <CustomMultiSelect
-                label="Orientations stratégiques (maintenez Ctrl/Cmd pour sélectionner)"
+                label="Orientations stratégiques (lecture seule, défini par le chantier)"
                 name="strategicOrientations"
                 options={orientations.map(o => ({ value: o.id, label: `${o.code} - ${o.label}`}))}
                 selectedValues={currentItem.strategicOrientations || []}
                 onChange={handleCustomMultiSelectChange}
-                disabled={isReadOnly || !isEditing}
+                disabled={true}
                 heightClass="h-24"
             />
             

@@ -2,11 +2,11 @@
 
 import React, { useState } from 'react';
 import Card, { CardContent, CardHeader, CardTitle } from '../components/ui/Card';
-import { Upload, HelpCircle, DatabaseBackup, Info, AlertTriangle, Trash2 } from 'lucide-react';
+import { Upload, HelpCircle, DatabaseBackup, Info, AlertTriangle, Trash2, Workflow } from 'lucide-react';
 import { useData } from '../contexts/DataContext';
 import { useAuth } from '../contexts/AuthContext';
 import Tooltip from '../components/ui/Tooltip';
-import { Activity, Chantier, Objective, StrategicOrientation, Resource } from '../types';
+import { Activity, Chantier, Objective, StrategicOrientation, Resource, SecurityProcess } from '../types';
 
 const DataManagement: React.FC = () => {
   const { 
@@ -14,7 +14,8 @@ const DataManagement: React.FC = () => {
     objectives, setObjectives,
     orientations, setOrientations,
     resources, setResources,
-    chantiers, setChantiers
+    chantiers, setChantiers,
+    securityProcesses, setSecurityProcesses
   } = useData();
   const { userRole } = useAuth();
   const isReadOnly = userRole === 'readonly';
@@ -33,7 +34,8 @@ const DataManagement: React.FC = () => {
       objectives,
       orientations,
       resources,
-      chantiers
+      chantiers,
+      securityProcesses
     };
     const blob = new Blob([JSON.stringify(allData, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -81,6 +83,10 @@ const DataManagement: React.FC = () => {
                 setChantiers(content as Chantier[]);
                 showFeedback('success', 'Chantiers importés avec succès.');
                 break;
+            case 'Processus de sécurité':
+                setSecurityProcesses(content as SecurityProcess[]);
+                showFeedback('success', 'Processus de sécurité importés avec succès.');
+                break;
             case 'Sauvegarde Complète':
                 let importedCount = 0;
                 if (Array.isArray(content.activities)) { setActivities(content.activities); importedCount++; }
@@ -88,9 +94,10 @@ const DataManagement: React.FC = () => {
                 if (Array.isArray(content.orientations)) { setOrientations(content.orientations); importedCount++; }
                 if (Array.isArray(content.resources)) { setResources(content.resources); importedCount++; }
                 if (Array.isArray(content.chantiers)) { setChantiers(content.chantiers); importedCount++; }
+                if (Array.isArray(content.securityProcesses)) { setSecurityProcesses(content.securityProcesses); importedCount++; }
                 
                 if (importedCount > 0) {
-                    showFeedback('success', 'Sauvegarde restaurée avec succès.');
+                    showFeedback('success', `Sauvegarde restaurée avec succès. ${importedCount} type(s) de données importé(s).`);
                 } else {
                     showFeedback('error', 'Fichier de sauvegarde invalide. La structure des données est incorrecte ou des données sont manquantes.');
                 }
@@ -149,7 +156,7 @@ const DataManagement: React.FC = () => {
       <Card>
         <CardHeader className="flex items-center justify-between">
           <CardTitle>Sauvegarde et restauration</CardTitle>
-           <Tooltip text="La sauvegarde complète inclut : activités, objectifs, orientations, chantiers et ressources.">
+           <Tooltip text="La sauvegarde complète inclut : activités, objectifs, orientations, chantiers, ressources et processus de sécurité.">
             <Info size={18} className="text-slate-500 cursor-help" />
           </Tooltip>
         </CardHeader>
@@ -174,7 +181,7 @@ const DataManagement: React.FC = () => {
       <Card>
         <CardHeader>
           <CardTitle>Import de données</CardTitle>
-          <p className="text-sm text-slate-500 mt-1">Importez des listes spécifiques au format JSON.</p>
+          <p className="text-sm text-slate-500 mt-1">Importez des listes spécifiques au format JSON. L'importation remplacera les données existantes pour le type sélectionné.</p>
         </CardHeader>
         <CardContent className="space-y-4">
           
@@ -223,6 +230,18 @@ const DataManagement: React.FC = () => {
             <label className={`${buttonClasses} text-sm w-fit ${isReadOnly ? disabledClasses : 'bg-green-600 text-white hover:bg-green-700 cursor-pointer'}`}>
               <Upload size={16} className="mr-2" /> Importer
               <input type="file" className="hidden" accept=".json" onChange={(e) => handleFileImport(e, 'Activités')} disabled={isReadOnly}/>
+            </label>
+          </div>
+          
+          <div className="p-4 border rounded-lg">
+            <h3 className="font-semibold">Importer des processus de sécurité</h3>
+            <div className="flex items-center text-sm text-slate-500 mt-1 mb-2">
+              <HelpCircle size={16} className="mr-2"/>
+              <span>Le fichier JSON doit être un tableau d'objets `SecurityProcess`.</span>
+            </div>
+            <label className={`${buttonClasses} text-sm w-fit ${isReadOnly ? disabledClasses : 'bg-green-600 text-white hover:bg-green-700 cursor-pointer'}`}>
+              <Upload size={16} className="mr-2" /> Importer
+              <input type="file" className="hidden" accept=".json" onChange={(e) => handleFileImport(e, 'Processus de sécurité')} disabled={isReadOnly}/>
             </label>
           </div>
 

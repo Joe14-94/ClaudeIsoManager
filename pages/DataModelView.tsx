@@ -63,6 +63,7 @@ const dataModelEntities = {
       { name: 'id', type: 'string' },
       { name: 'code', type: 'string' },
       { name: 'label', type: 'string' },
+      { name: 'chantierId', type: 'string' },
       { name: 'strategicOrientations', type: 'string[]' },
       { name: 'mesures_iso', type: 'IsoLink[]' },
     ],
@@ -173,7 +174,6 @@ const edgeDefaults = {
 
 const nmMarker = { type: MarkerType.ArrowClosed };
 const n1Marker = { type: MarkerType.ArrowClosed };
-const implicitMarker = { type: MarkerType.ArrowClosed };
 
 
 const initialEdges: Edge[] = [
@@ -186,13 +186,13 @@ const initialEdges: Edge[] = [
   { id: 'e-chantier-orientation', source: 'Chantier', target: 'StrategicOrientation', label: 'strategicOrientationId [n-1]', ...edgeDefaults, className: 'n1-edge', markerEnd: n1Marker },
   { id: 'e-objective-iso', source: 'Objective', target: 'IsoMeasure', label: 'mesures_iso [n-m]', ...edgeDefaults, className: 'nm-edge', markerEnd: nmMarker },
   {
-    id: 'e-chantier-objective',
-    source: 'Chantier',
-    target: 'Objective',
-    label: 'implicite (via code)',
+    id: 'e-objective-chantier',
+    source: 'Objective',
+    target: 'Chantier',
+    label: 'chantierId [n-1]',
     ...edgeDefaults,
-    className: 'implicit-edge',
-    markerEnd: implicitMarker,
+    className: 'n1-edge',
+    markerEnd: n1Marker,
   },
 ];
 

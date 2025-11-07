@@ -93,6 +93,7 @@ export interface Objective {
   label: string;
   description?: string;
   targetDate?: DateTime;
+  chantierId: string; // Lien direct vers le chantier parent
   strategicOrientations: string[]; // Array of IDs
   createdAt: DateTime;
   

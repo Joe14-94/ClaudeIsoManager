@@ -72,25 +72,17 @@
     "color": "#9333ea"
   },
   {
+    "id": "so-6.2",
+    "code": "6.2",
+    "label": "Sensibiliser et acculturer chaque acteur du réseau à la cybersécurité de façon adaptée",
+    "description": "",
+    "createdAt": "2025-11-01T10:00:00Z",
+    "color": "#9333ea"
+  },
+  {
     "id": "so-3.1",
     "code": "3.1",
     "label": "Assurer un niveau de protection efficace tout au long du cycle de vie des composants des infrastructures et des socles",
-    "description": "",
-    "createdAt": "2025-11-01T10:00:00Z",
-    "color": "#9333ea"
-  },
-  {
-    "id": "so-3.10",
-    "code": "3.10",
-    "label": "Accroître la sécurité physique des accès aux sites informatiques",
-    "description": "",
-    "createdAt": "2025-11-01T10:00:00Z",
-    "color": "#9333ea"
-  },
-  {
-    "id": "so-3.11",
-    "code": "3.11",
-    "label": "Gérer de manière stricte les accès et actions des comptes administrateurs",
     "description": "",
     "createdAt": "2025-11-01T10:00:00Z",
     "color": "#9333ea"
@@ -160,6 +152,22 @@
     "color": "#9333ea"
   },
   {
+    "id": "so-3.10",
+    "code": "3.10",
+    "label": "Accroître la sécurité physique des accès aux sites informatiques",
+    "description": "",
+    "createdAt": "2025-11-01T10:00:00Z",
+    "color": "#9333ea"
+  },
+  {
+    "id": "so-3.11",
+    "code": "3.11",
+    "label": "Gérer de manière stricte les accès et actions des comptes administrateurs",
+    "description": "",
+    "createdAt": "2025-11-01T10:00:00Z",
+    "color": "#9333ea"
+  },
+  {
     "id": "so-4.1",
     "code": "4.1",
     "label": "Définir le cadre de la détection",
@@ -211,14 +219,6 @@
     "id": "so-5.0",
     "code": "5.0",
     "label": "Assurer la résilience et la continuité des activités",
-    "description": "",
-    "createdAt": "2025-11-01T10:00:00Z",
-    "color": "#9333ea"
-  },
-  {
-    "id": "so-6.2",
-    "code": "6.2",
-    "label": "Sensibiliser et acculturer chaque acteur du réseau à la cybersécurité de façon adaptée",
     "description": "",
     "createdAt": "2025-11-01T10:00:00Z",
     "color": "#9333ea"

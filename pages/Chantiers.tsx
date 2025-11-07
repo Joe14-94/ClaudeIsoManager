@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { useData } from '../contexts/DataContext';
 import { Chantier, StrategicOrientation, Objective } from '../types';
@@ -80,13 +79,8 @@ const Chantiers: React.FC = () => {
     }
   };
 
-  const getLinkedObjectivesCount = (chantierCode: string): number => {
-    return objectives.filter(o => {
-        const objCodeParts = o.code.split('.');
-        if (objCodeParts.length < 3) return false;
-        const chantierCodeGuess = `${objCodeParts[0]}.${parseInt(objCodeParts[1])}.${parseInt(objCodeParts[2])}`;
-        return chantierCodeGuess === chantierCode;
-    }).length;
+  const getLinkedObjectivesCount = (chantierId: string): number => {
+    return objectives.filter(o => o.chantierId === chantierId).length;
   };
 
   return (
@@ -110,7 +104,7 @@ const Chantiers: React.FC = () => {
           .sort((a,b) => a.code.localeCompare(b.code, undefined, { numeric: true }))
           .map((chantier) => {
           const orientation = orientationsMap.get(chantier.strategicOrientationId);
-          const linkedObjectivesCount = getLinkedObjectivesCount(chantier.code);
+          const linkedObjectivesCount = getLinkedObjectivesCount(chantier.id);
 
           return (
             <Card key={chantier.id} className="cursor-pointer hover:shadow-md transition-shadow duration-200" onClick={() => handleOpenModal(chantier)}>
