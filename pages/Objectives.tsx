@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useData } from '../contexts/DataContext';
 import { Objective, StrategicOrientation, Chantier } from '../types';
 import Card, { CardContent } from '../components/ui/Card';
 import Modal from '../components/ui/Modal';
-import { PlusCircle, Trash2, Edit, Target, Workflow } from 'lucide-react';
+import { PlusCircle, Trash2, Edit, Target, Workflow, FilterX, ShieldCheck, Search } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import CustomMultiSelect from '../components/ui/CustomMultiSelect';
 import Tooltip from '../components/ui/Tooltip';
@@ -61,9 +62,35 @@ const Objectives: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentItem, setCurrentItem] = useState<Partial<Objective> | null>(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
   
-  const orientationsMap = new Map<string, StrategicOrientation>(orientations.map(o => [o.id, o]));
-  const chantiersMap = new Map<string, Chantier>(chantiers.map(c => [c.id, c]));
+  const location = useLocation();
+  const navigate = useNavigate();
+  const orientationFilter = location.state?.orientationFilter;
+  const chantierFilter = location.state?.chantierFilter;
+
+  const orientationsMap = useMemo(() => new Map<string, StrategicOrientation>(orientations.map(o => [o.id, o])), [orientations]);
+  const chantiersMap = useMemo(() => new Map<string, Chantier>(chantiers.map(c => [c.id, c])), [chantiers]);
+
+  const filteredObjectives = useMemo(() => {
+    let objectivesToFilter = objectives;
+    if (chantierFilter) {
+      objectivesToFilter = objectivesToFilter.filter(o => o.chantierId === chantierFilter);
+    } else if (orientationFilter) {
+      objectivesToFilter = objectivesToFilter.filter(o => o.strategicOrientations.includes(orientationFilter));
+    }
+
+    if (!searchTerm) {
+      return objectivesToFilter;
+    }
+
+    const lowercasedTerm = searchTerm.toLowerCase();
+    return objectivesToFilter.filter(objective =>
+      (objective.code && objective.code.toLowerCase().includes(lowercasedTerm)) ||
+      (objective.label && objective.label.toLowerCase().includes(lowercasedTerm)) ||
+      (objective.description && objective.description.toLowerCase().includes(lowercasedTerm))
+    );
+  }, [objectives, orientationFilter, chantierFilter, searchTerm]);
 
   const handleOpenModal = (item?: Objective) => {
     if (item) { // View/edit existing
@@ -145,80 +172,133 @@ const Objectives: React.FC = () => {
       handleCloseModal();
     }
   };
+  
+  const navigateTo = (e: React.MouseEvent, path: string, state: object) => {
+    e.stopPropagation();
+    navigate(path, { state });
+  };
 
+  const resetFilter = () => {
+    navigate(location.pathname, { replace: true });
+  }
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center flex-wrap gap-4">
         <h1 className="text-3xl font-bold text-slate-800">Objectifs</h1>
-        {!isReadOnly && (
-          <button onClick={() => handleOpenModal()} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-            <PlusCircle size={20} />
-            <span>Nouvel objectif</span>
-          </button>
-        )}
+        <div className="flex items-center gap-2">
+           <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                <input
+                    type="text"
+                    placeholder="Rechercher..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full sm:w-64 pl-10 pr-4 py-2 border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+            </div>
+            {!isReadOnly && (
+              <button onClick={() => handleOpenModal()} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                <PlusCircle size={20} />
+                <span>Nouvel objectif</span>
+              </button>
+            )}
+        </div>
       </div>
        <p className="text-slate-600">
         Les objectifs de la stratégie cybersécurité. Cliquez sur un objectif pour le modifier.
       </p>
+
+      {chantierFilter && (
+        <div className="bg-blue-100 border-l-4 border-blue-500 text-blue-800 p-4 rounded-r-lg flex items-center justify-between">
+          <p className="font-medium text-sm">
+            Filtré par le chantier : <span className="font-bold">{chantiersMap.get(chantierFilter)?.code}</span>
+          </p>
+          <button onClick={resetFilter} className="flex items-center gap-2 text-sm font-semibold hover:bg-blue-200 p-2 rounded-md">
+            <FilterX size={16}/>
+            Réinitialiser
+          </button>
+        </div>
+      )}
+
+      {orientationFilter && !chantierFilter && (
+        <div className="bg-blue-100 border-l-4 border-blue-500 text-blue-800 p-4 rounded-r-lg flex items-center justify-between">
+          <p className="font-medium text-sm">
+            Filtré par l'orientation stratégique : <span className="font-bold">{orientationsMap.get(orientationFilter)?.code}</span>
+          </p>
+          <button onClick={resetFilter} className="flex items-center gap-2 text-sm font-semibold hover:bg-blue-200 p-2 rounded-md">
+            <FilterX size={16}/>
+            Réinitialiser
+          </button>
+        </div>
+      )}
       
       <div className="space-y-4">
-        {objectives
-          .slice()
-          .sort((a,b) => a.code.localeCompare(b.code, undefined, { numeric: true }))
-          .map((objective) => {
-            const chantier = chantiersMap.get(objective.chantierId);
-            return (
-              <Card 
-                key={objective.id} 
-                className="cursor-pointer hover:shadow-md transition-shadow duration-200"
-                onClick={() => handleOpenModal(objective)}
-              >
-                <CardContent className="p-4">
-                  <div className="flex flex-col md:flex-row md:justify-between gap-4">
-                      <div className="flex-grow">
-                        <div className="flex items-center">
-                          <Target size={20} className="text-green-600 mr-3 flex-shrink-0" />
-                          <h3 className="font-semibold text-slate-900 text-base">
-                            <span className="font-mono text-blue-600">{objective.code}</span> - {objective.label}
-                          </h3>
+        {filteredObjectives.length > 0 ? (
+          filteredObjectives
+            .slice()
+            .sort((a,b) => a.code.localeCompare(b.code, undefined, { numeric: true }))
+            .map((objective) => {
+              const chantier = chantiersMap.get(objective.chantierId);
+              return (
+                <Card 
+                  key={objective.id} 
+                  className="cursor-pointer hover:shadow-md transition-shadow duration-200"
+                  onClick={() => handleOpenModal(objective)}
+                >
+                  <CardContent className="p-4">
+                    <div className="flex flex-col md:flex-row md:justify-between gap-4">
+                        <div className="flex-grow">
+                          <div className="flex items-center">
+                            <Target size={20} className="text-green-600 mr-3 flex-shrink-0" />
+                            <h3 className="font-semibold text-slate-900 text-base">
+                              <span className="font-mono text-blue-600">{objective.code}</span> - {objective.label}
+                            </h3>
+                          </div>
+                          <p className="text-sm text-slate-600 mt-2 md:pl-8 line-clamp-2">{objective.description || 'Aucune description fournie.'}</p>
                         </div>
-                        <p className="text-sm text-slate-600 mt-2 md:pl-8 line-clamp-2">{objective.description || 'Aucune description fournie.'}</p>
-                      </div>
-                      
-                      <div className="flex-shrink-0 md:ml-6 flex flex-col md:items-end gap-4">
-                        {chantier && (
-                          <div>
-                            <h4 className="text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider">Chantier</h4>
-                            <div className="flex flex-wrap gap-1 justify-start md:justify-end">
-                              <Tooltip text={chantier.label}>
-                                <span className="flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium rounded-full border bg-cyan-100 text-cyan-800 border-cyan-200">
-                                  <Workflow size={12} />
-                                  {chantier.code}
-                                </span>
-                              </Tooltip>
-                            </div>
-                          </div>
-                        )}
-                        {objective.mesures_iso && objective.mesures_iso.length > 0 && (
-                          <div>
-                              <h4 className="text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider">Mesures ISO</h4>
+                        
+                        <div className="flex-shrink-0 md:ml-6 flex flex-col md:items-end gap-4">
+                          {chantier && (
+                            <div>
+                              <h4 className="text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider">Chantier</h4>
                               <div className="flex flex-wrap gap-1 justify-start md:justify-end">
-                                {objective.mesures_iso.map((mesure, index) => (
-                                    <Tooltip key={index} text={mesure.titre}>
-                                      <span className="px-2 py-0.5 text-xs font-mono bg-red-100 text-red-700 rounded">
-                                          {mesure.numero_mesure}
-                                      </span>
-                                    </Tooltip>
-                                ))}
+                                <Tooltip text={chantier.label}>
+                                  <button onClick={(e) => navigateTo(e, '/chantiers', { openChantier: chantier.id })} className="flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium rounded-full border bg-cyan-100 text-cyan-800 border-cyan-200 hover:bg-cyan-200 hover:border-cyan-300 transition-colors">
+                                    <Workflow size={12} />
+                                    {chantier.code}
+                                  </button>
+                                </Tooltip>
                               </div>
-                          </div>
-                        )}
-                      </div>
-                  </div>
-                </CardContent>
-              </Card>
-          )})}
+                            </div>
+                          )}
+                          {objective.mesures_iso && objective.mesures_iso.length > 0 && (
+                            <div>
+                                <h4 className="text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider">Mesures ISO</h4>
+                                <div className="flex flex-wrap gap-1 justify-start md:justify-end">
+                                  {objective.mesures_iso.map((mesure, index) => (
+                                      <Tooltip key={index} text={mesure.titre}>
+                                        <button onClick={(e) => navigateTo(e, '/iso27002', { openMeasure: mesure.numero_mesure })} className="flex items-center gap-1.5 px-2 py-0.5 text-xs font-mono rounded-full border bg-red-100 text-red-800 border-red-200 hover:bg-red-200 hover:border-red-300 transition-colors">
+                                            <ShieldCheck size={12} />
+                                            {mesure.numero_mesure}
+                                        </button>
+                                      </Tooltip>
+                                  ))}
+                                </div>
+                            </div>
+                          )}
+                        </div>
+                    </div>
+                  </CardContent>
+                </Card>
+            )})
+        ) : (
+          <Card>
+              <CardContent className="text-center text-slate-500 py-16">
+                  <p className="font-semibold">Aucun objectif ne correspond à vos critères de recherche.</p>
+              </CardContent>
+          </Card>
+        )}
       </div>
 
        {isModalOpen && currentItem && (

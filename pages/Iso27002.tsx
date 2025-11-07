@@ -6,7 +6,7 @@ import { ISO_MEASURES_DATA, CHAPTER_COLORS } from '../constants';
 import { IsoChapter, IsoMeasure, IsoMeasureDetails } from '../types';
 import Card, { CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import Modal from '../components/ui/Modal';
-import { SlidersHorizontal } from 'lucide-react';
+import { SlidersHorizontal, Search } from 'lucide-react';
 import { useData } from '../contexts/DataContext';
 
 const MeasureDetails: React.FC<{ measure: IsoMeasure }> = ({ measure }) => {
@@ -71,6 +71,7 @@ const Iso27002: React.FC = () => {
   const [selectedMeasure, setSelectedMeasure] = useState<IsoMeasure | null>(null);
   const [showFilters, setShowFilters] = useState(false);
   const [filterByCoverage, setFilterByCoverage] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const allMeasures: IsoMeasure[] = useMemo(() => ISO_MEASURES_DATA.map(m => ({ ...m, id: m.code, details: (m as any).details })), []);
 
@@ -87,6 +88,7 @@ const Iso27002: React.FC = () => {
     if (locationState?.filter === 'covered') {
         setFilterByCoverage(true);
         setShowFilters(false);
+        setSearchTerm(''); // Clear search when applying coverage filter
         window.history.replaceState({}, document.title)
     }
   }, [locationState, allMeasures]);
@@ -141,9 +143,31 @@ const Iso27002: React.FC = () => {
   const coveredMeasuresCodes = useMemo(() => new Set(activities.flatMap(a => a.isoMeasures)), [activities]);
 
   const filteredMeasures = useMemo(() => {
-    const isAnyDetailFilterActive = Object.values(activeFilters).some(arr => (arr as string[]).length > 0);
-
     let measures = allMeasures;
+
+    if (searchTerm) {
+        const lowercasedTerm = searchTerm.toLowerCase();
+        return measures.filter(measure => {
+            const fullText = [
+                measure.code,
+                measure.title,
+                measure.description,
+                measure.details?.measure,
+                measure.details?.objective,
+                measure.details?.recommendations,
+                measure.details?.extraInfo,
+                measure.details?.type.join(' '),
+                measure.details?.properties.join(' '),
+                measure.details?.concepts.join(' '),
+                measure.details?.processes.join(' '),
+                measure.details?.functionalProcess,
+                measure.details?.domains.join(' '),
+            ].filter(Boolean).join(' ').toLowerCase();
+            return fullText.includes(lowercasedTerm);
+        });
+    }
+
+    const isAnyDetailFilterActive = Object.values(activeFilters).some(arr => (arr as string[]).length > 0);
 
     if (filterByCoverage) {
       measures = measures.filter(measure => coveredMeasuresCodes.has(measure.code));
@@ -171,7 +195,7 @@ const Iso27002: React.FC = () => {
             return selectedValues.includes(measureValues as string);
         });
     });
-  }, [allMeasures, activeFilters, filterByCoverage, coveredMeasuresCodes]);
+  }, [allMeasures, activeFilters, filterByCoverage, coveredMeasuresCodes, searchTerm]);
 
   const filterCounts = useMemo(() => {
     const counts: Record<string, Record<string, number>> = {};
@@ -197,7 +221,8 @@ const Iso27002: React.FC = () => {
   }, [filteredMeasures, filterOptions]);
 
   const handleFilterChange = (category: FilterableDetailKey, value: string) => {
-    setFilterByCoverage(false); // Disable coverage filter if detail filters are used
+    setSearchTerm(''); // Clear search when applying detail filters
+    setFilterByCoverage(false); 
     setActiveFilters(prev => {
         const currentCategoryFilters = prev[category] || [];
         const newCategoryFilters = currentCategoryFilters.includes(value)
@@ -210,7 +235,19 @@ const Iso27002: React.FC = () => {
     });
   };
 
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const term = e.target.value;
+    setSearchTerm(term);
+    if (term) {
+        // Reset other filters when searching
+        setFilterByCoverage(false);
+        setActiveFilters({ type: [], properties: [], concepts: [], processes: [], functionalProcess: [], domains: [] });
+        setShowFilters(false);
+    }
+  };
+
   const resetFilters = () => {
+      setSearchTerm('');
       setFilterByCoverage(false);
       setActiveFilters({
         type: [],
@@ -247,16 +284,28 @@ const Iso27002: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center flex-wrap gap-4">
         <h1 className="text-3xl font-bold text-slate-800">Référentiel ISO 27002:2022</h1>
-        <button 
-          onClick={() => { setShowFilters(!showFilters); setFilterByCoverage(false); }} 
-          className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-100 transition-colors shadow-sm"
-          aria-expanded={showFilters}
-        >
-          <SlidersHorizontal size={18} />
-          <span>Filtrer</span>
-        </button>
+         <div className="flex items-center gap-2">
+            <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                <input
+                    type="text"
+                    placeholder="Recherche plein texte..."
+                    value={searchTerm}
+                    onChange={handleSearchChange}
+                    className="w-full sm:w-64 pl-10 pr-4 py-2 border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+            </div>
+            <button 
+                onClick={() => { setShowFilters(!showFilters); setSearchTerm(''); }} 
+                className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-100 transition-colors shadow-sm"
+                aria-expanded={showFilters}
+            >
+                <SlidersHorizontal size={18} />
+                <span>Filtrer</span>
+            </button>
+        </div>
       </div>
       <p className="text-slate-600">
         Explorez les 93 mesures de sécurité de l'information, organisées en 4 chapitres. Cliquez sur une mesure pour voir le détail.
@@ -311,9 +360,13 @@ const Iso27002: React.FC = () => {
       )}
 
       <div className="text-sm text-slate-500 font-medium">
-        {totalFilteredMeasures} sur {allMeasures.length} mesure(s) affichée(s).
-        {filterByCoverage && <span className="ml-2 font-semibold text-blue-600">(Filtre "mesures couvertes" actif)</span>}
+        {searchTerm 
+            ? `${totalFilteredMeasures} mesure(s) trouvée(s) pour "${searchTerm}".`
+            : `${totalFilteredMeasures} sur ${allMeasures.length} mesure(s) affichée(s).`
+        }
+        {filterByCoverage && !searchTerm && <span className="ml-2 font-semibold text-blue-600">(Filtre "mesures couvertes" actif)</span>}
       </div>
+
 
       {totalFilteredMeasures > 0 ? (
         Object.entries(measuresByChapter).map(([chapter, measures]) => (
@@ -340,7 +393,12 @@ const Iso27002: React.FC = () => {
       ) : (
         <Card>
             <CardContent className="text-center text-slate-500 py-16">
-                <p className="font-semibold">Aucune mesure ne correspond aux filtres sélectionnés.</p>
+                <p className="font-semibold">
+                  {searchTerm 
+                    ? `Aucune mesure ne correspond à votre recherche "${searchTerm}".`
+                    : "Aucune mesure ne correspond aux filtres sélectionnés."
+                  }
+                </p>
                 <p className="text-sm mt-1">Essayez d'ajuster ou de réinitialiser vos filtres.</p>
             </CardContent>
         </Card>

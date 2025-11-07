@@ -16,14 +16,27 @@ const Tooltip: React.FC<TooltipProps> = ({ children, text }) => {
       const tooltip = tooltipRef.current;
       const target = targetRef.current;
       const targetRect = target.getBoundingClientRect();
+      const viewportWidth = window.innerWidth;
       
-      // Position tooltip above the target
-      tooltip.style.left = `${targetRect.left + targetRect.width / 2 - tooltip.offsetWidth / 2}px`;
-      tooltip.style.top = `${targetRect.top - tooltip.offsetHeight - 8}px`;
+      // Position tooltip above the target initially
+      let left = targetRect.left + targetRect.width / 2 - tooltip.offsetWidth / 2;
+      let top = targetRect.top - tooltip.offsetHeight - 8;
+      
+      tooltip.style.left = `${left}px`;
+      tooltip.style.top = `${top}px`;
 
-      // Adjust if it overflows
-      if (tooltip.getBoundingClientRect().top < 0) {
+      const tooltipRect = tooltip.getBoundingClientRect();
+      
+      // Adjust if it overflows vertically
+      if (tooltipRect.top < 0) {
         tooltip.style.top = `${targetRect.bottom + 8}px`;
+      }
+      
+      // Adjust if it overflows horizontally
+      if (tooltipRect.right > viewportWidth) {
+        tooltip.style.left = `${viewportWidth - tooltip.offsetWidth - 8}px`; // Align to the right edge with padding
+      } else if (tooltipRect.left < 0) {
+        tooltip.style.left = `8px`; // Align to the left edge with padding
       }
     }
   }, [isVisible, text]);

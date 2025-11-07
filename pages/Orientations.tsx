@@ -1,11 +1,12 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useData } from '../contexts/DataContext';
 import { StrategicOrientation, Chantier, Objective } from '../types';
 import Card, { CardContent } from '../components/ui/Card';
 import Modal from '../components/ui/Modal';
-import { PlusCircle, Trash2, Edit, TrendingUp, Workflow, Target } from 'lucide-react';
+import { PlusCircle, Trash2, Edit, TrendingUp, Workflow, Target, Search } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import Tooltip from '../components/ui/Tooltip';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 const Orientations: React.FC = () => {
   const { orientations, setOrientations, chantiers, objectives } = useData();
@@ -14,6 +15,38 @@ const Orientations: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentItem, setCurrentItem] = useState<Partial<StrategicOrientation> | null>(null);
   const [isEditing, setIsEditing] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const locationState = location.state as any;
+  const [searchTerm, setSearchTerm] = useState('');
+
+  useEffect(() => {
+    const orientationIdToOpen = locationState?.openOrientation;
+    if (orientationIdToOpen) {
+      const orientationToOpen = orientations.find(o => o.id === orientationIdToOpen);
+      if (orientationToOpen) {
+        handleOpenModal(orientationToOpen);
+        // Clear state to prevent modal from re-opening on navigation
+        window.history.replaceState({}, document.title)
+      }
+    }
+  }, [locationState, orientations]);
+
+  const filteredOrientations = useMemo(() => {
+    return orientations
+      .filter(orientation => {
+        if (!searchTerm) return true;
+        const lowercasedTerm = searchTerm.toLowerCase();
+        return (
+          orientation.code.toLowerCase().includes(lowercasedTerm) ||
+          orientation.label.toLowerCase().includes(lowercasedTerm) ||
+          (orientation.description && orientation.description.toLowerCase().includes(lowercasedTerm))
+        );
+      })
+      .slice()
+      .sort((a, b) => a.code.localeCompare(b.code, undefined, { numeric: true }));
+  }, [orientations, searchTerm]);
+
 
   const handleOpenModal = (item?: StrategicOrientation) => {
     if (item) { // View/edit existing
@@ -78,27 +111,42 @@ const Orientations: React.FC = () => {
     }
   };
 
+  const navigateTo = (e: React.MouseEvent, path: string, state: object) => {
+    e.stopPropagation();
+    navigate(path, { state });
+  };
+
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center flex-wrap gap-4">
         <h1 className="text-3xl font-bold text-slate-800">Orientations stratégiques</h1>
-        {!isReadOnly && (
-          <button onClick={() => handleOpenModal()} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-            <PlusCircle size={20} />
-            <span>Nouvelle orientation</span>
-          </button>
-        )}
+        <div className="flex items-center gap-2">
+           <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                <input
+                    type="text"
+                    placeholder="Rechercher..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full sm:w-64 pl-10 pr-4 py-2 border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+            </div>
+          {!isReadOnly && (
+            <button onClick={() => handleOpenModal()} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+              <PlusCircle size={20} />
+              <span>Nouvelle orientation</span>
+            </button>
+          )}
+        </div>
       </div>
       <p className="text-slate-600">
         Les orientations stratégiques qui cadrent la cybersécurité. Cliquez sur une carte pour la modifier.
       </p>
 
       <div className="space-y-4">
-        {orientations
-            .slice()
-            .sort((a,b) => a.code.localeCompare(b.code, undefined, {numeric: true}))
-            .map((orientation) => {
+        {filteredOrientations.length > 0 ? (
+            filteredOrientations.map((orientation) => {
                 const linkedChantiersCount = chantiers.filter(c => c.strategicOrientationId === orientation.id).length;
                 const linkedObjectivesCount = objectives.filter(o => o.strategicOrientations.includes(orientation.id)).length;
                 
@@ -126,10 +174,10 @@ const Orientations: React.FC = () => {
                                             <h4 className="text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider">Chantiers liés</h4>
                                             <div className="flex flex-wrap gap-1 justify-start md:justify-end">
                                                 <Tooltip text={`${linkedChantiersCount} chantier(s) directement lié(s) à cette orientation.`}>
-                                                    <span className="flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium rounded-full border bg-cyan-100 text-cyan-800 border-cyan-200">
+                                                    <button onClick={(e) => navigateTo(e, '/chantiers', { orientationFilter: orientation.id })} className="flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium rounded-full border bg-cyan-100 text-cyan-800 border-cyan-200 hover:bg-cyan-200 hover:border-cyan-300 transition-colors">
                                                         <Workflow size={12} />
                                                         {linkedChantiersCount}
-                                                    </span>
+                                                    </button>
                                                 </Tooltip>
                                             </div>
                                         </div>
@@ -139,10 +187,10 @@ const Orientations: React.FC = () => {
                                             <h4 className="text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider">Objectifs liés</h4>
                                             <div className="flex flex-wrap gap-1 justify-start md:justify-end">
                                                 <Tooltip text={`${linkedObjectivesCount} objectif(s) directement lié(s) à cette orientation.`}>
-                                                    <span className="flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium rounded-full border bg-green-100 text-green-800 border-green-200">
+                                                     <button onClick={(e) => navigateTo(e, '/objectives', { orientationFilter: orientation.id })} className="flex items-center gap-1.5 px-2 py-0.5 text-xs font-medium rounded-full border bg-green-100 text-green-800 border-green-200 hover:bg-green-200 hover:border-green-300 transition-colors">
                                                         <Target size={12} />
                                                         {linkedObjectivesCount}
-                                                    </span>
+                                                    </button>
                                                 </Tooltip>
                                             </div>
                                         </div>
@@ -152,7 +200,13 @@ const Orientations: React.FC = () => {
                         </CardContent>
                     </Card>
                 );
-        })}
+        })) : (
+            <Card>
+                <CardContent className="text-center text-slate-500 py-16">
+                    <p className="font-semibold">Aucune orientation ne correspond à votre recherche.</p>
+                </CardContent>
+            </Card>
+        )}
       </div>
 
        {isModalOpen && currentItem && (
