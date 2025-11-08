@@ -1,11 +1,12 @@
 import React, { useState, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useData } from '../contexts/DataContext';
-import { Objective, StrategicOrientation, Chantier } from '../types';
+import { Objective, StrategicOrientation, Chantier, IsoMeasure } from '../types';
 import Card, { CardContent } from '../components/ui/Card';
 import Modal from '../components/ui/Modal';
 import { PlusCircle, Trash2, Edit, Target, Workflow, FilterX, ShieldCheck, Search } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { ISO_MEASURES_DATA } from '../constants';
 import CustomMultiSelect from '../components/ui/CustomMultiSelect';
 import Tooltip from '../components/ui/Tooltip';
 
@@ -57,10 +58,11 @@ const ObjectiveDetails: React.FC<{
 
 const Objectives: React.FC = () => {
   const { objectives, setObjectives, orientations, chantiers } = useData();
-  const { userRole } = useAuth();
+    const { userRole } = useAuth();
   const isReadOnly = userRole === 'readonly';
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentItem, setCurrentItem] = useState<Partial<Objective> | null>(null);
+  const [selectedIsoMeasure, setSelectedIsoMeasure] = useState<Omit<IsoMeasure, 'id'> | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   
@@ -173,6 +175,21 @@ const Objectives: React.FC = () => {
     }
   };
   
+   const allMeasuresMap = useMemo(() => {
+        return new Map(ISO_MEASURES_DATA.map(m => [m.code, m]));
+    }, []);
+
+    const handleMeasureClick = (e: React.MouseEvent, measureCode: string) => {
+        e.stopPropagation();
+        if (userRole === 'admin') {
+            navigate('/iso27002', { state: { openMeasure: measureCode } });
+        } else {
+            const measure = allMeasuresMap.get(measureCode);
+            if (measure) {
+                setSelectedIsoMeasure(measure);
+            }
+        }
+    };
   const navigateTo = (e: React.MouseEvent, path: string, state: object) => {
     e.stopPropagation();
     navigate(path, { state });
@@ -278,7 +295,7 @@ const Objectives: React.FC = () => {
                                 <div className="flex flex-wrap gap-1 justify-start md:justify-end">
                                   {objective.mesures_iso.map((mesure, index) => (
                                       <Tooltip key={index} text={mesure.titre}>
-                                        <button onClick={(e) => navigateTo(e, '/iso27002', { openMeasure: mesure.numero_mesure })} className="flex items-center gap-1.5 px-2 py-0.5 text-xs font-mono rounded-full border bg-red-100 text-red-800 border-red-200 hover:bg-red-200 hover:border-red-300 transition-colors">
+                                        <button onClick={(e) => handleMeasureClick(e, mesure.numero_mesure)} className="flex items-center gap-1.5 px-2 py-0.5 text-xs font-mono rounded-full border bg-red-100 text-red-800 border-red-200 hover:bg-red-200 hover:border-red-300 transition-colors">
                                             <ShieldCheck size={12} />
                                             {mesure.numero_mesure}
                                         </button>
@@ -379,6 +396,29 @@ const Objectives: React.FC = () => {
           </form>
         </Modal>
       )}
+
+      {selectedIsoMeasure && (
+        <Modal
+            isOpen={!!selectedIsoMeasure}
+            onClose={() => setSelectedIsoMeasure(null)}
+            title={`${selectedIsoMeasure.code} - ${selectedIsoMeasure.title}`}
+        >
+            <div className="space-y-4">
+                <div>
+                    <h3 className="text-lg font-bold text-slate-800 mb-2">ID et Titre</h3>
+                    <p className="text-sm text-slate-600">{`${selectedIsoMeasure.code} - ${selectedIsoMeasure.title}`}</p>
+                </div>
+                <div>
+                    <h3 className="text-lg font-bold text-slate-800 mb-2">Mesure de sécurité</h3>
+                    <p className="text-sm text-slate-600">{selectedIsoMeasure.details?.measure}</p>
+                </div>
+                <div>
+                    <h3 className="text-lg font-bold text-slate-800 mb-2">Objectif</h3>
+                    <p className="text-sm text-slate-600">{selectedIsoMeasure.details?.objective}</p>
+                </div>
+            </div>
+        </Modal>
+    )}
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Card, { CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import Tooltip from '../components/ui/Tooltip';
@@ -6,6 +6,8 @@ import { Activity, ShieldCheck, ClipboardList } from 'lucide-react';
 import { ISO_MEASURES_DATA } from '../constants';
 import { ActivityStatus, IsoMeasure } from '../types';
 import { useData } from '../contexts/DataContext';
+import { useAuth } from '../contexts/AuthContext';
+import Modal from '../components/ui/Modal';
 
 const StatCard: React.FC<{ title: string; value: string | number; icon: React.ReactNode; onClick?: () => void; }> = ({ title, value, icon, onClick }) => (
   <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={onClick}>
@@ -23,7 +25,9 @@ const StatCard: React.FC<{ title: string; value: string | number; icon: React.Re
 
 const GeneralDashboard: React.FC = () => {
     const { activities, projects } = useData();
+    const { userRole } = useAuth();
     const navigate = useNavigate();
+    const [selectedIsoMeasure, setSelectedIsoMeasure] = useState<Omit<IsoMeasure, 'id'> | null>(null);
 
     const stats = useMemo(() => {
         const totalActivities = activities.length;
@@ -37,6 +41,21 @@ const GeneralDashboard: React.FC = () => {
             totalMeasures: ISO_MEASURES_DATA.length,
         };
     }, [activities, projects]);
+
+    const allMeasuresMap = useMemo(() => {
+        return new Map(ISO_MEASURES_DATA.map(m => [m.code, m]));
+    }, []);
+
+    const handleMeasureClick = (measureCode: string) => {
+        if (userRole === 'admin') {
+            navigate('/iso27002', { state: { openMeasure: measureCode } });
+        } else {
+            const measure = allMeasuresMap.get(measureCode);
+            if (measure) {
+                setSelectedIsoMeasure(measure);
+            }
+        }
+    };
     
     const coveredMeasuresCodes = useMemo(() => {
         return Array.from(new Set([...activities.flatMap(a => a.isoMeasures), ...projects.flatMap(p => p.isoMeasures || [])]));
@@ -115,7 +134,7 @@ const GeneralDashboard: React.FC = () => {
                             <Tooltip key={measure.code} text={`${measure.code}: ${measure.title} (Activités: ${coverageMatrix[measure.code]?.activityCount || 0}, Projets: ${coverageMatrix[measure.code]?.projectCount || 0})`}>
                               <div 
                                 className={`h-10 w-10 flex items-center justify-center rounded text-xs font-mono cursor-pointer transition-all duration-200 ${getCoverageClasses(measure.code)}`}
-                                onClick={() => navigate('/iso27002', { state: { openMeasure: measure.code } })}
+                                onClick={() => handleMeasureClick(measure.code)}
                               >
                                 {measure.code}
                               </div>
@@ -135,6 +154,29 @@ const GeneralDashboard: React.FC = () => {
               </div>
           </CardContent>
         </Card>
+
+        {selectedIsoMeasure && (
+            <Modal
+                isOpen={!!selectedIsoMeasure}
+                onClose={() => setSelectedIsoMeasure(null)}
+                title={`${selectedIsoMeasure.code} - ${selectedIsoMeasure.title}`}
+            >
+                <div className="space-y-4">
+                    <div>
+                        <h3 className="text-lg font-bold text-slate-800 mb-2">ID et Titre</h3>
+                        <p className="text-sm text-slate-600">{`${selectedIsoMeasure.code} - ${selectedIsoMeasure.title}`}</p>
+                    </div>
+                    <div>
+                        <h3 className="text-lg font-bold text-slate-800 mb-2">Mesure de sécurité</h3>
+                        <p className="text-sm text-slate-600">{selectedIsoMeasure.details?.measure}</p>
+                    </div>
+                    <div>
+                        <h3 className="text-lg font-bold text-slate-800 mb-2">Objectif</h3>
+                        <p className="text-sm text-slate-600">{selectedIsoMeasure.details?.objective}</p>
+                    </div>
+                </div>
+            </Modal>
+        )}
     </div>
   );
 };

@@ -7,6 +7,8 @@ import ProjectTimeline from '../components/charts/ProjectTimeline';
 import { ISO_MEASURES_DATA } from '../constants';
 import { ActivityStatus, IsoMeasure } from '../types';
 import Tooltip from '../components/ui/Tooltip';
+import { useAuth } from '../contexts/AuthContext';
+import Modal from '../components/ui/Modal';
 
 
 const formatCurrency = (value?: number) => {
@@ -95,9 +97,11 @@ const BudgetCard: React.FC<{
 
 const ProjectsDashboard: React.FC = () => {
     const { projects } = useData();
+    const { userRole } = useAuth();
     const navigate = useNavigate();
     const [timelineZoomLevel, setTimelineZoomLevel] = useState(1);
     const timelineContainerRef = useRef<HTMLDivElement>(null);
+    const [selectedIsoMeasure, setSelectedIsoMeasure] = useState<Omit<IsoMeasure, 'id'> | null>(null);
 
     const handleTimelineZoomIn = () => setTimelineZoomLevel(prev => Math.min(prev * 1.5, 8));
     const handleTimelineZoomOut = () => setTimelineZoomLevel(prev => Math.max(prev / 1.5, 0.25));
@@ -131,6 +135,21 @@ const ProjectsDashboard: React.FC = () => {
         });
     }, [projects]);
     
+     const allMeasuresMap = useMemo(() => {
+        return new Map(ISO_MEASURES_DATA.map(m => [m.code, m]));
+    }, []);
+
+    const handleMeasureClick = (measureCode: string) => {
+        if (userRole === 'admin') {
+            navigate('/iso27002', { state: { openMeasure: measureCode } });
+        } else {
+            const measure = allMeasuresMap.get(measureCode);
+            if (measure) {
+                setSelectedIsoMeasure(measure);
+            }
+        }
+    };
+
      const { coveredMeasures, totalMeasures } = useMemo(() => ({
         coveredMeasures: new Set(projects.flatMap(p => p.isoMeasures || [])).size,
         totalMeasures: ISO_MEASURES_DATA.length,
@@ -209,7 +228,7 @@ const ProjectsDashboard: React.FC = () => {
                                     <Tooltip key={measure.code} text={`${measure.code}: ${measure.title} (${coverageMatrix[measure.code]?.completed || 0}/${coverageMatrix[measure.code]?.count || 0} terminés)`}>
                                         <div 
                                             className={`h-10 w-10 flex items-center justify-center rounded text-xs font-mono cursor-pointer transition-colors ${getCoverageColor(measure.code)}`}
-                                            onClick={() => navigate('/iso27002', { state: { openMeasure: measure.code } })}
+                                            onClick={() => handleMeasureClick(measure.code)}
                                         >
                                             {measure.code}
                                         </div>
@@ -245,6 +264,29 @@ const ProjectsDashboard: React.FC = () => {
                   />
               </CardContent>
           </Card>
+
+           {selectedIsoMeasure && (
+                <Modal
+                    isOpen={!!selectedIsoMeasure}
+                    onClose={() => setSelectedIsoMeasure(null)}
+                    title={`${selectedIsoMeasure.code} - ${selectedIsoMeasure.title}`}
+                >
+                    <div className="space-y-4">
+                        <div>
+                            <h3 className="text-lg font-bold text-slate-800 mb-2">ID et Titre</h3>
+                            <p className="text-sm text-slate-600">{`${selectedIsoMeasure.code} - ${selectedIsoMeasure.title}`}</p>
+                        </div>
+                        <div>
+                            <h3 className="text-lg font-bold text-slate-800 mb-2">Mesure de sécurité</h3>
+                            <p className="text-sm text-slate-600">{selectedIsoMeasure.details?.measure}</p>
+                        </div>
+                        <div>
+                            <h3 className="text-lg font-bold text-slate-800 mb-2">Objectif</h3>
+                            <p className="text-sm text-slate-600">{selectedIsoMeasure.details?.objective}</p>
+                        </div>
+                    </div>
+                </Modal>
+            )}
         </div>
     );
 };

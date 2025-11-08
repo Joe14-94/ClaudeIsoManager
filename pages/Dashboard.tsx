@@ -1,5 +1,3 @@
-
-
 import React, { useMemo, useState } from 'react';
 // FIX: The project appears to use react-router-dom v5. The import for 'useNavigate' is for v6. It is replaced with the v6 equivalent 'useNavigate'.
 import { useNavigate } from 'react-router-dom';
@@ -12,6 +10,7 @@ import { useData } from '../contexts/DataContext';
 import DomainDonutChart from '../components/charts/DomainDonutChart';
 import ActivityTimeline from '../components/charts/ActivityTimeline';
 import Modal from '../components/ui/Modal';
+import { useAuth } from '../contexts/AuthContext';
 
 const StatCard: React.FC<{ title: string; value: string | number; icon: React.ReactNode; trend?: string; onClick?: () => void; }> = ({ title, value, icon, trend, onClick }) => (
   <Card className="cursor-pointer hover:shadow-md transition-shadow" onClick={onClick}>
@@ -30,9 +29,11 @@ const StatCard: React.FC<{ title: string; value: string | number; icon: React.Re
 
 const Dashboard: React.FC = () => {
     const { activities, objectives, resources } = useData();
+    const { userRole } = useAuth();
     // FIX: Switched from useHistory to useNavigate for v6 compatibility.
     const navigate = useNavigate();
     const [isObjectivesModalOpen, setIsObjectivesModalOpen] = useState(false);
+    const [selectedIsoMeasure, setSelectedIsoMeasure] = useState<Omit<IsoMeasure, 'id'> | null>(null);
     const [timelineZoomLevel, setTimelineZoomLevel] = useState(1);
 
     const handleTimelineZoomIn = () => setTimelineZoomLevel(prev => Math.min(prev * 1.5, 8));
@@ -87,6 +88,22 @@ const Dashboard: React.FC = () => {
       
       return { totalWorkload: total, workloadPerResource: perResource };
     }, [activities, resources]);
+
+
+    const allMeasuresMap = useMemo(() => {
+        return new Map(ISO_MEASURES_DATA.map(m => [m.code, m]));
+    }, []);
+
+    const handleMeasureClick = (measureCode: string) => {
+        if (userRole === 'admin') {
+            navigate('/iso27002', { state: { openMeasure: measureCode } });
+        } else {
+            const measure = allMeasuresMap.get(measureCode);
+            if (measure) {
+                setSelectedIsoMeasure(measure);
+            }
+        }
+    };
 
 
     const coveredMeasuresCodes = useMemo(() => {
@@ -165,8 +182,7 @@ const Dashboard: React.FC = () => {
                             <Tooltip key={measure.code} text={`${measure.code}: ${measure.title} (${coverageMatrix[measure.code]?.completed || 0}/${coverageMatrix[measure.code]?.count || 0})`}>
                               <div 
                                 className={`h-10 w-10 flex items-center justify-center rounded text-xs font-mono cursor-pointer transition-colors ${getCoverageColor(measure.code)}`}
-                                /* FIX: Updated to useNavigate for v6 */
-                                onClick={() => navigate('/iso27002', { state: { openMeasure: measure.code } })}
+                                onClick={() => handleMeasureClick(measure.code)}
                               >
                                 {measure.code}
                               </div>
@@ -277,6 +293,28 @@ const Dashboard: React.FC = () => {
         </Modal>
       )}
 
+      {selectedIsoMeasure && (
+        <Modal
+            isOpen={!!selectedIsoMeasure}
+            onClose={() => setSelectedIsoMeasure(null)}
+            title={`${selectedIsoMeasure.code} - ${selectedIsoMeasure.title}`}
+        >
+            <div className="space-y-4">
+                <div>
+                    <h3 className="text-lg font-bold text-slate-800 mb-2">ID et Titre</h3>
+                    <p className="text-sm text-slate-600">{`${selectedIsoMeasure.code} - ${selectedIsoMeasure.title}`}</p>
+                </div>
+                <div>
+                    <h3 className="text-lg font-bold text-slate-800 mb-2">Mesure de sécurité</h3>
+                    <p className="text-sm text-slate-600">{selectedIsoMeasure.details?.measure}</p>
+                </div>
+                <div>
+                    <h3 className="text-lg font-bold text-slate-800 mb-2">Objectif</h3>
+                    <p className="text-sm text-slate-600">{selectedIsoMeasure.details?.objective}</p>
+                </div>
+            </div>
+        </Modal>
+    )}
     </div>
   );
 };
