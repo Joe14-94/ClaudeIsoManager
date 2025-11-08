@@ -16,7 +16,8 @@ const DataManagement: React.FC = () => {
     chantiers, setChantiers,
     securityProcesses, setSecurityProcesses,
     projects, setProjects,
-    initiatives, setInitiatives
+    initiatives, setInitiatives,
+    dashboardLayouts, setDashboardLayouts
   } = useData();
   const { userRole } = useAuth();
   const isReadOnly = userRole === 'readonly';
@@ -39,6 +40,7 @@ const DataManagement: React.FC = () => {
       securityProcesses,
       projects,
       initiatives,
+      dashboardLayouts
     };
     const blob = new Blob([JSON.stringify(allData, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -108,6 +110,7 @@ const DataManagement: React.FC = () => {
                 if (Array.isArray(content.securityProcesses)) { setSecurityProcesses(content.securityProcesses); importedCount++; }
                 if (Array.isArray(content.projects)) { setProjects(content.projects); importedCount++; }
                 if (Array.isArray(content.initiatives)) { setInitiatives(content.initiatives); importedCount++; }
+                if (content.dashboardLayouts) { setDashboardLayouts(content.dashboardLayouts); importedCount++; }
                 
                 if (importedCount > 0) {
                     showFeedback('success', `Sauvegarde restaurée avec succès. ${importedCount} type(s) de données importé(s).`);
@@ -365,7 +368,7 @@ const DataManagement: React.FC = () => {
         <Card>
           <CardHeader className="flex items-center justify-between">
             <CardTitle>Sauvegarde et restauration</CardTitle>
-            <Tooltip text="La sauvegarde complète inclut : projets, activités, objectifs, orientations, chantiers, ressources, initiatives et processus de sécurité.">
+            <Tooltip text="La sauvegarde complète inclut : projets, activités, objectifs, orientations, chantiers, ressources, initiatives, processus de sécurité et la disposition du tableau de bord.">
               <Info size={18} className="text-slate-500 cursor-help" />
             </Tooltip>
           </CardHeader>

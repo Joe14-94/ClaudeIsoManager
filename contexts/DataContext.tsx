@@ -7,6 +7,7 @@ import { initiatives as initialInitiatives } from '../data/initiatives';
 import { projects as initialProjects } from '../data/projects';
 import { Activity, Chantier, Objective, StrategicOrientation, Resource, SecurityProcess, Initiative, Project } from '../types';
 import { loadReferenceData } from '../utils/referenceData';
+import type { Layout } from 'react-grid-layout';
 
 interface DataContextType {
     activities: Activity[];
@@ -25,6 +26,8 @@ interface DataContextType {
     setResources: React.Dispatch<React.SetStateAction<Resource[]>>;
     securityProcesses: SecurityProcess[];
     setSecurityProcesses: React.Dispatch<React.SetStateAction<SecurityProcess[]>>;
+    dashboardLayouts: { [breakpoint: string]: Layout[] };
+    setDashboardLayouts: React.Dispatch<React.SetStateAction<{ [breakpoint: string]: Layout[] }>>;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -43,6 +46,7 @@ export const DataProvider = ({ children }: PropsWithChildren) => {
     const [objectives, setObjectives] = useState<Objective[]>([]);
     const [initiatives, setInitiatives] = useState<Initiative[]>([]);
     const [projects, setProjects] = useState<Project[]>([]);
+    const [dashboardLayouts, setDashboardLayouts] = useState<{ [breakpoint: string]: Layout[] }>(() => loadFromLocalStorage('dashboardLayouts', { lg: [] }));
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
@@ -53,6 +57,7 @@ export const DataProvider = ({ children }: PropsWithChildren) => {
             setSecurityProcesses(loadFromLocalStorage('securityProcesses', initialSecurityProcesses));
             setInitiatives(loadFromLocalStorage('initiatives', initialInitiatives));
             setProjects(loadFromLocalStorage('projects', initialProjects));
+            setDashboardLayouts(loadFromLocalStorage('dashboardLayouts', { lg: [] }));
 
             // Gérer les données de référence avec versionnement
             const storedVersion = loadFromLocalStorage<string>(VERSION_KEY, '1.0');
@@ -96,6 +101,7 @@ export const DataProvider = ({ children }: PropsWithChildren) => {
     useEffect(() => { if (!isLoading) saveToLocalStorage('securityProcesses', securityProcesses); }, [securityProcesses, isLoading]);
     useEffect(() => { if (!isLoading) saveToLocalStorage('initiatives', initiatives); }, [initiatives, isLoading]);
     useEffect(() => { if (!isLoading) saveToLocalStorage('projects', projects); }, [projects, isLoading]);
+    useEffect(() => { if (!isLoading) saveToLocalStorage('dashboardLayouts', dashboardLayouts); }, [dashboardLayouts, isLoading]);
     
     // Les données de référence sont chargées depuis un fichier, mais peuvent être modifiées
     // par import, donc nous devons les persister.
@@ -112,6 +118,7 @@ export const DataProvider = ({ children }: PropsWithChildren) => {
         projects, setProjects,
         resources, setResources,
         securityProcesses, setSecurityProcesses,
+        dashboardLayouts, setDashboardLayouts,
     };
 
     if (isLoading) {

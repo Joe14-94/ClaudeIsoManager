@@ -2,7 +2,6 @@ import React from 'react';
 // FIX: The project appears to use react-router-dom v5, but the installed version is v6. Updating imports to v6.
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Sidebar from './components/layout/Sidebar';
-import Dashboard from './pages/Dashboard';
 import Activities from './pages/Activities';
 import GraphView from './pages/GraphView';
 import Iso27002 from './pages/Iso27002';
@@ -23,12 +22,14 @@ import DataModelView2 from './pages/DataModelView2';
 import TimelinePage from './pages/TimelinePage';
 import DataExplorer from './pages/DataExplorer';
 import Projects from './pages/Projects';
-import GeneralDashboard from './pages/GeneralDashboard';
-import ProjectsDashboard from './pages/ProjectsDashboard';
+import CustomDashboardPage from './pages/CustomDashboardPage';
 import ProjectsTimelinePage from './pages/ProjectsTimelinePage';
 import ProjectsBudget from './pages/ProjectsBudget';
 import ProjectsWorkload from './pages/ProjectsWorkload';
 import ProjectsExplorer from './pages/ProjectsExplorer';
+import { SidebarProvider } from './contexts/SidebarContext';
+import ActivitiesDashboard from './pages/ActivitiesDashboard';
+import ProjectsDashboardPage from './pages/ProjectsDashboardPage';
 
 const AppLayout: React.FC = () => {
   return (
@@ -38,16 +39,16 @@ const AppLayout: React.FC = () => {
         {/* FIX: Replaced v5 Switch with v6 Routes */}
         <Routes>
           {/* FIX: Replaced v5 Redirect and `exact` prop with v6 Navigate element. In v6, routes are exact by default. */}
-          <Route path="/" element={<Navigate to="/general-dashboard" />} />
+          <Route path="/" element={<Navigate to="/dashboard" />} />
           {/* FIX: Updated Route components to use `element` prop for v6 */}
-          <Route path="/general-dashboard" element={<GeneralDashboard />} />
-          <Route path="/projects-dashboard" element={<ProjectsDashboard />} />
-          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/dashboard" element={<CustomDashboardPage />} />
           <Route path="/projets" element={<Projects />} />
+          <Route path="/projects-dashboard" element={<ProjectsDashboardPage />} />
           <Route path="/projects-explorer" element={<ProjectsExplorer />} />
           <Route path="/projects-timeline" element={<ProjectsTimelinePage />} />
           <Route path="/projects-budget" element={<ProjectsBudget />} />
           <Route path="/projects-workload" element={<ProjectsWorkload />} />
+          <Route path="/activities-dashboard" element={<ActivitiesDashboard />} />
           <Route path="/activities" element={<Activities />} />
           <Route path="/explorer" element={<DataExplorer />} />
           <Route path="/timeline" element={<TimelinePage />} />
@@ -74,17 +75,19 @@ const App: React.FC = () => {
     <HashRouter>
       <AuthProvider>
         <DataProvider>
-          {/* FIX: Replaced v5 Switch with v6 Routes */}
-          <Routes>
-            {/* FIX: Updated Route components to use `element` prop for v6 */}
-            <Route path="/login" element={<LoginPage />} />
-            {/* FIX: Updated catch-all route for v6 */}
-            <Route path="/*" element={
-              <ProtectedRoute>
-                <AppLayout />
-              </ProtectedRoute>
-            } />
-          </Routes>
+          <SidebarProvider>
+            {/* FIX: Replaced v5 Switch with v6 Routes */}
+            <Routes>
+              {/* FIX: Updated Route components to use `element` prop for v6 */}
+              <Route path="/login" element={<LoginPage />} />
+              {/* FIX: Updated catch-all route for v6 */}
+              <Route path="/*" element={
+                <ProtectedRoute>
+                  <AppLayout />
+                </ProtectedRoute>
+              } />
+            </Routes>
+          </SidebarProvider>
         </DataProvider>
       </AuthProvider>
     </HashRouter>

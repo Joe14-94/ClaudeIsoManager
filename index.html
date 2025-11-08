@@ -6,6 +6,8 @@
     <title>ISO 27002 Activity Manager</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://aistudiocdn.com/@xyflow/react@12.9.0/dist/style.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/react-grid-layout/1.4.4/css/styles.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/react-resizable/3.0.5/css/styles.min.css" />
     <style>
       /* Custom scrollbar for a more modern look */
       ::-webkit-scrollbar {
@@ -136,6 +138,18 @@
       .react-flow__edge.selected .react-flow__edge-text {
         font-weight: 700;
       }
+      
+      .react-grid-item.react-grid-placeholder {
+        background: #60a5fa;
+        opacity: 0.2;
+        transition-duration: 100ms;
+        border-radius: 0.5rem;
+        z-index: 2;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+      }
     </style>
   <script type="importmap">
 {
@@ -147,7 +161,9 @@
     "react-router-dom": "https://aistudiocdn.com/react-router-dom@^6.25.1",
     "@xyflow/react/": "https://aistudiocdn.com/@xyflow/react@^12.9.0/",
     "@xyflow/react": "https://aistudiocdn.com/@xyflow/react@^12.9.0",
-    "d3": "https://aistudiocdn.com/d3@^7.9.0"
+    "d3": "https://aistudiocdn.com/d3@^7.9.0",
+    "react-grid-layout": "https://aistudiocdn.com/react-grid-layout@1.4.4",
+    "react-resizable": "https://aistudiocdn.com/react-resizable@3.0.5"
   }
 }
 </script>
