@@ -1,9 +1,13 @@
 import React, { useMemo, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Card, { CardContent, CardHeader, CardTitle } from '../components/ui/Card';
-import { ClipboardList, ZoomIn, ZoomOut, RotateCw } from 'lucide-react';
+import { ClipboardList, ZoomIn, ZoomOut, RotateCw, ShieldCheck } from 'lucide-react';
 import { useData } from '../contexts/DataContext';
 import ProjectTimeline from '../components/charts/ProjectTimeline';
+import { ISO_MEASURES_DATA } from '../constants';
+import { ActivityStatus, IsoMeasure } from '../types';
+import Tooltip from '../components/ui/Tooltip';
+
 
 const formatCurrency = (value?: number) => {
     if (value === undefined || value === null || isNaN(value)) return 'N/A';
@@ -93,7 +97,6 @@ const ProjectsDashboard: React.FC = () => {
     const { projects } = useData();
     const navigate = useNavigate();
     const [timelineZoomLevel, setTimelineZoomLevel] = useState(1);
-    // FIX: Added a ref for the timeline container.
     const timelineContainerRef = useRef<HTMLDivElement>(null);
 
     const handleTimelineZoomIn = () => setTimelineZoomLevel(prev => Math.min(prev * 1.5, 8));
@@ -128,12 +131,47 @@ const ProjectsDashboard: React.FC = () => {
         });
     }, [projects]);
     
+     const { coveredMeasures, totalMeasures } = useMemo(() => ({
+        coveredMeasures: new Set(projects.flatMap(p => p.isoMeasures || [])).size,
+        totalMeasures: ISO_MEASURES_DATA.length,
+    }), [projects]);
+
+    const coverageMatrix = useMemo(() => {
+        const matrix: { [key: string]: { count: number; completed: number } } = {};
+        ISO_MEASURES_DATA.forEach(measure => {
+            const relatedProjects = projects.filter(p => (p.isoMeasures || []).includes(measure.code));
+            matrix[measure.code] = {
+                count: relatedProjects.length,
+                completed: relatedProjects.filter(p => p.status === ActivityStatus.COMPLETED).length,
+            };
+        });
+        return matrix;
+    }, [projects]);
+
+    const measuresByChapter = useMemo(() => {
+        return ISO_MEASURES_DATA.reduce<Record<string, Omit<IsoMeasure, 'id'>[]>>((acc, measure) => {
+            if (!acc[measure.chapter]) acc[measure.chapter] = [];
+            acc[measure.chapter].push(measure);
+            return acc;
+        }, {} as Record<string, Omit<IsoMeasure, 'id'>[]>);
+    }, []);
+
+    const getCoverageColor = (measureCode: string): string => {
+      const data = coverageMatrix[measureCode];
+      if (!data || data.count === 0) return 'bg-slate-200 hover:bg-slate-300';
+      const ratio = data.completed / data.count;
+      if (ratio === 1) return 'bg-emerald-400 hover:bg-emerald-500';
+      if (ratio >= 0.5) return 'bg-yellow-400 hover:bg-yellow-500';
+      return 'bg-red-400 hover:bg-red-500';
+    };
+
     return (
         <div className="space-y-6">
             <h1 className="text-3xl font-bold text-slate-800">Tableau de bord Projets</h1>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                  <StatCard title="Nombre de projets" value={projectStats.totalProjects} icon={<ClipboardList size={24} />} onClick={() => navigate('/projets')} />
+                 <StatCard title="Mesures ISO couvertes" value={`${coveredMeasures} / ${totalMeasures}`} icon={<ShieldCheck size={24} />} onClick={() => navigate('/iso27002', { state: { filter: 'covered', coveredMeasuresCodes: Array.from(new Set(projects.flatMap(p => p.isoMeasures || []))) } })} />
                  <WorkloadCard 
                     title="Charges internes (J/H)"
                     requested={projectStats.internalWorkload.requested}
@@ -146,15 +184,49 @@ const ProjectsDashboard: React.FC = () => {
                     engaged={projectStats.externalWorkload.engaged}
                     consumed={projectStats.externalWorkload.consumed}
                  />
-                 <BudgetCard 
-                    validatedPO={projectStats.budget.validatedPO}
-                    completedPV={projectStats.budget.completedPV}
-                    available={projectStats.budget.available}
-                    forecastedPO={projectStats.budget.forecastedPO}
-                    forecastedAvailable={projectStats.budget.forecastedAvailable}
-                 />
+                 <div className="md:col-span-2 lg:col-span-4">
+                    <BudgetCard 
+                        validatedPO={projectStats.budget.validatedPO}
+                        completedPV={projectStats.budget.completedPV}
+                        available={projectStats.budget.available}
+                        forecastedPO={projectStats.budget.forecastedPO}
+                        forecastedAvailable={projectStats.budget.forecastedAvailable}
+                    />
+                 </div>
             </div>
             
+            <Card>
+                <CardHeader>
+                    <CardTitle>Matrice de couverture ISO 27002 (Projets)</CardTitle>
+                    <p className="text-sm text-slate-500 mt-1">Survolez une case pour voir le détail des projets liés.</p>
+                </CardHeader>
+                <CardContent>
+                    {Object.entries(measuresByChapter).map(([chapter, measures]) => (
+                        <div key={chapter} className="mb-6">
+                            <h4 className="text-md font-semibold text-slate-700 mb-2">{chapter}</h4>
+                            <div className="flex flex-wrap gap-1">
+                                {measures.slice().sort((a,b) => a.code.localeCompare(b.code, undefined, { numeric: true })).map((measure) => (
+                                    <Tooltip key={measure.code} text={`${measure.code}: ${measure.title} (${coverageMatrix[measure.code]?.completed || 0}/${coverageMatrix[measure.code]?.count || 0} terminés)`}>
+                                        <div 
+                                            className={`h-10 w-10 flex items-center justify-center rounded text-xs font-mono cursor-pointer transition-colors ${getCoverageColor(measure.code)}`}
+                                            onClick={() => navigate('/iso27002', { state: { openMeasure: measure.code } })}
+                                        >
+                                            {measure.code}
+                                        </div>
+                                    </Tooltip>
+                                ))}
+                            </div>
+                        </div>
+                    ))}
+                    <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-slate-600">
+                        <div className="flex items-center"><span className="w-4 h-4 rounded bg-slate-200 mr-2"></span>Non couvert</div>
+                        <div className="flex items-center"><span className="w-4 h-4 rounded bg-red-400 mr-2"></span> &lt;50% terminé</div>
+                        <div className="flex items-center"><span className="w-4 h-4 rounded bg-yellow-400 mr-2"></span> &gt;50% terminé</div>
+                        <div className="flex items-center"><span className="w-4 h-4 rounded bg-emerald-400 mr-2"></span> 100% terminé</div>
+                    </div>
+                </CardContent>
+            </Card>
+
              <Card>
               <CardHeader className="flex justify-between items-center">
                   <CardTitle>Timeline des projets</CardTitle>
@@ -164,7 +236,6 @@ const ProjectsDashboard: React.FC = () => {
                     <button onClick={handleTimelineZoomReset} title="Réinitialiser le zoom" className="p-2 rounded-md hover:bg-slate-200 text-slate-600 transition-colors"><RotateCw size={18} /></button>
                   </div>
               </CardHeader>
-              {/* FIX: Passed the ref to CardContent and the scrollContainerRef prop to ProjectTimeline. */}
               <CardContent ref={timelineContainerRef} className="h-[400px] overflow-auto">
                   <ProjectTimeline 
                     projects={projects}

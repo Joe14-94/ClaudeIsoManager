@@ -67,6 +67,10 @@ const Sidebar: React.FC = () => {
                   <ClipboardList size={18} className="mr-3" />
                   Projets
                 </NavLink>
+                 <NavLink to="/projects-explorer" className={getNavLinkClass}>
+                  <LayoutGrid size={18} className="mr-3" />
+                  Explorateur
+                </NavLink>
                  <NavLink to="/projects-timeline" className={getNavLinkClass}>
                   <GanttChart size={18} className="mr-3" />
                   Timeline

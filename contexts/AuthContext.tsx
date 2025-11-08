@@ -29,7 +29,7 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
     loadFromLocalStorage(READONLY_PASSWORD_KEY, 'lectureISO27002!')
   );
   const [pmoPassword, setPmoPassword] = useState<string>(() =>
-    loadFromLocalStorage(PMO_PASSWORD_KEY, 'pmoISO27002!')
+    loadFromLocalStorage(PMO_PASSWORD_KEY, 'pmoISO27002$')
   );
   
   // Persister les changements de mot de passe

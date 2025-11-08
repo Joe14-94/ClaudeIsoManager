@@ -28,7 +28,7 @@ const GeneralDashboard: React.FC = () => {
     const stats = useMemo(() => {
         const totalActivities = activities.length;
         const totalProjects = projects.length;
-        const coveredMeasures = new Set(activities.flatMap(a => a.isoMeasures)).size;
+        const coveredMeasures = new Set([...activities.flatMap(a => a.isoMeasures), ...projects.flatMap(p => p.isoMeasures || [])]).size;
         
         return {
             totalActivities,
@@ -39,20 +39,21 @@ const GeneralDashboard: React.FC = () => {
     }, [activities, projects]);
     
     const coveredMeasuresCodes = useMemo(() => {
-        return Array.from(new Set(activities.flatMap(a => a.isoMeasures)));
-    }, [activities]);
+        return Array.from(new Set([...activities.flatMap(a => a.isoMeasures), ...projects.flatMap(p => p.isoMeasures || [])]));
+    }, [activities, projects]);
 
     const coverageMatrix = useMemo(() => {
-        const matrix: { [key: string]: { count: number; completed: number } } = {};
+        const matrix: { [key: string]: { activityCount: number; projectCount: number; } } = {};
         ISO_MEASURES_DATA.forEach(measure => {
             const relatedActivities = activities.filter(a => a.isoMeasures.includes(measure.code));
+            const relatedProjects = projects.filter(p => (p.isoMeasures || []).includes(measure.code));
             matrix[measure.code] = {
-                count: relatedActivities.length,
-                completed: relatedActivities.filter(a => a.status === ActivityStatus.COMPLETED).length,
+                activityCount: relatedActivities.length,
+                projectCount: relatedProjects.length,
             };
         });
         return matrix;
-    }, [activities]);
+    }, [activities, projects]);
 
     const measuresByChapter = useMemo(() => {
         return ISO_MEASURES_DATA.reduce<Record<string, Omit<IsoMeasure, 'id'>[]>>((acc, measure) => {
@@ -64,19 +65,23 @@ const GeneralDashboard: React.FC = () => {
         }, {} as Record<string, Omit<IsoMeasure, 'id'>[]>);
     }, []);
 
-    const getCoverageColor = (measureCode: string): string => {
+    const getCoverageClasses = (measureCode: string): string => {
       const data = coverageMatrix[measureCode];
-      if (!data || data.count === 0) {
-        return 'bg-slate-200 hover:bg-slate-300'; // Non couvert
+      if (!data) return 'bg-slate-200 hover:bg-slate-300';
+      
+      const hasActivities = data.activityCount > 0;
+      const hasProjects = data.projectCount > 0;
+      
+      if (hasActivities && hasProjects) {
+        return 'bg-[linear-gradient(to_right,theme(colors.yellow.400)_50%,theme(colors.sky.400)_50%)] hover:opacity-80';
       }
-      const ratio = data.completed / data.count;
-      if (ratio === 1) {
-        return 'bg-emerald-400 hover:bg-emerald-500'; // 100%
+      if (hasActivities) {
+        return 'bg-yellow-400 hover:bg-yellow-500';
       }
-      if (ratio >= 0.5) {
-        return 'bg-yellow-400 hover:bg-yellow-500'; // 50-99%
+      if (hasProjects) {
+        return 'bg-sky-400 hover:bg-sky-500';
       }
-      return 'bg-red-400 hover:bg-red-500'; // <50%
+      return 'bg-slate-200 hover:bg-slate-300';
     };
 
     return (
@@ -86,12 +91,12 @@ const GeneralDashboard: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <StatCard title="Activités totales" value={stats.totalActivities} icon={<Activity size={24} />} onClick={() => navigate('/activities')} />
         <StatCard title="Nombre de projets" value={stats.totalProjects} icon={<ClipboardList size={24} />} onClick={() => navigate('/projets')} />
-        <StatCard title="Mesures ISO couvertes" value={`${stats.coveredMeasures} / ${stats.totalMeasures}`} icon={<ShieldCheck size={24} />} onClick={() => navigate('/iso27002', { state: { filter: 'covered', coveredMeasuresCodes } })} />
+        <StatCard title="Mesures ISO couvertes (global)" value={`${stats.coveredMeasures} / ${stats.totalMeasures}`} icon={<ShieldCheck size={24} />} onClick={() => navigate('/iso27002', { state: { filter: 'covered', coveredMeasuresCodes } })} />
       </div>
       
         <Card>
           <CardHeader>
-            <CardTitle>Matrice de couverture ISO 27002</CardTitle>
+            <CardTitle>Matrice de couverture ISO 27002 globale (Activités &amp; Projets)</CardTitle>
             <p className="text-sm text-slate-500 mt-1">Survolez une case pour voir le détail, cliquez pour accéder à la mesure.</p>
           </CardHeader>
           <CardContent>
@@ -107,9 +112,9 @@ const GeneralDashboard: React.FC = () => {
                               }
                               return aParts[1] - bParts[1];
                           }).map((measure) => (
-                            <Tooltip key={measure.code} text={`${measure.code}: ${measure.title} (${coverageMatrix[measure.code]?.completed || 0}/${coverageMatrix[measure.code]?.count || 0})`}>
+                            <Tooltip key={measure.code} text={`${measure.code}: ${measure.title} (Activités: ${coverageMatrix[measure.code]?.activityCount || 0}, Projets: ${coverageMatrix[measure.code]?.projectCount || 0})`}>
                               <div 
-                                className={`h-10 w-10 flex items-center justify-center rounded text-xs font-mono cursor-pointer transition-colors ${getCoverageColor(measure.code)}`}
+                                className={`h-10 w-10 flex items-center justify-center rounded text-xs font-mono cursor-pointer transition-all duration-200 ${getCoverageClasses(measure.code)}`}
                                 onClick={() => navigate('/iso27002', { state: { openMeasure: measure.code } })}
                               >
                                 {measure.code}
@@ -119,11 +124,14 @@ const GeneralDashboard: React.FC = () => {
                       </div>
                   </div>
               ))}
-               <div className="mt-4 flex flex-wrap items-center gap-4 text-sm text-slate-600">
+               <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-slate-600">
                   <div className="flex items-center"><span className="w-4 h-4 rounded bg-slate-200 mr-2"></span>Non couvert</div>
-                  <div className="flex items-center"><span className="w-4 h-4 rounded bg-red-400 mr-2"></span> &lt;50% terminé</div>
-                  <div className="flex items-center"><span className="w-4 h-4 rounded bg-yellow-400 mr-2"></span> &gt;50% terminé</div>
-                  <div className="flex items-center"><span className="w-4 h-4 rounded bg-emerald-400 mr-2"></span> 100% terminé</div>
+                  <div className="flex items-center"><span className="w-4 h-4 rounded bg-yellow-400 mr-2"></span>Couvert par Activités</div>
+                  <div className="flex items-center"><span className="w-4 h-4 rounded bg-sky-400 mr-2"></span>Couvert par Projets</div>
+                  <div className="flex items-center">
+                    <span className="w-4 h-4 rounded mr-2" style={{ background: 'linear-gradient(to right, #facc15 50%, #38bdf8 50%)' }}></span>
+                    Couvert par les deux
+                  </div>
               </div>
           </CardContent>
         </Card>

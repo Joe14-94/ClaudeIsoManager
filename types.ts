@@ -202,6 +202,8 @@ export interface Project {
   isTop30: boolean;
   createdAt: DateTime;
   updatedAt: DateTime;
+  initiativeId: string;
+  isoMeasures: string[];
 
   // Budget fields
   budgetRequested?: number;

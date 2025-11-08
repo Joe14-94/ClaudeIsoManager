@@ -5,7 +5,7 @@ import { Upload, HelpCircle, DatabaseBackup, Info, AlertTriangle, Trash2, Workfl
 import { useData } from '../contexts/DataContext';
 import { useAuth } from '../contexts/AuthContext';
 import Tooltip from '../components/ui/Tooltip';
-import { Activity, Chantier, Objective, StrategicOrientation, Resource, SecurityProcess, Project, ActivityStatus, TShirtSize } from '../types';
+import { Activity, Chantier, Objective, StrategicOrientation, Resource, SecurityProcess, Project, ActivityStatus, TShirtSize, Initiative } from '../types';
 
 const DataManagement: React.FC = () => {
   const { 
@@ -16,6 +16,7 @@ const DataManagement: React.FC = () => {
     chantiers, setChantiers,
     securityProcesses, setSecurityProcesses,
     projects, setProjects,
+    initiatives, setInitiatives
   } = useData();
   const { userRole } = useAuth();
   const isReadOnly = userRole === 'readonly';
@@ -37,6 +38,7 @@ const DataManagement: React.FC = () => {
       chantiers,
       securityProcesses,
       projects,
+      initiatives,
     };
     const blob = new Blob([JSON.stringify(allData, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -80,6 +82,10 @@ const DataManagement: React.FC = () => {
                 setOrientations(content as StrategicOrientation[]);
                 showFeedback('success', 'Orientations importées avec succès.');
                 break;
+             case 'Initiatives':
+                setInitiatives(content as Initiative[]);
+                showFeedback('success', 'Initiatives importées avec succès.');
+                break;
             case 'Activités':
                 setActivities(content as Activity[]);
                 showFeedback('success', 'Activités importées avec succès.');
@@ -101,6 +107,7 @@ const DataManagement: React.FC = () => {
                 if (Array.isArray(content.chantiers)) { setChantiers(content.chantiers); importedCount++; }
                 if (Array.isArray(content.securityProcesses)) { setSecurityProcesses(content.securityProcesses); importedCount++; }
                 if (Array.isArray(content.projects)) { setProjects(content.projects); importedCount++; }
+                if (Array.isArray(content.initiatives)) { setInitiatives(content.initiatives); importedCount++; }
                 
                 if (importedCount > 0) {
                     showFeedback('success', `Sauvegarde restaurée avec succès. ${importedCount} type(s) de données importé(s).`);
@@ -184,6 +191,8 @@ const DataManagement: React.FC = () => {
                     status: ActivityStatus.NOT_STARTED,
                     tShirtSize: TShirtSize.M,
                     isTop30: false,
+                    initiativeId: initiatives[0]?.id || '',
+                    isoMeasures: [],
                     internalWorkloadRequested,
                     internalWorkloadEngaged,
                     internalWorkloadConsumed,
@@ -285,6 +294,8 @@ const DataManagement: React.FC = () => {
                       status: ActivityStatus.NOT_STARTED,
                       tShirtSize: TShirtSize.M,
                       isTop30: false,
+                      initiativeId: initiatives[0]?.id || '',
+                      isoMeasures: [],
                       ...budgetData,
                       createdAt: new Date().toISOString(),
                       updatedAt: new Date().toISOString(),
@@ -354,7 +365,7 @@ const DataManagement: React.FC = () => {
         <Card>
           <CardHeader className="flex items-center justify-between">
             <CardTitle>Sauvegarde et restauration</CardTitle>
-            <Tooltip text="La sauvegarde complète inclut : projets, activités, objectifs, orientations, chantiers, ressources et processus de sécurité.">
+            <Tooltip text="La sauvegarde complète inclut : projets, activités, objectifs, orientations, chantiers, ressources, initiatives et processus de sécurité.">
               <Info size={18} className="text-slate-500 cursor-help" />
             </Tooltip>
           </CardHeader>
@@ -422,6 +433,18 @@ const DataManagement: React.FC = () => {
                 </label>
               </div>
               
+               <div className="p-4 border rounded-lg">
+                <h3 className="font-semibold">Importer des initiatives (JSON)</h3>
+                <div className="flex items-center text-sm text-slate-500 mt-1 mb-2">
+                  <HelpCircle size={16} className="mr-2"/>
+                  <span>Le fichier JSON doit être un tableau d'objets `Initiative`.</span>
+                </div>
+                <label className={`${buttonClasses} text-sm w-fit ${isReadOnly ? disabledClasses : 'bg-green-600 text-white hover:bg-green-700 cursor-pointer'}`}>
+                  <Upload size={16} className="mr-2" /> Importer
+                  <input type="file" className="hidden" accept=".json" onChange={(e) => handleFileImport(e, 'Initiatives')} disabled={isReadOnly}/>
+                </label>
+              </div>
+
               <div className="p-4 border rounded-lg">
                 <h3 className="font-semibold">Importer des activités (JSON)</h3>
                 <div className="flex items-center text-sm text-slate-500 mt-1 mb-2">

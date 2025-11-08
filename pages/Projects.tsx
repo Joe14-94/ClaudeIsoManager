@@ -1,18 +1,19 @@
 import React, { useState, useMemo } from 'react';
 import { useData } from '../contexts/DataContext';
-import { Project, ActivityStatus, TShirtSize, Resource } from '../types';
-import { STATUS_COLORS } from '../constants';
+import { Project, ActivityStatus, TShirtSize, Resource, Initiative } from '../types';
+import { STATUS_COLORS, ISO_MEASURES_DATA } from '../constants';
 import Card, { CardContent, CardHeader } from '../components/ui/Card';
 import Modal from '../components/ui/Modal';
 import { Search, PlusCircle, Edit, ArrowUp, ArrowDown } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import CalendarDatePicker from '../components/ui/CalendarDatePicker';
+import CustomMultiSelect from '../components/ui/CustomMultiSelect';
 
-type SortKey = 'projectId' | 'title' | 'status' | 'projectManagerMOA' | 'projectManagerMOE' | 'totalProgress';
+type SortKey = 'projectId' | 'title' | 'status' | 'projectManagerMOA' | 'projectManagerMOE' | 'totalProgress' | 'initiative';
 type SortDirection = 'ascending' | 'descending';
 
 const Projects: React.FC = () => {
-    const { projects, setProjects, resources } = useData();
+    const { projects, setProjects, resources, initiatives } = useData();
     const { userRole } = useAuth();
     const isReadOnly = userRole === 'readonly';
 
@@ -24,8 +25,10 @@ const Projects: React.FC = () => {
     const [isFormModalOpen, setIsFormModalOpen] = useState(false);
     const [isEditMode, setIsEditMode] = useState(false);
     const [currentProject, setCurrentProject] = useState<Partial<Project> | null>(null);
+    const [isoSearchTerm, setIsoSearchTerm] = useState('');
 
     const resourceMap = useMemo(() => new Map(resources.map(r => [r.id, r.name])), [resources]);
+    const initiativeMap = useMemo(() => new Map(initiatives.map(i => [i.id, i.label])), [initiatives]);
 
     const handleOpenFormModal = (projectToEdit?: Project) => {
         if (projectToEdit) {
@@ -46,6 +49,8 @@ const Projects: React.FC = () => {
                 status: ActivityStatus.NOT_STARTED,
                 tShirtSize: TShirtSize.M,
                 isTop30: false,
+                initiativeId: initiatives[0]?.id || '',
+                isoMeasures: [],
                 budgetRequested: undefined,
                 budgetApproved: undefined,
                 budgetCommitted: undefined,
@@ -55,6 +60,7 @@ const Projects: React.FC = () => {
             });
             setIsEditMode(false);
         }
+        setIsoSearchTerm('');
         setIsFormModalOpen(true);
     };
 
@@ -64,27 +70,12 @@ const Projects: React.FC = () => {
         setIsEditMode(false);
     };
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-        if (currentProject) {
-            const { name, value, type } = e.target;
-            
-            if (type === 'checkbox') {
-                const { checked } = e.target as HTMLInputElement;
-                setCurrentProject({ ...currentProject, [name]: checked });
-            } else if (type === 'number') {
-                setCurrentProject({ ...currentProject, [name]: value ? parseFloat(value) : undefined });
-            } else {
-                setCurrentProject({ ...currentProject, [name]: value });
-            }
-        }
-    };
-    
     const handleSave = (e: React.FormEvent) => {
         e.preventDefault();
         if (!currentProject || isReadOnly) return;
 
-        if (!currentProject.title || !currentProject.projectId) {
-          alert("L'ID projet et le titre sont obligatoires.");
+        if (!currentProject.title || !currentProject.projectId || !currentProject.initiativeId) {
+          alert("L'ID projet, le titre et l'initiative sont obligatoires.");
           return;
         }
         
@@ -146,6 +137,10 @@ const Projects: React.FC = () => {
                     aValue = getProjectProgress(a);
                     bValue = getProjectProgress(b);
                     break;
+                case 'initiative':
+                    aValue = initiativeMap.get(a.initiativeId || '');
+                    bValue = initiativeMap.get(b.initiativeId || '');
+                    break;
                 default:
                     aValue = a[sortConfig.key as keyof Project] as string;
                     bValue = b[sortConfig.key as keyof Project] as string;
@@ -165,7 +160,7 @@ const Projects: React.FC = () => {
           });
         }
         return sortableItems;
-    }, [projects, statusFilter, top30Filter, searchTerm, sortConfig, resourceMap]);
+    }, [projects, statusFilter, top30Filter, searchTerm, sortConfig, resourceMap, initiativeMap]);
 
     const renderSortArrow = (key: SortKey) => {
         if (sortConfig?.key === key) {
@@ -225,6 +220,7 @@ const Projects: React.FC = () => {
                             <tr>
                                 <th scope="col" className="px-6 py-3 cursor-pointer" onClick={() => requestSort('projectId')}>ID {renderSortArrow('projectId')}</th>
                                 <th scope="col" className="px-6 py-3 cursor-pointer" onClick={() => requestSort('title')}>Titre {renderSortArrow('title')}</th>
+                                <th scope="col" className="px-6 py-3 cursor-pointer" onClick={() => requestSort('initiative')}>Initiative {renderSortArrow('initiative')}</th>
                                 <th scope="col" className="px-6 py-3 cursor-pointer" onClick={() => requestSort('status')}>Statut {renderSortArrow('status')}</th>
                                 <th scope="col" className="px-6 py-3 cursor-pointer" onClick={() => requestSort('projectManagerMOA')}>CP MOA {renderSortArrow('projectManagerMOA')}</th>
                                 <th scope="col" className="px-6 py-3 cursor-pointer" onClick={() => requestSort('projectManagerMOE')}>CP MOE {renderSortArrow('projectManagerMOE')}</th>
@@ -238,6 +234,7 @@ const Projects: React.FC = () => {
                                 <tr key={project.id} className="bg-white border-b hover:bg-slate-50">
                                     <th scope="row" className="px-6 py-4 font-medium text-slate-900 whitespace-nowrap">{project.projectId}</th>
                                     <td className="px-6 py-4">{project.title}</td>
+                                    <td className="px-6 py-4">{initiativeMap.get(project.initiativeId || '') || '-'}</td>
                                     <td className="px-6 py-4"><span className={`px-2 py-1 text-xs font-medium rounded-full ${STATUS_COLORS[project.status]}`}>{project.status}</span></td>
                                     <td className="px-6 py-4">{resourceMap.get(project.projectManagerMOA || '') || '-'}</td>
                                     <td className="px-6 py-4">{resourceMap.get(project.projectManagerMOE || '') || '-'}</td>
@@ -267,6 +264,8 @@ const Projects: React.FC = () => {
                         isReadOnly={isReadOnly}
                         handleSave={handleSave}
                         handleCloseModal={handleCloseModal}
+                        isoSearchTerm={isoSearchTerm}
+                        setIsoSearchTerm={setIsoSearchTerm}
                     />
                 </Modal>
             )}
@@ -280,8 +279,24 @@ const FormBody: React.FC<{
     isReadOnly: boolean;
     handleSave: (e: React.FormEvent) => void;
     handleCloseModal: () => void;
-}> = ({ currentProject, setCurrentProject, isReadOnly, handleSave, handleCloseModal }) => {
-    const { resources } = useData();
+    isoSearchTerm: string;
+    setIsoSearchTerm: (term: string) => void;
+}> = ({ currentProject, setCurrentProject, isReadOnly, handleSave, handleCloseModal, isoSearchTerm, setIsoSearchTerm }) => {
+    const { resources, initiatives } = useData();
+
+    const filteredIsoOptions = useMemo(() => {
+        const options = ISO_MEASURES_DATA.map(m => ({
+          value: m.code,
+          label: `${m.code} - ${m.title}`,
+          tooltip: m.details?.measure
+        }));
+        if (!isoSearchTerm) return options;
+        return options.filter(opt => opt.label.toLowerCase().includes(isoSearchTerm.toLowerCase()));
+    }, [isoSearchTerm]);
+
+    const handleCustomMultiSelectChange = (name: string, value: string[]) => {
+        setCurrentProject(prev => ({ ...prev!, [name]: value }));
+    };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value, type } = e.target;
@@ -376,6 +391,39 @@ const FormBody: React.FC<{
                         {Object.values(TShirtSize).map(s => <option key={s} value={s}>{s}</option>)}
                     </select>
                 </div>
+            </div>
+
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label htmlFor="initiativeId">Initiative de rattachement</label>
+                    <select name="initiativeId" id="initiativeId" value={currentProject.initiativeId || ''} onChange={handleChange} disabled={isReadOnly} required>
+                        <option value="" disabled>Sélectionner une initiative</option>
+                        {initiatives.map(i => <option key={i.id} value={i.id}>{i.code} - {i.label}</option>)}
+                    </select>
+                </div>
+            </div>
+            
+             <div>
+                <label className="block text-sm font-medium text-slate-700">Mesures ISO</label>
+                 <div className="relative mt-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                    <input
+                      type="text"
+                      placeholder="Rechercher par code ou titre..."
+                      className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-md bg-white mb-2"
+                      value={isoSearchTerm}
+                      onChange={(e) => setIsoSearchTerm(e.target.value)}
+                      disabled={isReadOnly}
+                    />
+                </div>
+                <CustomMultiSelect
+                    label=""
+                    name="isoMeasures"
+                    options={filteredIsoOptions}
+                    selectedValues={currentProject.isoMeasures || []}
+                    onChange={handleCustomMultiSelectChange}
+                    disabled={isReadOnly}
+                />
             </div>
 
             <div className="pt-4">
@@ -503,17 +551,6 @@ const FormBody: React.FC<{
 };
 
 // Simple input styling for the form
-const FormInput: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = (props) => (
-    <input {...props} className={`mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm ${props.readOnly ? 'bg-slate-100' : ''}`} />
-);
-const FormTextArea: React.FC<React.TextareaHTMLAttributes<HTMLTextAreaElement>> = (props) => (
-    <textarea {...props} className={`mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm ${props.readOnly ? 'bg-slate-100' : ''}`} />
-);
-const FormSelect: React.FC<React.SelectHTMLAttributes<HTMLSelectElement>> = (props) => (
-    <select {...props} className={`mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm ${props.disabled ? 'bg-slate-100' : ''}`} />
-);
-
-// Injecting styles directly in the component for simplicity
 const style = document.createElement('style');
 style.textContent = `
     form label {

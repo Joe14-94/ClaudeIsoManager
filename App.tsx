@@ -27,6 +27,7 @@ import ProjectsDashboard from './pages/ProjectsDashboard';
 import ProjectsTimelinePage from './pages/ProjectsTimelinePage';
 import ProjectsBudget from './pages/ProjectsBudget';
 import ProjectsWorkload from './pages/ProjectsWorkload';
+import ProjectsExplorer from './pages/ProjectsExplorer';
 
 const AppLayout: React.FC = () => {
   return (
@@ -42,6 +43,7 @@ const AppLayout: React.FC = () => {
           <Route path="/projects-dashboard" element={<ProjectsDashboard />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/projets" element={<Projects />} />
+          <Route path="/projects-explorer" element={<ProjectsExplorer />} />
           <Route path="/projects-timeline" element={<ProjectsTimelinePage />} />
           <Route path="/projects-budget" element={<ProjectsBudget />} />
           <Route path="/projects-workload" element={<ProjectsWorkload />} />
