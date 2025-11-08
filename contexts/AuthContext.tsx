@@ -15,6 +15,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 const ADMIN_PASSWORD_KEY = 'admin_password';
 const READONLY_PASSWORD_KEY = 'readonly_password';
+const PMO_PASSWORD_KEY = 'pmo_password';
 
 export const AuthProvider = ({ children }: PropsWithChildren) => {
   const [userRole, setUserRole] = useState<UserRole | null>(null);
@@ -27,6 +28,9 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
   const [readonlyPassword, setReadonlyPassword] = useState<string>(() => 
     loadFromLocalStorage(READONLY_PASSWORD_KEY, 'lectureISO27002!')
   );
+  const [pmoPassword, setPmoPassword] = useState<string>(() =>
+    loadFromLocalStorage(PMO_PASSWORD_KEY, 'pmoISO27002!')
+  );
   
   // Persister les changements de mot de passe
   useEffect(() => {
@@ -36,6 +40,11 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
   useEffect(() => {
     saveToLocalStorage(READONLY_PASSWORD_KEY, readonlyPassword);
   }, [readonlyPassword]);
+  
+  useEffect(() => {
+    saveToLocalStorage(PMO_PASSWORD_KEY, pmoPassword);
+  }, [pmoPassword]);
+
 
   useEffect(() => {
     try {
@@ -62,6 +71,11 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
       sessionStorage.setItem('user_role', 'readonly');
       return true;
     }
+    if (trimmedPassword === pmoPassword) {
+      setUserRole('pmo');
+      sessionStorage.setItem('user_role', 'pmo');
+      return true;
+    }
     return false;
   };
 
@@ -83,6 +97,8 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
       setAdminPassword(newPassword);
     } else if (roleToChange === 'readonly') {
       setReadonlyPassword(newPassword);
+    } else if (roleToChange === 'pmo') {
+      setPmoPassword(newPassword);
     } else {
         return { success: false, message: "Rôle invalide." };
     }

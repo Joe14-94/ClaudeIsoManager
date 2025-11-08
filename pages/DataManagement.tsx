@@ -1,7 +1,3 @@
-
-
-
-
 // FIX: The import statement was malformed and was missing the 'useState' hook import.
 import React, { useState } from 'react';
 import Card, { CardContent, CardHeader, CardTitle } from '../components/ui/Card';
@@ -354,30 +350,32 @@ const DataManagement: React.FC = () => {
         </div>
       )}
 
-      <Card>
-        <CardHeader className="flex items-center justify-between">
-          <CardTitle>Sauvegarde et restauration</CardTitle>
-           <Tooltip text="La sauvegarde complète inclut : projets, activités, objectifs, orientations, chantiers, ressources et processus de sécurité.">
-            <Info size={18} className="text-slate-500 cursor-help" />
-          </Tooltip>
-        </CardHeader>
-        <CardContent className="flex flex-col sm:flex-row gap-4">
-          <button
-            onClick={handleExport}
-            disabled={isReadOnly}
-            className={`${buttonClasses} ${isReadOnly ? disabledClasses : 'bg-blue-600 text-white hover:bg-blue-700'}`}
-          >
-            <DatabaseBackup className="mr-2" size={18} />
-            Sauvegarder les données (JSON)
-          </button>
-          
-          <label className={`${buttonClasses} ${isReadOnly ? disabledClasses : 'bg-slate-500 text-white hover:bg-slate-600 cursor-pointer'}`}>
-              <Upload className="mr-2" size={18} />
-              Restaurer une sauvegarde
-              <input type="file" className="hidden" accept=".json" onChange={(e) => handleFileImport(e, 'Sauvegarde Complète')} disabled={isReadOnly} />
-          </label>
-        </CardContent>
-      </Card>
+      {(userRole === 'admin' || userRole === 'pmo') && (
+        <Card>
+          <CardHeader className="flex items-center justify-between">
+            <CardTitle>Sauvegarde et restauration</CardTitle>
+            <Tooltip text="La sauvegarde complète inclut : projets, activités, objectifs, orientations, chantiers, ressources et processus de sécurité.">
+              <Info size={18} className="text-slate-500 cursor-help" />
+            </Tooltip>
+          </CardHeader>
+          <CardContent className="flex flex-col sm:flex-row gap-4">
+            <button
+              onClick={handleExport}
+              disabled={isReadOnly}
+              className={`${buttonClasses} ${isReadOnly ? disabledClasses : 'bg-blue-600 text-white hover:bg-blue-700'}`}
+            >
+              <DatabaseBackup className="mr-2" size={18} />
+              Sauvegarder les données (JSON)
+            </button>
+            
+            <label className={`${buttonClasses} ${isReadOnly ? disabledClasses : 'bg-slate-500 text-white hover:bg-slate-600 cursor-pointer'}`}>
+                <Upload className="mr-2" size={18} />
+                Restaurer une sauvegarde
+                <input type="file" className="hidden" accept=".json" onChange={(e) => handleFileImport(e, 'Sauvegarde Complète')} disabled={isReadOnly} />
+            </label>
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardHeader>
@@ -386,148 +384,158 @@ const DataManagement: React.FC = () => {
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
           
-          <div className="p-4 border rounded-lg">
-            <h3 className="font-semibold">Importer des objectifs (JSON)</h3>
-            <div className="flex items-center text-sm text-slate-500 mt-1 mb-2">
-              <HelpCircle size={16} className="mr-2"/>
-              <span>Le fichier JSON doit être un tableau d'objets `Objective`.</span>
-            </div>
-            <label className={`${buttonClasses} text-sm w-fit ${isReadOnly ? disabledClasses : 'bg-green-600 text-white hover:bg-green-700 cursor-pointer'}`}>
-              <Upload size={16} className="mr-2" /> Importer
-              <input type="file" className="hidden" accept=".json" onChange={(e) => handleFileImport(e, 'Objectifs')} disabled={isReadOnly}/>
-            </label>
-          </div>
-          
-          <div className="p-4 border rounded-lg">
-            <h3 className="font-semibold">Importer des orientations (JSON)</h3>
-            <div className="flex items-center text-sm text-slate-500 mt-1 mb-2">
-              <HelpCircle size={16} className="mr-2"/>
-              <span>Le fichier JSON doit être un tableau d'objets `StrategicOrientation`.</span>
-            </div>
-            <label className={`${buttonClasses} text-sm w-fit ${isReadOnly ? disabledClasses : 'bg-green-600 text-white hover:bg-green-700 cursor-pointer'}`}>
-              <Upload size={16} className="mr-2" /> Importer
-              <input type="file" className="hidden" accept=".json" onChange={(e) => handleFileImport(e, 'Orientations')} disabled={isReadOnly}/>
-            </label>
-          </div>
+          {userRole === 'admin' && (
+            <>
+              <div className="p-4 border rounded-lg">
+                <h3 className="font-semibold">Importer des objectifs (JSON)</h3>
+                <div className="flex items-center text-sm text-slate-500 mt-1 mb-2">
+                  <HelpCircle size={16} className="mr-2"/>
+                  <span>Le fichier JSON doit être un tableau d'objets `Objective`.</span>
+                </div>
+                <label className={`${buttonClasses} text-sm w-fit ${isReadOnly ? disabledClasses : 'bg-green-600 text-white hover:bg-green-700 cursor-pointer'}`}>
+                  <Upload size={16} className="mr-2" /> Importer
+                  <input type="file" className="hidden" accept=".json" onChange={(e) => handleFileImport(e, 'Objectifs')} disabled={isReadOnly}/>
+                </label>
+              </div>
+              
+              <div className="p-4 border rounded-lg">
+                <h3 className="font-semibold">Importer des orientations (JSON)</h3>
+                <div className="flex items-center text-sm text-slate-500 mt-1 mb-2">
+                  <HelpCircle size={16} className="mr-2"/>
+                  <span>Le fichier JSON doit être un tableau d'objets `StrategicOrientation`.</span>
+                </div>
+                <label className={`${buttonClasses} text-sm w-fit ${isReadOnly ? disabledClasses : 'bg-green-600 text-white hover:bg-green-700 cursor-pointer'}`}>
+                  <Upload size={16} className="mr-2" /> Importer
+                  <input type="file" className="hidden" accept=".json" onChange={(e) => handleFileImport(e, 'Orientations')} disabled={isReadOnly}/>
+                </label>
+              </div>
 
-          <div className="p-4 border rounded-lg">
-            <h3 className="font-semibold">Importer des chantiers (JSON)</h3>
-            <div className="flex items-center text-sm text-slate-500 mt-1 mb-2">
-              <HelpCircle size={16} className="mr-2"/>
-              <span>Le fichier JSON doit être un tableau d'objets `Chantier`.</span>
-            </div>
-            <label className={`${buttonClasses} text-sm w-fit ${isReadOnly ? disabledClasses : 'bg-green-600 text-white hover:bg-green-700 cursor-pointer'}`}>
-              <Upload size={16} className="mr-2" /> Importer
-              <input type="file" className="hidden" accept=".json" onChange={(e) => handleFileImport(e, 'Chantiers')} disabled={isReadOnly}/>
-            </label>
-          </div>
-          
-          <div className="p-4 border rounded-lg">
-            <h3 className="font-semibold">Importer des activités (JSON)</h3>
-            <div className="flex items-center text-sm text-slate-500 mt-1 mb-2">
-              <HelpCircle size={16} className="mr-2"/>
-              <span>Le fichier JSON doit être un tableau d'objets `Activity`.</span>
-            </div>
-            <label className={`${buttonClasses} text-sm w-fit ${isReadOnly ? disabledClasses : 'bg-green-600 text-white hover:bg-green-700 cursor-pointer'}`}>
-              <Upload size={16} className="mr-2" /> Importer
-              <input type="file" className="hidden" accept=".json" onChange={(e) => handleFileImport(e, 'Activités')} disabled={isReadOnly}/>
-            </label>
-          </div>
+              <div className="p-4 border rounded-lg">
+                <h3 className="font-semibold">Importer des chantiers (JSON)</h3>
+                <div className="flex items-center text-sm text-slate-500 mt-1 mb-2">
+                  <HelpCircle size={16} className="mr-2"/>
+                  <span>Le fichier JSON doit être un tableau d'objets `Chantier`.</span>
+                </div>
+                <label className={`${buttonClasses} text-sm w-fit ${isReadOnly ? disabledClasses : 'bg-green-600 text-white hover:bg-green-700 cursor-pointer'}`}>
+                  <Upload size={16} className="mr-2" /> Importer
+                  <input type="file" className="hidden" accept=".json" onChange={(e) => handleFileImport(e, 'Chantiers')} disabled={isReadOnly}/>
+                </label>
+              </div>
+              
+              <div className="p-4 border rounded-lg">
+                <h3 className="font-semibold">Importer des activités (JSON)</h3>
+                <div className="flex items-center text-sm text-slate-500 mt-1 mb-2">
+                  <HelpCircle size={16} className="mr-2"/>
+                  <span>Le fichier JSON doit être un tableau d'objets `Activity`.</span>
+                </div>
+                <label className={`${buttonClasses} text-sm w-fit ${isReadOnly ? disabledClasses : 'bg-green-600 text-white hover:bg-green-700 cursor-pointer'}`}>
+                  <Upload size={16} className="mr-2" /> Importer
+                  <input type="file" className="hidden" accept=".json" onChange={(e) => handleFileImport(e, 'Activités')} disabled={isReadOnly}/>
+                </label>
+              </div>
 
-          <div className="p-4 border rounded-lg">
-            <h3 className="font-semibold">Importer des projets (JSON)</h3>
-            <div className="flex items-center text-sm text-slate-500 mt-1 mb-2">
-              <HelpCircle size={16} className="mr-2"/>
-              <span>Le fichier JSON doit être un tableau d'objets `Project`.</span>
-            </div>
-            <label className={`${buttonClasses} text-sm w-fit ${isReadOnly ? disabledClasses : 'bg-green-600 text-white hover:bg-green-700 cursor-pointer'}`}>
-              <Upload size={16} className="mr-2" /> Importer
-              <input type="file" className="hidden" accept=".json" onChange={(e) => handleFileImport(e, 'Projets')} disabled={isReadOnly}/>
-            </label>
-          </div>
+              <div className="p-4 border rounded-lg">
+                <h3 className="font-semibold">Importer des projets (JSON)</h3>
+                <div className="flex items-center text-sm text-slate-500 mt-1 mb-2">
+                  <HelpCircle size={16} className="mr-2"/>
+                  <span>Le fichier JSON doit être un tableau d'objets `Project`.</span>
+                </div>
+                <label className={`${buttonClasses} text-sm w-fit ${isReadOnly ? disabledClasses : 'bg-green-600 text-white hover:bg-green-700 cursor-pointer'}`}>
+                  <Upload size={16} className="mr-2" /> Importer
+                  <input type="file" className="hidden" accept=".json" onChange={(e) => handleFileImport(e, 'Projets')} disabled={isReadOnly}/>
+                </label>
+              </div>
+              
+              <div className="p-4 border rounded-lg">
+                <h3 className="font-semibold">Importer des processus (JSON)</h3>
+                <div className="flex items-center text-sm text-slate-500 mt-1 mb-2">
+                  <HelpCircle size={16} className="mr-2"/>
+                  <span>Le fichier JSON doit être un tableau d'objets `SecurityProcess`.</span>
+                </div>
+                <label className={`${buttonClasses} text-sm w-fit ${isReadOnly ? disabledClasses : 'bg-green-600 text-white hover:bg-green-700 cursor-pointer'}`}>
+                  <Upload size={16} className="mr-2" /> Importer
+                  <input type="file" className="hidden" accept=".json" onChange={(e) => handleFileImport(e, 'Processus de sécurité')} disabled={isReadOnly}/>
+                </label>
+              </div>
+            </>
+          )}
           
-          <div className="p-4 border rounded-lg">
-            <h3 className="font-semibold">Importer des processus (JSON)</h3>
-            <div className="flex items-center text-sm text-slate-500 mt-1 mb-2">
-              <HelpCircle size={16} className="mr-2"/>
-              <span>Le fichier JSON doit être un tableau d'objets `SecurityProcess`.</span>
-            </div>
-            <label className={`${buttonClasses} text-sm w-fit ${isReadOnly ? disabledClasses : 'bg-green-600 text-white hover:bg-green-700 cursor-pointer'}`}>
-              <Upload size={16} className="mr-2" /> Importer
-              <input type="file" className="hidden" accept=".json" onChange={(e) => handleFileImport(e, 'Processus de sécurité')} disabled={isReadOnly}/>
-            </label>
-          </div>
-          
-          <div className="p-4 border rounded-lg md:col-span-1">
-            <h3 className="font-semibold">Import FDR JH (CSV)</h3>
-            <div className="flex items-center text-sm text-slate-500 mt-1 mb-2">
-              <HelpCircle size={16} className="mr-2"/>
-              <span>Import spécifique pour la mise à jour des charges projets (J/H).</span>
-            </div>
-            <label className={`${buttonClasses} text-sm w-fit ${isReadOnly ? disabledClasses : 'bg-teal-600 text-white hover:bg-teal-700 cursor-pointer'}`}>
-              <Upload size={16} className="mr-2" /> Importer le CSV des charges
-              <input type="file" className="hidden" accept=".csv" onChange={handleFdrJhImport} disabled={isReadOnly}/>
-            </label>
-          </div>
+          {(userRole === 'admin' || userRole === 'pmo') && (
+            <>
+              <div className="p-4 border rounded-lg md:col-span-1">
+                <h3 className="font-semibold">Import FDR JH (CSV)</h3>
+                <div className="flex items-center text-sm text-slate-500 mt-1 mb-2">
+                  <HelpCircle size={16} className="mr-2"/>
+                  <span>Import spécifique pour la mise à jour des charges projets (J/H).</span>
+                </div>
+                <label className={`${buttonClasses} text-sm w-fit ${isReadOnly ? disabledClasses : 'bg-teal-600 text-white hover:bg-teal-700 cursor-pointer'}`}>
+                  <Upload size={16} className="mr-2" /> Importer le CSV des charges
+                  <input type="file" className="hidden" accept=".csv" onChange={handleFdrJhImport} disabled={isReadOnly}/>
+                </label>
+              </div>
 
-          <div className="p-4 border rounded-lg md:col-span-1">
-            <h3 className="font-semibold">Import FDR Euros (CSV)</h3>
-            <div className="flex items-center text-sm text-slate-500 mt-1 mb-2">
-              <HelpCircle size={16} className="mr-2"/>
-              <span>Import spécifique pour la mise à jour des budgets projets (€).</span>
-            </div>
-            <label className={`${buttonClasses} text-sm w-fit ${isReadOnly ? disabledClasses : 'bg-teal-600 text-white hover:bg-teal-700 cursor-pointer'}`}>
-              <Upload size={16} className="mr-2" /> Importer le CSV des budgets
-              <input type="file" className="hidden" accept=".csv" onChange={handleFdrEurosImport} disabled={isReadOnly}/>
-            </label>
-          </div>
+              <div className="p-4 border rounded-lg md:col-span-1">
+                <h3 className="font-semibold">Import FDR Euros (CSV)</h3>
+                <div className="flex items-center text-sm text-slate-500 mt-1 mb-2">
+                  <HelpCircle size={16} className="mr-2"/>
+                  <span>Import spécifique pour la mise à jour des budgets projets (€).</span>
+                </div>
+                <label className={`${buttonClasses} text-sm w-fit ${isReadOnly ? disabledClasses : 'bg-teal-600 text-white hover:bg-teal-700 cursor-pointer'}`}>
+                  <Upload size={16} className="mr-2" /> Importer le CSV des budgets
+                  <input type="file" className="hidden" accept=".csv" onChange={handleFdrEurosImport} disabled={isReadOnly}/>
+                </label>
+              </div>
+            </>
+          )}
 
 
         </CardContent>
       </Card>
       
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center text-orange-700">
-            <AlertTriangle className="mr-2" />
-            Actions de réinitialisation
-          </CardTitle>
-          <p className="text-sm text-slate-500 mt-1">Actions dangereuses à n'utiliser qu'en connaissance de cause.</p>
-        </CardHeader>
-        <CardContent>
-            {showResetConfirmation ? (
-                 <div className="p-4 border border-red-200 rounded-lg bg-red-50">
-                    <h3 className="font-semibold text-red-800">Confirmation requise</h3>
-                    <p className="text-sm text-red-700 mt-1">Êtes-vous absolument certain de vouloir supprimer TOUTES les activités ? Cette action est irréversible.</p>
-                    <div className="flex gap-4 mt-4">
-                        <button onClick={confirmResetActivities} className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700">
-                            Oui, supprimer tout
-                        </button>
-                        <button onClick={() => setShowResetConfirmation(false)} className="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-200 rounded-md hover:bg-slate-300">
-                            Annuler
-                        </button>
-                    </div>
-                </div>
-            ) : (
-                <div className="p-4 border border-slate-200 rounded-lg bg-slate-50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                    <div>
-                    <h3 className="font-semibold text-slate-800">Supprimer toutes les activités</h3>
-                    <p className="text-sm text-slate-600 mt-1">Cette action supprimera définitivement toutes les activités de l'application. Utilisez-la pour nettoyer les données de test avant d'importer des données réelles.</p>
-                    </div>
-                    <Tooltip text="Cette action est irréversible.">
-                    <button
-                        onClick={handleResetActivities}
-                        disabled={isReadOnly}
-                        className={`${buttonClasses} ${isReadOnly ? disabledClasses : 'bg-red-600 text-white hover:bg-red-700'}`}
-                    >
-                        <Trash2 className="mr-2" size={18} />
-                        Supprimer les activités
-                    </button>
-                    </Tooltip>
-                </div>
-            )}
-        </CardContent>
-      </Card>
+      {(userRole === 'admin' || userRole === 'pmo') && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center text-orange-700">
+              <AlertTriangle className="mr-2" />
+              Actions de réinitialisation
+            </CardTitle>
+            <p className="text-sm text-slate-500 mt-1">Actions dangereuses à n'utiliser qu'en connaissance de cause.</p>
+          </CardHeader>
+          <CardContent>
+              {showResetConfirmation ? (
+                  <div className="p-4 border border-red-200 rounded-lg bg-red-50">
+                      <h3 className="font-semibold text-red-800">Confirmation requise</h3>
+                      <p className="text-sm text-red-700 mt-1">Êtes-vous absolument certain de vouloir supprimer TOUTES les activités ? Cette action est irréversible.</p>
+                      <div className="flex gap-4 mt-4">
+                          <button onClick={confirmResetActivities} className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700">
+                              Oui, supprimer tout
+                          </button>
+                          <button onClick={() => setShowResetConfirmation(false)} className="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-200 rounded-md hover:bg-slate-300">
+                              Annuler
+                          </button>
+                      </div>
+                  </div>
+              ) : (
+                  <div className="p-4 border border-slate-200 rounded-lg bg-slate-50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                      <div>
+                      <h3 className="font-semibold text-slate-800">Supprimer toutes les activités</h3>
+                      <p className="text-sm text-slate-600 mt-1">Cette action supprimera définitivement toutes les activités de l'application. Utilisez-la pour nettoyer les données de test avant d'importer des données réelles.</p>
+                      </div>
+                      <Tooltip text="Cette action est irréversible.">
+                      <button
+                          onClick={handleResetActivities}
+                          disabled={isReadOnly}
+                          className={`${buttonClasses} ${isReadOnly ? disabledClasses : 'bg-red-600 text-white hover:bg-red-700'}`}
+                      >
+                          <Trash2 className="mr-2" size={18} />
+                          Supprimer les activités
+                      </button>
+                      </Tooltip>
+                  </div>
+              )}
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 };

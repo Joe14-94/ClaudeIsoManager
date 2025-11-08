@@ -7,21 +7,29 @@ interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   className?: string;
 }
 
-const Card: React.FC<CardProps> = ({ children, className = '', ...props }) => {
+// FIX: Use React.forwardRef to allow passing refs to the underlying div element. This resolves an error in ProjectsTimelinePage and allows ProjectsDashboard to correctly get a ref to CardContent.
+const Card = React.forwardRef<HTMLDivElement, CardProps>(({ children, className = '', ...props }, ref) => {
   return (
-    <div className={`bg-white border border-slate-200 rounded-lg shadow-sm ${className}`} {...props}>
+    <div ref={ref} className={`bg-white border border-slate-200 rounded-lg shadow-sm ${className}`} {...props}>
       {children}
     </div>
   );
-};
+});
+Card.displayName = "Card";
 
-export const CardHeader: React.FC<CardProps> = ({ children, className = '', ...props }) => {
-  return <div className={`p-4 border-b border-slate-200 ${className}`} {...props}>{children}</div>;
-};
 
-export const CardContent: React.FC<CardProps> = ({ children, className = '', ...props }) => {
-  return <div className={`p-4 ${className}`} {...props}>{children}</div>;
-};
+// FIX: Use React.forwardRef to allow passing refs to the underlying div element.
+export const CardHeader = React.forwardRef<HTMLDivElement, CardProps>(({ children, className = '', ...props }, ref) => {
+  return <div ref={ref} className={`p-4 border-b border-slate-200 ${className}`} {...props}>{children}</div>;
+});
+CardHeader.displayName = "CardHeader";
+
+// FIX: Use React.forwardRef to allow passing refs to the underlying div element.
+export const CardContent = React.forwardRef<HTMLDivElement, CardProps>(({ children, className = '', ...props }, ref) => {
+  return <div ref={ref} className={`p-4 ${className}`} {...props}>{children}</div>;
+});
+CardContent.displayName = "CardContent";
+
 
 // FIX: Created a distinct props interface for CardTitle to correctly type its underlying h3 element.
 interface CardTitleProps extends React.HTMLAttributes<HTMLHeadingElement> {

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 // FIX: The project appears to use react-router-dom v5. The imports for 'NavLink' and 'useNavigate' are for v6. Updating to v6 equivalents to fix build errors.
 import { NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, ListChecks, Network, ShieldCheck, Target, TrendingUp, Users, Database, FileUp, FileDown, Workflow, GitMerge, ClipboardCheck, LogOut, KeyRound, DatabaseZap, GanttChart, LayoutGrid, Flag, ClipboardList } from 'lucide-react';
+import { LayoutDashboard, ListChecks, Network, ShieldCheck, Target, TrendingUp, Users, Database, FileUp, FileDown, Workflow, GitMerge, ClipboardCheck, LogOut, KeyRound, DatabaseZap, GanttChart, LayoutGrid, Flag, ClipboardList, ChevronUp, ChevronDown, Coins, Timer } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import ChangePasswordModal from '../auth/ChangePasswordModal';
 import { APP_VERSION } from '../../config';
@@ -11,6 +11,12 @@ const Sidebar: React.FC = () => {
   // FIX: Switched from useHistory to useNavigate for v6 compatibility.
   const navigate = useNavigate();
   const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false);
+  
+  const [isProjetsOpen, setIsProjetsOpen] = useState(false);
+  const [isActivitesOpen, setIsActivitesOpen] = useState(false);
+  const [isReferentielsOpen, setIsReferentielsOpen] = useState(false);
+  const [isDonneesOpen, setIsDonneesOpen] = useState(false);
+
 
   const navItemClasses = "flex items-center px-4 py-2.5 text-sm font-medium rounded-lg transition-colors";
   const activeClasses = "bg-slate-200 text-slate-900";
@@ -35,85 +41,160 @@ const Sidebar: React.FC = () => {
           </div>
           <h1 className="text-xl font-bold text-slate-800">ISO Manager</h1>
         </div>
-        <nav className="flex-1 flex flex-col gap-y-4 mt-4">
-          <div className='space-y-1'>
-              {/* FIX: Updated NavLink to use a className function instead of `activeClassName` for v6 compatibility. */}
-              <NavLink to="/dashboard" className={getNavLinkClass}>
-                <LayoutDashboard size={18} className="mr-3" />
-                Tableau de bord
-              </NavLink>
-               <NavLink to="/projets" className={getNavLinkClass}>
-                <ClipboardList size={18} className="mr-3" />
-                Projets
-              </NavLink>
-              <NavLink to="/activities" className={getNavLinkClass}>
-                <ListChecks size={18} className="mr-3" />
-                Activités
-              </NavLink>
-              <NavLink to="/explorer" className={getNavLinkClass}>
-                <LayoutGrid size={18} className="mr-3" />
-                Explorateur
-              </NavLink>
-              <NavLink to="/timeline" className={getNavLinkClass}>
-                <GanttChart size={18} className="mr-3" />
-                Timeline
-              </NavLink>
-              <NavLink to="/graph" className={getNavLinkClass}>
-                <Network size={18} className="mr-3" />
-                Vue arborescente
-              </NavLink>
-              <NavLink to="/d3-graph" className={getNavLinkClass}>
-                <GitMerge size={18} className="mr-3" />
-                Vue D3.js
-              </NavLink>
+        <nav className="flex-1 flex flex-col gap-y-1 mt-4 overflow-y-auto">
+          {(userRole === 'admin' || userRole === 'pmo') && (
+            <NavLink to="/general-dashboard" className={getNavLinkClass}>
+              <LayoutDashboard size={18} className="mr-3" />
+              Tableau de bord
+            </NavLink>
+          )}
+          
+          {(userRole === 'admin' || userRole === 'pmo') && (
+          <div className="py-2">
+            <div className="flex justify-between items-center px-4 mb-2">
+              <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Projets</h2>
+              <button onClick={() => setIsProjetsOpen(!isProjetsOpen)} className="text-slate-400 hover:text-slate-600">
+                {isProjetsOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+              </button>
+            </div>
+            {isProjetsOpen && (
+              <div className='space-y-1'>
+                 <NavLink to="/projects-dashboard" className={getNavLinkClass}>
+                    <LayoutDashboard size={18} className="mr-3" />
+                    Tableau de bord
+                </NavLink>
+                 <NavLink to="/projets" className={getNavLinkClass}>
+                  <ClipboardList size={18} className="mr-3" />
+                  Projets
+                </NavLink>
+                 <NavLink to="/projects-timeline" className={getNavLinkClass}>
+                  <GanttChart size={18} className="mr-3" />
+                  Timeline
+                </NavLink>
+                 <NavLink to="/projects-budget" className={getNavLinkClass}>
+                  <Coins size={18} className="mr-3" />
+                  Budget
+                </NavLink>
+                 <NavLink to="/projects-workload" className={getNavLinkClass}>
+                  <Timer size={18} className="mr-3" />
+                  Charges J/H
+                </NavLink>
+              </div>
+            )}
+          </div>
+          )}
+
+          {(userRole === 'admin' || userRole === 'pmo') && (
+          <div className="py-2">
+            <div className="flex justify-between items-center px-4 mb-2">
+              <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Activités</h2>
+              <button onClick={() => setIsActivitesOpen(!isActivitesOpen)} className="text-slate-400 hover:text-slate-600">
+                {isActivitesOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+              </button>
+            </div>
+            {isActivitesOpen && (
+              <div className='space-y-1'>
+                <NavLink to="/dashboard" className={getNavLinkClass}>
+                  <LayoutDashboard size={18} className="mr-3" />
+                  Tableau de bord Activités
+                </NavLink>
+                <NavLink to="/activities" className={getNavLinkClass}>
+                  <ListChecks size={18} className="mr-3" />
+                  Activités
+                </NavLink>
+                <NavLink to="/explorer" className={getNavLinkClass}>
+                  <LayoutGrid size={18} className="mr-3" />
+                  Explorateur
+                </NavLink>
+                <NavLink to="/timeline" className={getNavLinkClass}>
+                  <GanttChart size={18} className="mr-3" />
+                  Timeline
+                </NavLink>
+                {userRole === 'admin' && (
+                  <>
+                    <NavLink to="/graph" className={getNavLinkClass}>
+                      <Network size={18} className="mr-3" />
+                      Vue arborescente
+                    </NavLink>
+                    <NavLink to="/d3-graph" className={getNavLinkClass}>
+                      <GitMerge size={18} className="mr-3" />
+                      Vue D3.js
+                    </NavLink>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+          )}
+
+          <div className="py-2">
+              <div className="flex justify-between items-center px-4 mb-2">
+                <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Référentiels</h2>
+                <button onClick={() => setIsReferentielsOpen(!isReferentielsOpen)} className="text-slate-400 hover:text-slate-600">
+                    {isReferentielsOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                </button>
+              </div>
+              {isReferentielsOpen && (
+                <div className='space-y-1'>
+                    {userRole === 'admin' && (
+                      <>
+                        <NavLink to="/iso27002" className={getNavLinkClass}>
+                            <ShieldCheck size={18} className="mr-3" />
+                            ISO 27002
+                        </NavLink>
+                        <NavLink to="/initiatives" className={getNavLinkClass}>
+                            <Flag size={18} className="mr-3" />
+                            Initiatives
+                        </NavLink>
+                        <NavLink to="/orientations" className={getNavLinkClass}>
+                            <TrendingUp size={18} className="mr-3" />
+                            Orientations
+                        </NavLink>
+                        <NavLink to="/chantiers" className={getNavLinkClass}>
+                            <Workflow size={18} className="mr-3" />
+                            Chantiers
+                        </NavLink>
+                        <NavLink to="/objectives" className={getNavLinkClass}>
+                            <Target size={18} className="mr-3" />
+                            Objectifs
+                        </NavLink>
+                        <NavLink to="/processes" className={getNavLinkClass}>
+                            <ClipboardCheck size={18} className="mr-3" />
+                            Processus
+                        </NavLink>
+                      </>
+                    )}
+                    <NavLink to="/resources" className={getNavLinkClass}>
+                        <Users size={18} className="mr-3" />
+                        Ressources
+                    </NavLink>
+                </div>
+              )}
           </div>
 
-          <div>
-              <h2 className="px-4 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Référentiels</h2>
-              <div className='space-y-1'>
-                  <NavLink to="/iso27002" className={getNavLinkClass}>
-                      <ShieldCheck size={18} className="mr-3" />
-                      ISO 27002
-                  </NavLink>
-                  <NavLink to="/initiatives" className={getNavLinkClass}>
-                      <Flag size={18} className="mr-3" />
-                      Initiatives
-                  </NavLink>
-                  <NavLink to="/orientations" className={getNavLinkClass}>
-                      <TrendingUp size={18} className="mr-3" />
-                      Orientations
-                  </NavLink>
-                  <NavLink to="/chantiers" className={getNavLinkClass}>
-                      <Workflow size={18} className="mr-3" />
-                      Chantiers
-                  </NavLink>
-                  <NavLink to="/objectives" className={getNavLinkClass}>
-                      <Target size={18} className="mr-3" />
-                      Objectifs
-                  </NavLink>
-                  <NavLink to="/processes" className={getNavLinkClass}>
-                      <ClipboardCheck size={18} className="mr-3" />
-                      Processus
-                  </NavLink>
-                   <NavLink to="/resources" className={getNavLinkClass}>
-                      <Users size={18} className="mr-3" />
-                      Ressources
-                  </NavLink>
+          <div className="py-2">
+              <div className="flex justify-between items-center px-4 mb-2">
+                <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Données</h2>
+                <button onClick={() => setIsDonneesOpen(!isDonneesOpen)} className="text-slate-400 hover:text-slate-600">
+                    {isDonneesOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                </button>
               </div>
-          </div>
-
-          <div>
-              <h2 className="px-4 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Données</h2>
-              <div className='space-y-1'>
-                  <NavLink to="/data-management" className={getNavLinkClass}>
-                      <Database size={18} className="mr-3" />
-                      Gestion des données
-                  </NavLink>
-                  <NavLink to="/data-model" className={getNavLinkClass}>
-                      <DatabaseZap size={18} className="mr-3" />
-                      Modèle de données
-                  </NavLink>
-              </div>
+              {isDonneesOpen && (
+                <div className='space-y-1'>
+                    {(userRole === 'admin' || userRole === 'pmo') && (
+                      <NavLink to="/data-management" className={getNavLinkClass}>
+                          <Database size={18} className="mr-3" />
+                          Gestion des données
+                      </NavLink>
+                    )}
+                    {userRole === 'admin' && (
+                      <NavLink to="/data-model" className={getNavLinkClass}>
+                          <DatabaseZap size={18} className="mr-3" />
+                          Modèle de données
+                      </NavLink>
+                    )}
+                </div>
+              )}
           </div>
         </nav>
          <div className="mt-auto space-y-2">

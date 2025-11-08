@@ -227,4 +227,4 @@ export interface CoverageMatrix {
   }
 }
 
-export type UserRole = 'admin' | 'readonly';
+export type UserRole = 'admin' | 'readonly' | 'pmo';

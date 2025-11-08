@@ -1,4 +1,5 @@
 
+
 import React, { useMemo, useState } from 'react';
 // FIX: The project appears to use react-router-dom v5. The import for 'useNavigate' is for v6. It is replaced with the v6 equivalent 'useNavigate'.
 import { useNavigate } from 'react-router-dom';
@@ -131,7 +132,7 @@ const Dashboard: React.FC = () => {
 
     return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold text-slate-800">Tableau de bord</h1>
+      <h1 className="text-3xl font-bold text-slate-800">Tableau de bord activités</h1>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {/* FIX: Updated to useNavigate for v6 */}

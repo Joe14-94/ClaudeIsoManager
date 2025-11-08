@@ -22,6 +22,11 @@ import DataModelView from './pages/DataModelView';
 import TimelinePage from './pages/TimelinePage';
 import DataExplorer from './pages/DataExplorer';
 import Projects from './pages/Projects';
+import GeneralDashboard from './pages/GeneralDashboard';
+import ProjectsDashboard from './pages/ProjectsDashboard';
+import ProjectsTimelinePage from './pages/ProjectsTimelinePage';
+import ProjectsBudget from './pages/ProjectsBudget';
+import ProjectsWorkload from './pages/ProjectsWorkload';
 
 const AppLayout: React.FC = () => {
   return (
@@ -31,10 +36,15 @@ const AppLayout: React.FC = () => {
         {/* FIX: Replaced v5 Switch with v6 Routes */}
         <Routes>
           {/* FIX: Replaced v5 Redirect and `exact` prop with v6 Navigate element. In v6, routes are exact by default. */}
-          <Route path="/" element={<Navigate to="/dashboard" />} />
+          <Route path="/" element={<Navigate to="/general-dashboard" />} />
           {/* FIX: Updated Route components to use `element` prop for v6 */}
+          <Route path="/general-dashboard" element={<GeneralDashboard />} />
+          <Route path="/projects-dashboard" element={<ProjectsDashboard />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/projets" element={<Projects />} />
+          <Route path="/projects-timeline" element={<ProjectsTimelinePage />} />
+          <Route path="/projects-budget" element={<ProjectsBudget />} />
+          <Route path="/projects-workload" element={<ProjectsWorkload />} />
           <Route path="/activities" element={<Activities />} />
           <Route path="/explorer" element={<DataExplorer />} />
           <Route path="/timeline" element={<TimelinePage />} />

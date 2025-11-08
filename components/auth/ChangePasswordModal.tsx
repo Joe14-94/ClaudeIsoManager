@@ -73,10 +73,14 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen, onClo
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
           <label className="block text-sm font-medium text-slate-700">Compte à modifier</label>
-          <div className="mt-2 flex space-x-6">
+          <div className="mt-2 flex flex-wrap gap-x-6 gap-y-2">
             <div className="flex items-center">
               <input id="role-admin" name="role" type="radio" value="admin" checked={roleToChange === 'admin'} onChange={() => setRoleToChange('admin')} className="h-4 w-4 text-blue-600 border-slate-300 focus:ring-blue-500"/>
               <label htmlFor="role-admin" className="ml-2 block text-sm text-slate-900">Administrateur</label>
+            </div>
+             <div className="flex items-center">
+              <input id="role-pmo" name="role" type="radio" value="pmo" checked={roleToChange === 'pmo'} onChange={() => setRoleToChange('pmo')} className="h-4 w-4 text-blue-600 border-slate-300 focus:ring-blue-500"/>
+              <label htmlFor="role-pmo" className="ml-2 block text-sm text-slate-900">PMO</label>
             </div>
             <div className="flex items-center">
               <input id="role-readonly" name="role" type="radio" value="readonly" checked={roleToChange === 'readonly'} onChange={() => setRoleToChange('readonly')} className="h-4 w-4 text-blue-600 border-slate-300 focus:ring-blue-500"/>
@@ -96,7 +100,7 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen, onClo
         </div>
 
         <div>
-          <label htmlFor="newPassword" className="block text-sm font-medium text-slate-700">Nouveau mot de passe pour le compte '{roleToChange === 'admin' ? 'Administrateur' : 'Lecture seule'}'</label>
+          <label htmlFor="newPassword" className="block text-sm font-medium text-slate-700">Nouveau mot de passe pour le compte '{roleToChange === 'admin' ? 'Administrateur' : roleToChange === 'pmo' ? 'PMO' : 'Lecture seule'}'</label>
           <div className="relative mt-1">
             <input type={showNewPassword ? 'text' : 'password'} name="newPassword" id="newPassword" value={newPassword} onChange={e => setNewPassword(e.target.value)} required className="block w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm pr-10" />
             <button type="button" onClick={() => setShowNewPassword(!showNewPassword)} className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-500 hover:text-slate-700" aria-label={showNewPassword ? "Cacher le mot de passe" : "Afficher le mot de passe"}>
