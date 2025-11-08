@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 // FIX: The project appears to use react-router-dom v5. The imports for 'NavLink' and 'useNavigate' are for v6. Updating to v6 equivalents to fix build errors.
 import { NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, ListChecks, Network, ShieldCheck, Target, TrendingUp, Users, Database, FileUp, FileDown, Workflow, GitMerge, ClipboardCheck, LogOut, KeyRound, DatabaseZap, GanttChart, LayoutGrid, Flag, ClipboardList, ChevronUp, ChevronDown, Coins, Timer } from 'lucide-react';
+// fix: Replaced non-existent 'GitNetwork' icon with 'GitBranch' from lucide-react.
+import { LayoutDashboard, ListChecks, Network, ShieldCheck, Target, TrendingUp, Users, Database, FileUp, FileDown, Workflow, GitMerge, ClipboardCheck, LogOut, KeyRound, DatabaseZap, GanttChart, LayoutGrid, Flag, ClipboardList, ChevronUp, ChevronDown, Coins, Timer, GitBranch } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import ChangePasswordModal from '../auth/ChangePasswordModal';
 import { APP_VERSION } from '../../config';
@@ -15,7 +16,7 @@ const Sidebar: React.FC = () => {
   const [isProjetsOpen, setIsProjetsOpen] = useState(false);
   const [isActivitesOpen, setIsActivitesOpen] = useState(false);
   const [isReferentielsOpen, setIsReferentielsOpen] = useState(false);
-  const [isDonneesOpen, setIsDonneesOpen] = useState(false);
+  const [isDonneesOpen, setIsDonneesOpen] = useState(true);
 
 
   const navItemClasses = "flex items-center px-4 py-2.5 text-sm font-medium rounded-lg transition-colors";
@@ -192,10 +193,17 @@ const Sidebar: React.FC = () => {
                       </NavLink>
                     )}
                     {userRole === 'admin' && (
-                      <NavLink to="/data-model" className={getNavLinkClass}>
-                          <DatabaseZap size={18} className="mr-3" />
-                          Modèle de données
-                      </NavLink>
+                      <>
+                        <NavLink to="/data-model" className={getNavLinkClass}>
+                            <DatabaseZap size={18} className="mr-3" />
+                            Modèle de données
+                        </NavLink>
+                         <NavLink to="/data-model-2" className={getNavLinkClass}>
+                            {/* fix: Replaced non-existent 'GitNetwork' icon with 'GitBranch'. */}
+                            <GitBranch size={18} className="mr-3" />
+                            Modèle de données 2
+                        </NavLink>
+                      </>
                     )}
                 </div>
               )}

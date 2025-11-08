@@ -19,6 +19,7 @@ import { DataProvider } from './contexts/DataContext';
 import { AuthProvider } from './contexts/AuthContext';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import DataModelView from './pages/DataModelView';
+import DataModelView2 from './pages/DataModelView2';
 import TimelinePage from './pages/TimelinePage';
 import DataExplorer from './pages/DataExplorer';
 import Projects from './pages/Projects';
@@ -61,6 +62,7 @@ const AppLayout: React.FC = () => {
           <Route path="/resources" element={<Resources />} />
           <Route path="/data-management" element={<DataManagement />} />
           <Route path="/data-model" element={<DataModelView />} />
+          <Route path="/data-model-2" element={<DataModelView2 />} />
         </Routes>
       </main>
     </div>
