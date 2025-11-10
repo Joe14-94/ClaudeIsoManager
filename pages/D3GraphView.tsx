@@ -398,17 +398,17 @@ const D3GraphView: React.FC = () => {
                     const { offsetWidth: tooltipWidth, offsetHeight: tooltipHeight } = tooltipNode;
                     const { pageX, pageY } = event;
                     
-                    let x = pageX + 15;
-                    let y = pageY - 15;
+                    let x = pageX + 5;
+                    let y = pageY - 5;
 
                     if (x + tooltipWidth > window.innerWidth) {
-                        x = pageX - 15 - tooltipWidth;
+                        x = pageX - 5 - tooltipWidth;
                     }
                     if (y + tooltipHeight > window.innerHeight) {
-                        y = pageY - 15 - tooltipHeight;
+                        y = pageY - 5 - tooltipHeight;
                     }
                     if (y < 0) {
-                        y = pageY + 15;
+                        y = pageY + 5;
                     }
 
                     tooltip.style('left', `${x}px`).style('top', `${y}px`);

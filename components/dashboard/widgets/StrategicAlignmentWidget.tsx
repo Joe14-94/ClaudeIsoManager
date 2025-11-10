@@ -2,35 +2,33 @@ import React, { useRef, useEffect, useMemo } from 'react';
 import * as d3 from 'd3';
 import { useData } from '../../../contexts/DataContext';
 import { CardHeader, CardTitle, CardContent } from '../../ui/Card';
-import { Objective, Chantier, Project } from '../../../types';
+import { Objective, Chantier } from '../../../types';
 
-const formatCurrency = (value: number) => {
-    if (isNaN(value)) return 'N/A';
-    return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', notation: 'compact', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(value);
+const formatCurrency = (value?: number) => {
+    if (value === undefined || value === null || isNaN(value)) return 'N/A';
+    return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', notation: 'compact' }).format(value);
 };
 
 const StrategicAlignmentWidget: React.FC = () => {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const tooltipRef = useRef<HTMLDivElement | null>(null);
   const { activities, orientations, objectives, chantiers, projects } = useData();
 
   const alignmentData = useMemo(() => {
-    const totalBudget = projects.reduce((acc, p) => acc + (p.budgetApproved || 0), 0);
-    const totalWorkload = projects.reduce((acc, p) => acc + (p.internalWorkloadEngaged || 0) + (p.externalWorkloadEngaged || 0), 0);
-    const averageDailyRate = totalWorkload > 0 ? totalBudget / totalWorkload : 0;
-
     const data: { [key: string]: { label: string, workload: number, budget: number } } = {};
     const orientationMap = new Map<string, { label: string }>(orientations.map(o => [o.id, { label: `${o.code} - ${o.label}` }]));
     const objectiveMap = new Map<string, Objective>(objectives.map(o => [o.id, o]));
     const chantierMap = new Map<string, Chantier>(chantiers.map(c => [c.id, c]));
 
+    const totalBudget = projects.reduce((sum, p) => sum + (p.budgetApproved || 0), 0);
+    const totalWorkloadAllProjects = projects.reduce((sum, p) => sum + (p.internalWorkloadEngaged || 0) + (p.externalWorkloadEngaged || 0), 0);
+    const costPerDay = totalWorkloadAllProjects > 0 ? totalBudget / totalWorkloadAllProjects : 750;
+
     activities.forEach(activity => {
       if (activity.workloadInPersonDays && activity.workloadInPersonDays > 0) {
+        
         const allOrientationIds = new Set<string>();
-        if (activity.strategicOrientations) {
-            activity.strategicOrientations.forEach(soId => allOrientationIds.add(soId));
-        }
+        if (activity.strategicOrientations) activity.strategicOrientations.forEach(soId => allOrientationIds.add(soId));
         if (activity.objectives) {
             activity.objectives.forEach(objId => {
                 const objective = objectiveMap.get(objId);
@@ -50,37 +48,30 @@ const StrategicAlignmentWidget: React.FC = () => {
             data[orientationId] = { label: orientationDetails.label, workload: 0, budget: 0 };
           }
           data[orientationId].workload += activity.workloadInPersonDays!;
+          data[orientationId].budget += activity.workloadInPersonDays! * costPerDay;
         });
       }
-    });
-    
-    Object.values(data).forEach(d => {
-        d.budget = d.workload * averageDailyRate;
     });
 
     return Object.values(data).sort((a, b) => b.workload - a.workload);
   }, [activities, orientations, objectives, chantiers, projects]);
 
   useEffect(() => {
-    if (!svgRef.current || !containerRef.current || !tooltipRef.current || alignmentData.length === 0) {
+    if (!svgRef.current || !containerRef.current || alignmentData.length === 0) {
       if (svgRef.current) d3.select(svgRef.current).selectAll('*').remove();
       return;
     }
 
     const container = containerRef.current;
     const svg = d3.select(svgRef.current);
-    const tooltip = d3.select(tooltipRef.current);
-
-    const keys = ['workload', 'budget'];
-    const colorPalette = ['#7dd3fc', '#a78bfa']; // Sky-300, Purple-400
-    const color = d3.scaleOrdinal<string>().domain(keys).range(colorPalette);
+    const tooltip = d3.select('body').selectAll('.d3-tooltip').data([null]).join('div').attr('class', 'd3-tooltip');
 
     const drawChart = () => {
       svg.selectAll('*').remove();
       const { width, height } = container.getBoundingClientRect();
       svg.attr('width', width).attr('height', height);
 
-      const margin = { top: 40, right: 30, bottom: 40, left: 220 };
+      const margin = { top: 50, right: 30, bottom: 50, left: 220 };
       const innerWidth = width - margin.left - margin.right;
       const innerHeight = height - margin.top - margin.bottom;
 
@@ -88,89 +79,116 @@ const StrategicAlignmentWidget: React.FC = () => {
 
       const g = svg.append('g').attr('transform', `translate(${margin.left}, ${margin.top})`);
 
-      const yScale = d3.scaleBand()
+      const maxWorkload = d3.max(alignmentData, d => d.workload) || 0;
+      const maxBudget = d3.max(alignmentData, d => d.budget) || 0;
+      
+      const xScaleWorkload = d3.scaleLinear().domain([0, maxWorkload]).range([0, innerWidth]).nice();
+      const xScaleBudget = d3.scaleLinear().domain([0, maxBudget]).range([0, innerWidth]).nice();
+      
+      const yScale0 = d3.scaleBand()
         .domain(alignmentData.map(d => d.label))
         .range([0, innerHeight])
-        .paddingInner(0.3); 
+        .padding(0.3);
+
+      const yScale1 = d3.scaleBand()
+        .domain(['workload', 'budget'])
+        .range([0, yScale0.bandwidth()])
+        .padding(0.1);
+
+      const xAxisWorkload = g.append('g').attr('transform', `translate(0, ${innerHeight})`).call(d3.axisBottom(xScaleWorkload).ticks(Math.min(5, innerWidth / 80)));
+      const xAxisBudget = g.append('g').call(d3.axisTop(xScaleBudget).ticks(Math.min(5, innerWidth / 80)).tickFormat(d3.format("~s")));
+      const yAxis = g.append('g').call(d3.axisLeft(yScale0).tickSize(0));
+      
+      [xAxisWorkload, xAxisBudget, yAxis].forEach(axis => axis.select(".domain").remove());
+      xAxisWorkload.selectAll("line").remove();
+      xAxisBudget.selectAll("line").remove();
+      yAxis.selectAll("text").attr('class', 'text-sm fill-slate-600');
+
+      svg.append('text').attr('x', margin.left + innerWidth / 2).attr('y', height - 10).attr('text-anchor', 'middle').attr('class', 'text-xs fill-slate-500 font-medium').text('Charge (J/H)');
+      svg.append('text').attr('x', margin.left + innerWidth / 2).attr('y', 20).attr('text-anchor', 'middle').attr('class', 'text-xs fill-slate-500 font-medium').text('Budget Estimé (€)');
+
+      g.append('g').attr('class', 'grid').call(d3.axisBottom(xScaleWorkload).ticks(5).tickSize(innerHeight)).selectAll('.tick line').attr('stroke', '#e2e8f0').attr('stroke-dasharray', '2,2');
+      g.selectAll('.grid .domain, .grid .tick text').remove();
+
+      const orientationGroup = g.selectAll('.orientation-group').data(alignmentData).enter().append('g').attr('transform', d => `translate(0, ${yScale0(d.label)!})`);
+
+      const bars = orientationGroup.selectAll('rect')
+        .data(d => [{key: 'workload', value: d.workload, label: d.label}, {key: 'budget', value: d.budget, label: d.label}])
+        .enter().append('rect')
+        .attr('x', 0).attr('y', d => yScale1(d.key)!)
+        .attr('height', yScale1.bandwidth())
+        .attr('fill', d => d.key === 'workload' ? '#7dd3fc' : '#818cf8')
+        .attr('width', 0);
         
-      const barPadding = 0.1;
-      const barHeight = (yScale.bandwidth() * (1 - barPadding)) / 2;
+      bars.transition().duration(800).ease(d3.easeCubicOut).attr('width', d => d.key === 'workload' ? xScaleWorkload(d.value) : xScaleBudget(d.value));
 
-      const xScaleWorkload = d3.scaleLinear()
-        .domain([0, d3.max(alignmentData, d => d.workload) || 1])
-        .range([0, innerWidth]).nice();
+      bars.on('mouseover', function(event, d) {
+            d3.select(this).style('opacity', 0.85);
+            const fullData = alignmentData.find(item => item.label === d.label);
+            tooltip.style('opacity', 1).html(`<strong>${d.label}</strong><br/>Charge: ${fullData?.workload.toFixed(1)} J/H<br/>Budget Estimé: ${formatCurrency(fullData?.budget)}`);
+        })
+        .on('mousemove', (event) => {
+            const tooltipNode = tooltip.node();
+            if (!tooltipNode) return;
 
-      const xScaleBudget = d3.scaleLinear()
-        .domain([0, d3.max(alignmentData, d => d.budget) || 1])
-        .range([0, innerWidth]).nice();
+            const tooltipWidth = tooltipNode.offsetWidth;
+            const tooltipHeight = tooltipNode.offsetHeight;
+            const { clientX, clientY } = event;
+            const margin = 15;
+            const horizontalOffset = 25;
+            const verticalOffset = 75; // Increased offset to move tooltip higher
 
-      // Axes
-      g.append('g').call(d3.axisLeft(yScale).tickSize(0)).call(g => g.select(".domain").remove()).selectAll("text").attr('class', 'text-sm fill-slate-600');
-      g.append('g').attr('transform', `translate(0, ${innerHeight})`).call(d3.axisBottom(xScaleWorkload).ticks(5)).call(g => g.select(".domain").attr('stroke', '#cbd5e1')).selectAll('.tick text').attr('class', 'text-xs fill-slate-500');
-      g.append('g').call(d3.axisTop(xScaleBudget).ticks(5).tickFormat(d => d3.format("~s")(d)!.replace('G', 'B'))).call(g => g.select(".domain").attr('stroke', '#cbd5e1')).selectAll('.tick text').attr('class', 'text-xs fill-slate-500');
+            // Calculate desired position (up and left of cursor)
+            let x = clientX - tooltipWidth - horizontalOffset;
+            let y = clientY - tooltipHeight - verticalOffset;
 
-      // Axis Labels
-      svg.append('text').attr('x', margin.left + innerWidth / 2).attr('y', height - 5).attr('text-anchor', 'middle').attr('class', 'text-xs fill-slate-500 font-medium').text('Charge de travail (J/H)');
-      svg.append('text').attr('x', margin.left + innerWidth / 2).attr('y', 15).attr('text-anchor', 'middle').attr('class', 'text-xs fill-slate-500 font-medium').text('Budget Estimé (€)');
-      
-      const onMouseOver = function(event: MouseEvent, d: any) {
-        d3.selectAll('.bar-group rect').style('opacity', 0.5);
-        d3.select((this as SVGRectElement).parentNode).selectAll('rect').style('opacity', 1);
-        tooltip.style('opacity', 1)
-               .html(`<strong>${d.label}</strong><br/>
-                      <span style="color:${color('workload')}">■</span> Charge: ${d.workload.toFixed(1)} J/H<br/>
-                      <span style="color:${color('budget')}">■</span> Budget: ${formatCurrency(d.budget)}`);
-      };
+            // Adjust for viewport boundaries without flipping
+            if (x < margin) {
+                x = margin;
+            }
+            if (y < margin) {
+                y = margin;
+            }
+            if (x + tooltipWidth > window.innerWidth - margin) {
+                x = window.innerWidth - tooltipWidth - margin;
+            }
+            if (y + tooltipHeight > window.innerHeight - margin) {
+                y = window.innerHeight - tooltipHeight - margin;
+            }
 
-      const onMouseMove = function(event: MouseEvent) {
-          tooltip.style('left', (event.pageX + 15) + 'px')
-                 .style('top', (event.pageY - 15) + 'px');
-      };
-      
-      const onMouseOut = function() {
-          d3.selectAll('.bar-group rect').style('opacity', 1);
-          tooltip.style('opacity', 0);
-      };
+            tooltip.style('left', `${x}px`).style('top', `${y}px`);
+        })
+        .on('mouseout', function() {
+            d3.select(this).style('opacity', 1);
+            tooltip.style('opacity', 0);
+        });
 
-      // Grouped bars
-      const barGroups = g.selectAll('.bar-group').data(alignmentData).enter().append('g').attr('class', 'bar-group').attr('transform', d => `translate(0, ${yScale(d.label)})`);
-      
-      barGroups.append('rect').attr('y', 0).attr('height', barHeight).attr('fill', color('workload')).attr('rx', 2).attr('x', 0).attr('width', 0)
-        .on('mouseover', onMouseOver).on('mousemove', onMouseMove).on('mouseout', onMouseOut)
-        .transition().duration(700).ease(d3.easeCubicOut).attr('width', d => Math.max(0, xScaleWorkload(d.workload))).delay((d, i) => i * 40);
-
-      barGroups.append('rect').attr('y', barHeight + yScale.bandwidth() * barPadding).attr('height', barHeight).attr('fill', color('budget')).attr('rx', 2).attr('x', 0).attr('width', 0)
-        .on('mouseover', onMouseOver).on('mousemove', onMouseMove).on('mouseout', onMouseOut)
-        .transition().duration(700).ease(d3.easeCubicOut).attr('width', d => Math.max(0, xScaleBudget(d.budget))).delay((d, i) => i * 40);
-
-      // Legend
-      const legend = g.append('g').attr('font-family', 'sans-serif').attr('font-size', 10).attr('text-anchor', 'start');
-      const legendItem = legend.selectAll('.legend-item').data(keys).join('g').attr('class', 'legend-item').attr('transform', (d, i) => `translate(${i * 140}, ${innerHeight + margin.bottom - 20})`);
-      legendItem.append('rect').attr('x', -margin.left + 20).attr('y', -5).attr('width', 10).attr('height', 10).attr('fill', color);
-      legendItem.append('text').attr('x', -margin.left + 35).attr('y', 0).attr('dy', '0.32em').text(d => d === 'workload' ? 'Charge (J/H)' : 'Budget Estimé (€)').attr('class', 'text-xs fill-slate-600');
+      const legend = svg.append('g').attr('transform', `translate(${margin.left}, 0)`);
+      const legendItems = [{ key: 'workload', label: 'Charge (J/H)', color: '#7dd3fc' }, { key: 'budget', label: 'Budget Estimé (€)', color: '#818cf8' }];
+      const legendItem = legend.selectAll('.legend-item').data(legendItems).enter().append('g').attr('transform', (d, i) => `translate(${i * 160}, 0)`);
+      legendItem.append('rect').attr('width', 12).attr('height', 12).attr('fill', d => d.color).attr('rx', 2);
+      legendItem.append('text').attr('x', 16).attr('y', 10).text(d => d.label).attr('class', 'text-xs fill-slate-600');
     };
 
     const resizeObserver = new ResizeObserver(drawChart);
     resizeObserver.observe(container);
+    
     return () => resizeObserver.disconnect();
-  }, [alignmentData, projects]);
+  }, [alignmentData]);
 
   return (
     <div className="h-full w-full flex flex-col">
       <CardHeader className="non-draggable">
-        <CardTitle>Alignement Activités par Orientation</CardTitle>
-        <p className="text-sm text-slate-500 mt-1">Comparaison de la charge (J/H) et du budget estimé (€) par orientation.</p>
+        <CardTitle>Alignement des activités par orientation</CardTitle>
+        <p className="text-sm text-slate-500 mt-1">Charge (J/H) et budget (€) des activités par orientation.</p>
       </CardHeader>
       <CardContent className="flex-grow min-h-0" ref={containerRef}>
         {alignmentData.length === 0 ? (
-          <div className="flex items-center justify-center h-full text-slate-500">
-            Aucune donnée d'activité avec charge de travail pour afficher le graphique.
-          </div>
+            <div className="flex items-center justify-center h-full text-slate-500">
+                Aucune donnée pour afficher le graphique.
+            </div>
         ) : (
-          <>
             <svg ref={svgRef} className="w-full h-full"></svg>
-            <div ref={tooltipRef} className="d3-tooltip" style={{ position: 'fixed' }}></div>
-          </>
         )}
       </CardContent>
     </div>

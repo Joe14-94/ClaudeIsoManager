@@ -1,10 +1,11 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { Responsive, WidthProvider } from 'react-grid-layout';
 import type { Layout } from 'react-grid-layout';
 import { useData } from '../contexts/DataContext';
 import { WIDGET_REGISTRY, WidgetConfig } from '../components/dashboard/widgets/WidgetRegistry';
 import AddWidgetModal from '../components/dashboard/AddWidgetModal';
-import { Edit, Save, X, Plus, Trash2, Move } from 'lucide-react';
+// FIX: Import the 'Check' icon to resolve a "Cannot find name" error and remove unused icon imports.
+import { Edit, Plus, Trash2, Move, Check } from 'lucide-react';
 import WidgetContainer from '../components/dashboard/WidgetContainer';
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
@@ -18,72 +19,56 @@ const CustomDashboardPage: React.FC = () => {
   const { dashboardLayouts, setDashboardLayouts } = useData();
   const [isEditMode, setIsEditMode] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentBreakpoint, setCurrentBreakpoint] = useState('lg');
   
-  // État temporaire pour les modifications en mode édition afin de permettre l'annulation.
-  const [tempLayouts, setTempLayouts] = useState<{ [key: string]: Layout[] } | null>(null);
-
-  const currentLayouts = isEditMode && tempLayouts ? tempLayouts : dashboardLayouts;
-
   const widgets: WidgetItem[] = useMemo(() => {
-    const mainLayout = currentLayouts['lg'] || [];
+    const mainLayout = dashboardLayouts[currentBreakpoint] || dashboardLayouts['lg'] || [];
     return mainLayout
       .map(item => {
         const widgetConfig = WIDGET_REGISTRY.find(w => w.id === item.i);
         return widgetConfig ? { id: widgetConfig.id, config: widgetConfig } : null;
       })
       .filter((w): w is WidgetItem => w !== null);
-  }, [currentLayouts]);
-
-  const onLayoutChange = (_layout: Layout[], allLayouts: { [key: string]: Layout[] }) => {
+  }, [dashboardLayouts, currentBreakpoint]);
+  
+  const handleLayoutChange = useCallback((layout: Layout[]) => {
     if (isEditMode) {
-      setTempLayouts(allLayouts);
+      setDashboardLayouts(prev => ({
+        ...prev,
+        [currentBreakpoint]: layout,
+      }));
     }
-  };
+  }, [isEditMode, currentBreakpoint, setDashboardLayouts]);
 
-  const handleEnterEditMode = () => {
-    // Copie profonde pour éviter de muter l'état original lors des modifications
-    setTempLayouts(JSON.parse(JSON.stringify(dashboardLayouts)));
-    setIsEditMode(true);
-  };
+  const onBreakpointChange = useCallback((newBreakpoint: string) => {
+    setCurrentBreakpoint(newBreakpoint);
+  }, []);
 
   const addWidget = (widgetConfig: WidgetConfig) => {
-    if (!tempLayouts) return;
-
-    const currentLayout = tempLayouts['lg'] || [];
     const newItem: Layout = {
       i: widgetConfig.id,
-      x: (currentLayout.length * widgetConfig.defaultLayout.w) % 12,
+      x: (widgets.length * widgetConfig.defaultLayout.w) % 12,
       y: Infinity, // Place le nouvel élément en bas
       ...widgetConfig.defaultLayout
     };
     
-    const newLayouts = { ...tempLayouts };
-    Object.keys(newLayouts).forEach(breakpoint => {
-      newLayouts[breakpoint] = [...(newLayouts[breakpoint] || []), newItem];
+    setDashboardLayouts(prevLayouts => {
+      const newLayouts = { ...prevLayouts };
+      Object.keys(newLayouts).forEach(breakpoint => {
+        newLayouts[breakpoint] = [...(newLayouts[breakpoint] || []), { ...newItem }];
+      });
+      return newLayouts;
     });
-    setTempLayouts(newLayouts);
   };
 
   const removeWidget = (widgetId: string) => {
-    if (!tempLayouts) return;
-    const newLayouts = { ...tempLayouts };
-    Object.keys(newLayouts).forEach(breakpoint => {
-      newLayouts[breakpoint] = newLayouts[breakpoint].filter(item => item.i !== widgetId);
+    setDashboardLayouts(prevLayouts => {
+        const newLayouts = { ...prevLayouts };
+        Object.keys(newLayouts).forEach(breakpoint => {
+          newLayouts[breakpoint] = newLayouts[breakpoint].filter(item => item.i !== widgetId);
+        });
+        return newLayouts;
     });
-    setTempLayouts(newLayouts);
-  };
-
-  const handleSaveLayout = () => {
-    if (tempLayouts) {
-      setDashboardLayouts(tempLayouts);
-    }
-    setTempLayouts(null);
-    setIsEditMode(false);
-  };
-
-  const handleCancelEdit = () => {
-    setTempLayouts(null);
-    setIsEditMode(false);
   };
 
   return (
@@ -96,15 +81,12 @@ const CustomDashboardPage: React.FC = () => {
               <button onClick={() => setIsModalOpen(true)} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
                 <Plus size={20} /> Ajouter un widget
               </button>
-              <button onClick={handleSaveLayout} className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-                <Save size={20} /> Sauvegarder
-              </button>
-              <button onClick={handleCancelEdit} className="flex items-center gap-2 px-4 py-2 bg-slate-500 text-white rounded-lg hover:bg-slate-600">
-                <X size={20} /> Annuler
+              <button onClick={() => setIsEditMode(false)} className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                <Check size={20} /> Terminer
               </button>
             </>
           ) : (
-            <button onClick={handleEnterEditMode} className="flex items-center gap-2 px-4 py-2 bg-slate-200 text-slate-800 rounded-lg hover:bg-slate-300">
+            <button onClick={() => setIsEditMode(true)} className="flex items-center gap-2 px-4 py-2 bg-slate-200 text-slate-800 rounded-lg hover:bg-slate-300">
               <Edit size={20} /> Modifier le tableau de bord
             </button>
           )}
@@ -126,11 +108,13 @@ const CustomDashboardPage: React.FC = () => {
       ) : (
         <ResponsiveGridLayout
           className={`layout transition-all duration-300 ${isEditMode ? 'border-2 border-dashed border-slate-300 rounded-lg bg-slate-50/50 p-2' : ''}`}
-          layouts={currentLayouts}
+          layouts={dashboardLayouts}
           breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
           cols={{ lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 }}
           rowHeight={80}
-          onLayoutChange={onLayoutChange}
+          onBreakpointChange={onBreakpointChange}
+          onDragStop={handleLayoutChange}
+          onResizeStop={handleLayoutChange}
           isDraggable={isEditMode}
           isResizable={isEditMode}
           draggableCancel=".non-draggable"

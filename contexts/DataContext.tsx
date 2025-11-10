@@ -36,6 +36,13 @@ const DataContext = createContext<DataContextType | undefined>(undefined);
 const REFERENCE_DATA_VERSION = '2.3';
 const VERSION_KEY = 'reference_data_version';
 
+const initialLayouts = {
+    lg: [
+        { i: 'strategicAlignment', x: 0, y: 0, w: 6, h: 5, minW: 5, minH: 4 },
+        { i: 'projectInitiativeAlignment', x: 6, y: 0, w: 6, h: 5, minW: 5, minH: 4 },
+    ]
+};
+
 
 export const DataProvider = ({ children }: PropsWithChildren) => {
     const [activities, setActivities] = useState<Activity[]>([]);
@@ -46,7 +53,7 @@ export const DataProvider = ({ children }: PropsWithChildren) => {
     const [objectives, setObjectives] = useState<Objective[]>([]);
     const [initiatives, setInitiatives] = useState<Initiative[]>([]);
     const [projects, setProjects] = useState<Project[]>([]);
-    const [dashboardLayouts, setDashboardLayouts] = useState<{ [breakpoint: string]: Layout[] }>(() => loadFromLocalStorage('dashboardLayouts', { lg: [] }));
+    const [dashboardLayouts, setDashboardLayouts] = useState<{ [breakpoint: string]: Layout[] }>(() => loadFromLocalStorage('dashboardLayouts', initialLayouts));
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
@@ -57,7 +64,7 @@ export const DataProvider = ({ children }: PropsWithChildren) => {
             setSecurityProcesses(loadFromLocalStorage('securityProcesses', initialSecurityProcesses));
             setInitiatives(loadFromLocalStorage('initiatives', initialInitiatives));
             setProjects(loadFromLocalStorage('projects', initialProjects));
-            setDashboardLayouts(loadFromLocalStorage('dashboardLayouts', { lg: [] }));
+            setDashboardLayouts(loadFromLocalStorage('dashboardLayouts', initialLayouts));
 
             // Gérer les données de référence avec versionnement
             const storedVersion = loadFromLocalStorage<string>(VERSION_KEY, '1.0');

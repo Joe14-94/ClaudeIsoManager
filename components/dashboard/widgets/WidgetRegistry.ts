@@ -79,7 +79,7 @@ export const WIDGET_REGISTRY: WidgetConfig[] = [
   {
     id: 'strategicAlignment',
     name: 'Graphique : Alignement Activités par Orientation',
-    description: "Répartit la charge de travail (J/H) des activités par orientation stratégique pour visualiser l'alignement de l'effort. Données utilisées : `activities.workloadInPersonDays`, `activities.strategicOrientations`.",
+    description: "Répartit la charge de travail (J/H) et le budget estimé (€) des activités par orientation stratégique.",
     component: StrategicAlignmentWidget,
     defaultLayout: { w: 6, h: 5, minW: 5, minH: 4 },
   },
