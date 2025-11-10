@@ -5,6 +5,7 @@ import ProjectTimeline from '../components/charts/ProjectTimeline';
 import { useData } from '../contexts/DataContext';
 import { ActivityStatus } from '../types';
 import { ZoomIn, ZoomOut, RotateCw, FilterX } from 'lucide-react';
+import ActiveFiltersDisplay from '../components/ui/ActiveFiltersDisplay';
 
 const ProjectsTimelinePage: React.FC = () => {
   const { projects } = useData();
@@ -32,6 +33,18 @@ const ProjectsTimelinePage: React.FC = () => {
   const handleZoomIn = () => setZoomLevel(prev => Math.min(prev * 1.5, 8));
   const handleZoomOut = () => setZoomLevel(prev => Math.max(prev / 1.5, 0.25));
   const handleZoomReset = () => setZoomLevel(1);
+
+  const activeFiltersForDisplay = useMemo(() => {
+    const filters: { [key: string]: string } = {};
+    if (statusFilter) filters['Statut'] = statusFilter;
+    if (top30Filter) filters['Top 30'] = top30Filter === 'true' ? 'Oui' : 'Non';
+    return filters;
+  }, [statusFilter, top30Filter]);
+
+  const handleRemoveFilter = (key: string) => {
+    if (key === 'Statut') setStatusFilter('');
+    if (key === 'Top 30') setTop30Filter('');
+  };
 
   return (
     <div className="space-y-6 h-full flex flex-col">
@@ -73,6 +86,9 @@ const ProjectsTimelinePage: React.FC = () => {
                 <FilterX size={16} />
                 <span>Réinitialiser</span>
               </button>
+            </div>
+            <div className="mt-4">
+              <ActiveFiltersDisplay filters={activeFiltersForDisplay} onRemoveFilter={handleRemoveFilter} onClearAll={handleResetFilters} />
             </div>
         </CardHeader>
         <CardContent ref={scrollContainerRef} className="flex-grow h-0 overflow-auto">

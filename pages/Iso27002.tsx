@@ -1,4 +1,5 @@
 
+
 import React, { useState, useMemo, useEffect } from 'react';
 // FIX: The project appears to use react-router-dom v5. The `useLocation` hook is available in v5.1+, and the error likely stems from a project-wide version mismatch with v6. Updated to v6.
 import { useLocation } from 'react-router-dom';
@@ -8,6 +9,7 @@ import Card, { CardContent, CardHeader, CardTitle } from '../components/ui/Card'
 import Modal from '../components/ui/Modal';
 import { SlidersHorizontal, Search } from 'lucide-react';
 import { useData } from '../contexts/DataContext';
+import ActiveFiltersDisplay from '../components/ui/ActiveFiltersDisplay';
 
 const MeasureDetails: React.FC<{ measure: IsoMeasure }> = ({ measure }) => {
     if (!measure.details) {
@@ -272,6 +274,42 @@ const Iso27002: React.FC = () => {
         domains: [],
       });
   };
+  
+    const filterLabels: Record<string, string> = {
+    type: 'Type de mesure',
+    properties: 'Propriétés',
+    concepts: 'Concepts de cybersécurité',
+    processes: 'Capacités opérationnelles',
+    functionalProcess: 'Processus fonctionnels',
+    domains: 'Domaines de sécurité'
+  };
+
+  const activeFiltersForDisplay = useMemo(() => {
+    const filters: { [key: string]: string } = {};
+    if (filterByCoverage) filters['Couverture'] = 'Mesures couvertes';
+    if (codeFilter) filters['Code Mesure'] = `${codeFilter.length} spécifique(s)`;
+    
+    (Object.keys(activeFilters) as FilterableDetailKey[]).forEach(category => {
+        const selected = activeFilters[category];
+        if (selected.length > 0) {
+            const label = filterLabels[category] || category;
+            filters[label] = selected.length > 1 ? `${selected.length} sélectionnés` : selected[0];
+        }
+    });
+
+    return filters;
+  }, [filterByCoverage, codeFilter, activeFilters, filterLabels]);
+  
+  const handleRemoveFilter = (key: string) => {
+    if (key === 'Couverture') setFilterByCoverage(false);
+    else if (key === 'Code Mesure') setCodeFilter(null);
+    else {
+        const categoryKey = (Object.keys(filterLabels) as FilterableDetailKey[]).find(k => filterLabels[k] === key);
+        if (categoryKey) {
+            setActiveFilters(prev => ({...prev, [categoryKey]: []}));
+        }
+    }
+  };
 
 
   const measuresByChapter = useMemo(() => {
@@ -285,16 +323,6 @@ const Iso27002: React.FC = () => {
   }, [filteredMeasures]);
 
   const totalFilteredMeasures = filteredMeasures.length;
-
-  const filterLabels: Record<string, string> = {
-    type: 'Type de mesure',
-    properties: 'Propriétés',
-    concepts: 'Concepts de cybersécurité',
-    processes: 'Capacités opérationnelles',
-    functionalProcess: 'Processus fonctionnels',
-    domains: 'Domaines de sécurité'
-  };
-
 
   return (
     <div className="space-y-6">
@@ -373,13 +401,13 @@ const Iso27002: React.FC = () => {
         </Card>
       )}
 
+      <ActiveFiltersDisplay filters={activeFiltersForDisplay} onRemoveFilter={handleRemoveFilter} onClearAll={resetFilters} />
+
       <div className="text-sm text-slate-500 font-medium">
         {searchTerm 
             ? `${totalFilteredMeasures} mesure(s) trouvée(s) pour "${searchTerm}".`
             : `${totalFilteredMeasures} sur ${allMeasures.length} mesure(s) affichée(s).`
         }
-        {filterByCoverage && !searchTerm && <span className="ml-2 font-semibold text-blue-600">(Filtre "mesures couvertes" actif)</span>}
-        {codeFilter && !searchTerm && <span className="ml-2 font-semibold text-blue-600">({codeFilter.length} mesure(s) spécifique(s) affichée(s))</span>}
       </div>
 
 

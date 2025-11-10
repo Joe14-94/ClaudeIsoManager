@@ -32,6 +32,7 @@ import ActivitiesDashboard from './pages/ActivitiesDashboard';
 import ProjectsDashboardPage from './pages/ProjectsDashboardPage';
 import AccessRightsPage from './pages/AccessRightsPage';
 import Header from './components/layout/Header';
+import { NotificationProvider } from './contexts/NotificationContext';
 
 const AppLayout: React.FC = () => {
   return (
@@ -81,19 +82,21 @@ const App: React.FC = () => {
     <HashRouter>
       <AuthProvider>
         <DataProvider>
-          <SidebarProvider>
-            {/* FIX: Replaced v5 Switch with v6 Routes */}
-            <Routes>
-              {/* FIX: Updated Route components to use `element` prop for v6 */}
-              <Route path="/login" element={<LoginPage />} />
-              {/* FIX: Updated catch-all route for v6 */}
-              <Route path="/*" element={
-                <ProtectedRoute>
-                  <AppLayout />
-                </ProtectedRoute>
-              } />
-            </Routes>
-          </SidebarProvider>
+          <NotificationProvider>
+            <SidebarProvider>
+              {/* FIX: Replaced v5 Switch with v6 Routes */}
+              <Routes>
+                {/* FIX: Updated Route components to use `element` prop for v6 */}
+                <Route path="/login" element={<LoginPage />} />
+                {/* FIX: Updated catch-all route for v6 */}
+                <Route path="/*" element={
+                  <ProtectedRoute>
+                    <AppLayout />
+                  </ProtectedRoute>
+                } />
+              </Routes>
+            </SidebarProvider>
+          </NotificationProvider>
         </DataProvider>
       </AuthProvider>
     </HashRouter>

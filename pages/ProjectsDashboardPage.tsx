@@ -1,11 +1,13 @@
-import React, { useMemo, useRef } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Card, { CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import { useData } from '../contexts/DataContext';
-import { ActivityStatus } from '../types';
+import { ActivityStatus, Project } from '../types';
 import { ClipboardList, Star, TrendingUp, DollarSign } from 'lucide-react';
 import ProjectStatusDonutChart from '../components/charts/ProjectStatusDonutChart';
 import ProjectTimeline from '../components/charts/ProjectTimeline';
+import ActiveFiltersDisplay from '../components/ui/ActiveFiltersDisplay';
+import { STATUS_COLORS } from '../constants';
 
 const StatCard: React.FC<{ title: string; value: string | number; icon: React.ReactNode; onClick?: () => void }> = ({ title, value, icon, onClick }) => (
   <Card className={`transition-shadow hover:shadow-md ${onClick ? 'cursor-pointer' : ''}`} onClick={onClick}>
@@ -29,6 +31,19 @@ const ProjectsDashboardPage: React.FC = () => {
   const { projects } = useData();
   const navigate = useNavigate();
   const timelineContainerRef = useRef<HTMLDivElement>(null);
+  
+  const [filters, setFilters] = useState<Partial<{ status: ActivityStatus }>>({});
+
+  const filteredProjects = useMemo(() => {
+    if (Object.keys(filters).length === 0) {
+      return projects;
+    }
+    return projects.filter(project => {
+      const statusMatch = !filters.status || project.status === filters.status;
+      return statusMatch;
+    });
+  }, [projects, filters]);
+
 
   const stats = useMemo(() => {
     const total = projects.length;
@@ -47,6 +62,23 @@ const ProjectsDashboardPage: React.FC = () => {
       totalBudgetApproved
     };
   }, [projects]);
+  
+  const handleSliceClick = (status: ActivityStatus) => {
+    setFilters({ status });
+  };
+  
+  const handleRemoveFilter = (key: string) => {
+    if (key === 'Statut') setFilters(prev => ({...prev, status: undefined}));
+  };
+
+  const handleClearAll = () => setFilters({});
+  
+  const activeFiltersForDisplay = useMemo(() => {
+    const displayFilters: { [key: string]: string } = {};
+    if (filters.status) displayFilters['Statut'] = filters.status;
+    return displayFilters;
+  }, [filters]);
+
 
   return (
     <div className="space-y-6">
@@ -83,22 +115,49 @@ const ProjectsDashboardPage: React.FC = () => {
         <Card>
           <CardHeader><CardTitle>Répartition par statut</CardTitle></CardHeader>
           <CardContent>
-            <ProjectStatusDonutChart data={projects} onSliceClick={(status) => navigate('/projets', { state: { statusFilter: status }})} />
+            <ProjectStatusDonutChart data={projects} onSliceClick={handleSliceClick} />
           </CardContent>
         </Card>
       </div>
 
        <Card>
-          <CardHeader><CardTitle>Chronologie des projets</CardTitle></CardHeader>
-          <CardContent ref={timelineContainerRef} className="h-96 overflow-auto">
-            <ProjectTimeline 
-                projects={projects} 
-                onProjectClick={(id) => navigate('/projets', { state: { openProject: id } })} 
-                scrollContainerRef={timelineContainerRef}
-            />
-          </CardContent>
-        </Card>
-
+        <CardHeader>
+          <CardTitle>Liste des projets filtrés ({filteredProjects.length})</CardTitle>
+           <div className="mt-2">
+            <ActiveFiltersDisplay filters={activeFiltersForDisplay} onRemoveFilter={handleRemoveFilter} onClearAll={handleClearAll} />
+          </div>
+        </CardHeader>
+        <CardContent className="max-h-96 overflow-y-auto">
+           {filteredProjects.length > 0 ? (
+            <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left text-slate-500">
+                    <thead className="text-xs text-slate-700 uppercase bg-slate-50 sticky top-0">
+                        <tr>
+                            <th scope="col" className="px-4 py-3">ID</th>
+                            <th scope="col" className="px-4 py-3">Titre</th>
+                            <th scope="col" className="px-4 py-3">Statut</th>
+                            <th scope="col" className="px-4 py-3">Top 30</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {filteredProjects.map(project => (
+                            <tr key={project.id} className="bg-white border-b hover:bg-slate-50 cursor-pointer" onClick={() => navigate('/projets', { state: { openProject: project.id } })}>
+                                <th scope="row" className="px-4 py-3 font-medium text-slate-900 whitespace-nowrap">{project.projectId}</th>
+                                <td className="px-4 py-3">{project.title}</td>
+                                <td className="px-4 py-3"><span className={`px-2 py-1 text-xs font-medium rounded-full ${STATUS_COLORS[project.status]}`}>{project.status}</span></td>
+                                <td className="px-4 py-3">{project.isTop30 ? 'Oui' : 'Non'}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+          ) : (
+            <div className="text-center py-8 text-slate-500">
+              <p>Aucun projet ne correspond à vos filtres.</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 };

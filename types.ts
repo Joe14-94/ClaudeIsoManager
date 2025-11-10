@@ -230,3 +230,16 @@ export interface CoverageMatrix {
 }
 
 export type UserRole = 'admin' | 'readonly' | 'pmo';
+
+export interface Notification {
+  id: string;
+  message: string;
+  type: 'deadline' | 'budget';
+  read: boolean;
+  linkTo: {
+    path: string;
+    state: any;
+  };
+  createdAt: DateTime;
+  entityId: string; // ID of the activity or project
+}

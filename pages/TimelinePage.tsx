@@ -7,6 +7,7 @@ import ActivityTimeline from '../components/charts/ActivityTimeline';
 import { useData } from '../contexts/DataContext';
 import { SecurityDomain, ActivityStatus, Priority } from '../types';
 import { ZoomIn, ZoomOut, RotateCw, FilterX } from 'lucide-react';
+import ActiveFiltersDisplay from '../components/ui/ActiveFiltersDisplay';
 
 const TimelinePage: React.FC = () => {
   const { activities } = useData();
@@ -37,6 +38,20 @@ const TimelinePage: React.FC = () => {
   const handleZoomIn = () => setZoomLevel(prev => Math.min(prev * 1.5, 8)); // Max zoom
   const handleZoomOut = () => setZoomLevel(prev => Math.max(prev / 1.5, 0.25)); // Min zoom
   const handleZoomReset = () => setZoomLevel(1);
+  
+  const activeFiltersForDisplay = useMemo(() => {
+    const filters: { [key: string]: string } = {};
+    if (domainFilter) filters['Domaine'] = domainFilter;
+    if (statusFilter) filters['Statut'] = statusFilter;
+    if (priorityFilter) filters['Priorité'] = priorityFilter;
+    return filters;
+  }, [domainFilter, statusFilter, priorityFilter]);
+
+  const handleRemoveFilter = (key: string) => {
+    if (key === 'Domaine') setDomainFilter('');
+    if (key === 'Statut') setStatusFilter('');
+    if (key === 'Priorité') setPriorityFilter('');
+  };
 
   return (
     <div className="space-y-6 h-full flex flex-col">
@@ -86,6 +101,9 @@ const TimelinePage: React.FC = () => {
                 <FilterX size={16} />
                 <span>Réinitialiser</span>
               </button>
+            </div>
+            <div className="mt-4">
+              <ActiveFiltersDisplay filters={activeFiltersForDisplay} onRemoveFilter={handleRemoveFilter} onClearAll={handleResetFilters} />
             </div>
         </CardHeader>
         <CardContent className="flex-grow h-0 overflow-auto">

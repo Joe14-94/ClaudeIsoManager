@@ -11,6 +11,7 @@ import { useAuth } from '../contexts/AuthContext';
 import GuidedActivityWizard from '../components/wizards/GuidedActivityWizard';
 import CustomMultiSelect from '../components/ui/CustomMultiSelect';
 import CalendarDatePicker from '../components/ui/CalendarDatePicker';
+import ActiveFiltersDisplay from '../components/ui/ActiveFiltersDisplay';
 
 const ActivityFilter: React.FC<{
   searchTerm: string;
@@ -115,6 +116,7 @@ const Activities: React.FC = () => {
   const [activityToDelete, setActivityToDelete] = useState<Activity | null>(null);
 
   const processMap = useMemo(() => new Map(securityProcesses.map(p => [p.id, p.name])), [securityProcesses]);
+  const resourceMap = useMemo(() => new Map(resources.map(r => [r.id, r.name])), [resources]);
   
   const handleOpenDeleteModal = (activity: Activity) => {
     if (isReadOnly) return;
@@ -188,6 +190,8 @@ const Activities: React.FC = () => {
       const activityToOpen = activities.find(a => a.id === activityIdToOpen);
       if (activityToOpen) {
         handleOpenFormModal(activityToOpen);
+        // Clear state to prevent modal from re-opening on navigation
+        window.history.replaceState({}, document.title)
       }
     }
   }, [locationState, activities]);
@@ -332,6 +336,33 @@ const Activities: React.FC = () => {
     setActivities(prev => [newActivity, ...prev]);
     handleCloseModals();
   }
+  
+  const activeFiltersForDisplay = useMemo(() => {
+    const filters: { [key: string]: string } = {};
+    if (domainFilter) filters['Domaine'] = domainFilter;
+    if (statusFilter) filters['Statut'] = statusFilter;
+    if (priorityFilter) filters['Priorité'] = priorityFilter;
+    if (resourceFilter) filters['Ressource'] = resourceMap.get(resourceFilter) || resourceFilter;
+    if (processFilter) filters['Processus'] = processMap.get(processFilter) || processFilter;
+    return filters;
+  }, [domainFilter, statusFilter, priorityFilter, resourceFilter, processFilter, resourceMap, processMap]);
+
+  const handleRemoveFilter = (key: string) => {
+    if (key === 'Domaine') setDomainFilter('');
+    if (key === 'Statut') setStatusFilter('');
+    if (key === 'Priorité') setPriorityFilter('');
+    if (key === 'Ressource') setResourceFilter('');
+    if (key === 'Processus') setProcessFilter('');
+  };
+
+  const handleClearAll = () => {
+    setDomainFilter('');
+    setStatusFilter('');
+    setPriorityFilter('');
+    setResourceFilter('');
+    setProcessFilter('');
+    setSearchTerm('');
+  };
 
 
   return (
@@ -366,6 +397,7 @@ const Activities: React.FC = () => {
             securityProcesses={securityProcesses}
             resources={resources}
           />
+          <ActiveFiltersDisplay filters={activeFiltersForDisplay} onRemoveFilter={handleRemoveFilter} onClearAll={handleClearAll} />
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">

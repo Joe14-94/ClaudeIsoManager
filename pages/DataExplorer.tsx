@@ -5,6 +5,8 @@ import Card, { CardContent, CardHeader, CardTitle } from '../components/ui/Card'
 import Modal from '../components/ui/Modal';
 import { LayoutGrid, FileDown, Filter, X, GripVertical, Info, ArrowUp, ArrowDown, ZoomIn, ZoomOut, RotateCw, Search } from 'lucide-react';
 import { Activity, Chantier, IsoMeasure, Objective, StrategicOrientation, SecurityProcess } from '../types';
+import ActiveFiltersDisplay from '../components/ui/ActiveFiltersDisplay';
+import Tooltip from '../components/ui/Tooltip';
 
 type FieldKey = 'orientation' | 'chantier' | 'objectif' | 'activite' | 'mesure_iso' | 'statut_activite' | 'priorite_activite' | 'domaine_activite' | 'processus';
 
@@ -195,7 +197,8 @@ const DataExplorer: React.FC = () => {
     if (Object.keys(filters).length === 0) return processedData;
     return processedData.filter(row => {
         return Object.entries(filters).every(([key, values]) => {
-            if (!values || !Array.isArray(values)) return true;
+            // FIX: Added Array.isArray check and ensure rowValue is a string for .includes()
+            if (!Array.isArray(values)) return true;
             if (values.length === 0) return false;
 
             const field = AVAILABLE_FIELDS.find(f => f.key === key as FieldKey);
@@ -203,10 +206,11 @@ const DataExplorer: React.FC = () => {
             
             const rowValue = field.getValue(row);
             if(rowValue === undefined) {
+                // If a row doesn't have a value for a filtered field, it should not be included if the filter is active.
                 return false;
             }
             
-            return values.includes(rowValue);
+            return values.includes(String(rowValue));
         });
     });
 }, [processedData, filters]);
@@ -389,6 +393,33 @@ const DataExplorer: React.FC = () => {
     const handleZoomOut = () => setZoomLevel(prev => Math.max(prev - 0.1, 0.7));
     const handleResetZoom = () => setZoomLevel(1);
 
+    const activeFiltersForDisplay = useMemo(() => {
+        const displayFilters: { [key: string]: string } = {};
+        Object.entries(filters).forEach(([key, values]) => {
+            // FIX: Added Array.isArray check to fix "Property 'length' does not exist on type 'unknown'" error.
+            if (Array.isArray(values) && values.length > 0) {
+                const field = AVAILABLE_FIELDS.find(f => f.key === key);
+                if (field) {
+                    displayFilters[field.label] = values.length > 1 ? `${values.length} sélectionnés` : values[0];
+                }
+            }
+        });
+        return displayFilters;
+    }, [filters]);
+
+    const handleRemoveFilter = (label: string) => {
+        const field = AVAILABLE_FIELDS.find(f => f.label === label);
+        if (field) {
+            setFilters(prev => {
+                const newFilters = { ...prev };
+                delete newFilters[field.key];
+                return newFilters;
+            });
+        }
+    };
+    
+    const handleClearAll = () => setFilters({});
+
     return (
         <div className="flex flex-col h-full space-y-4">
         <div className="flex justify-between items-center">
@@ -401,7 +432,14 @@ const DataExplorer: React.FC = () => {
         <div className="grid grid-cols-12 gap-4 flex-grow min-h-0">
             <div className="col-span-12 lg:col-span-3 xl:col-span-2 flex flex-col">
             <Card className="flex-grow flex flex-col min-h-0">
-                <CardHeader><CardTitle>Champs disponibles</CardTitle></CardHeader>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      Champs disponibles
+                      <Tooltip text="Cochez les champs que vous souhaitez voir apparaître comme colonnes dans votre tableau de résultats.">
+                        <Info size={16} className="text-slate-400 cursor-help" />
+                      </Tooltip>
+                    </CardTitle>
+                </CardHeader>
                 <CardContent className="flex-grow overflow-y-auto">
                 <div className="space-y-1">
                     {AVAILABLE_FIELDS.map(field => (
@@ -425,7 +463,15 @@ const DataExplorer: React.FC = () => {
 
             <div className="col-span-12 lg:col-span-9 xl:col-span-10 grid grid-rows-[auto_1fr] gap-4 min-h-0">
             <Card>
-                <CardHeader><CardTitle>Colonnes du tableau</CardTitle><p className="text-sm text-slate-500 mt-1">Cochez des champs pour les ajouter. Glissez-déposez les pastilles pour réordonner.</p></CardHeader>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                        Colonnes du tableau
+                        <Tooltip text="Glissez-déposez les pastilles pour réordonner les colonnes. Utilisez les icônes sur chaque pastille pour filtrer ou retirer la colonne.">
+                            <Info size={16} className="text-slate-400 cursor-help" />
+                        </Tooltip>
+                    </CardTitle>
+                    <p className="text-sm text-slate-500 mt-1">Cochez des champs pour les ajouter. Glissez-déposez les pastilles pour réordonner.</p>
+                </CardHeader>
                 <CardContent 
                     className="min-h-[80px] p-2 border-2 border-dashed border-slate-200 rounded-md"
                     onDrop={handleReorderDrop}
@@ -462,15 +508,20 @@ const DataExplorer: React.FC = () => {
             </Card>
 
             <Card className="grid grid-rows-[auto_1fr] min-h-0">
-                <CardHeader className="flex justify-between items-center">
-                <CardTitle>Résultats ({finalTableData.length} lignes)</CardTitle>
-                <div className="flex items-center gap-1 text-slate-600">
-                    <button onClick={handleZoomOut} title="Dézoomer" className="p-1 rounded-md hover:bg-slate-200 disabled:opacity-50" disabled={zoomLevel <= 0.7}><ZoomOut size={18} /></button>
-                    <span className="text-xs font-mono w-12 text-center select-none">{Math.round(zoomLevel * 100)}%</span>
-                    <button onClick={handleZoomIn} title="Zoomer" className="p-1 rounded-md hover:bg-slate-200 disabled:opacity-50" disabled={zoomLevel >= 1.5}><ZoomIn size={18} /></button>
-                    <button onClick={handleResetZoom} title="Réinitialiser" className="p-1 rounded-md hover:bg-slate-200 ml-2"><RotateCw size={16} /></button>
-                </div>
-            </CardHeader>
+                <CardHeader>
+                    <div className="flex justify-between items-center">
+                        <CardTitle>Résultats ({finalTableData.length} lignes)</CardTitle>
+                        <div className="flex items-center gap-1 text-slate-600">
+                            <button onClick={handleZoomOut} title="Dézoomer" className="p-1 rounded-md hover:bg-slate-200 disabled:opacity-50" disabled={zoomLevel <= 0.7}><ZoomOut size={18} /></button>
+                            <span className="text-xs font-mono w-12 text-center select-none">{Math.round(zoomLevel * 100)}%</span>
+                            <button onClick={handleZoomIn} title="Zoomer" className="p-1 rounded-md hover:bg-slate-200 disabled:opacity-50" disabled={zoomLevel >= 1.5}><ZoomIn size={18} /></button>
+                            <button onClick={handleResetZoom} title="Réinitialiser" className="p-1 rounded-md hover:bg-slate-200 ml-2"><RotateCw size={16} /></button>
+                        </div>
+                    </div>
+                    <div className="mt-2">
+                        <ActiveFiltersDisplay filters={activeFiltersForDisplay} onRemoveFilter={handleRemoveFilter} onClearAll={handleClearAll} />
+                    </div>
+                </CardHeader>
             <CardContent className="overflow-auto p-0">
                 {columns.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full text-slate-500 p-4"><Info size={32} className="mb-2"/><p>Votre tableau apparaîtra ici.</p></div>

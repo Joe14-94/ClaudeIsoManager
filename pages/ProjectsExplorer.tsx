@@ -5,6 +5,7 @@ import Card, { CardContent, CardHeader, CardTitle } from '../components/ui/Card'
 import Modal from '../components/ui/Modal';
 import { LayoutGrid, FileDown, Filter, X, GripVertical, Info, ArrowUp, ArrowDown, ZoomIn, ZoomOut, RotateCw, Search } from 'lucide-react';
 import { Project, Initiative, Resource, IsoMeasure } from '../types';
+import ActiveFiltersDisplay from '../components/ui/ActiveFiltersDisplay';
 
 const formatCurrency = (value?: number) => {
     if (value === undefined || value === null || isNaN(value)) return 'N/A';
@@ -308,6 +309,33 @@ const ProjectsExplorer: React.FC = () => {
     const handleZoomIn = () => setZoomLevel(prev => Math.min(prev + 0.1, 1.5));
     const handleZoomOut = () => setZoomLevel(prev => Math.max(prev - 0.1, 0.7));
     const handleResetZoom = () => setZoomLevel(1);
+    
+    const activeFiltersForDisplay = useMemo(() => {
+        const displayFilters: { [key: string]: string } = {};
+        Object.entries(filters).forEach(([key, values]) => {
+            // FIX: Added Array.isArray check to fix "Property 'length' does not exist on type 'unknown'" error.
+            if (Array.isArray(values) && values.length > 0) {
+                const field = AVAILABLE_FIELDS.find(f => f.key === key);
+                if (field) {
+                    displayFilters[field.label] = values.length > 1 ? `${values.length} sélectionnés` : values[0];
+                }
+            }
+        });
+        return displayFilters;
+    }, [filters]);
+
+    const handleRemoveFilter = (label: string) => {
+        const field = AVAILABLE_FIELDS.find(f => f.label === label);
+        if (field) {
+            setFilters(prev => {
+                const newFilters = { ...prev };
+                delete newFilters[field.key];
+                return newFilters;
+            });
+        }
+    };
+    
+    const handleClearAll = () => setFilters({});
 
     return (
         <div className="flex flex-col h-full space-y-4">
@@ -382,13 +410,18 @@ const ProjectsExplorer: React.FC = () => {
                     </Card>
 
                     <Card className="grid grid-rows-[auto_1fr] min-h-0">
-                        <CardHeader className="flex justify-between items-center">
-                            <CardTitle>Résultats ({finalTableData.length} lignes)</CardTitle>
-                            <div className="flex items-center gap-1 text-slate-600">
-                                <button onClick={handleZoomOut} title="Dézoomer" className="p-1 rounded-md hover:bg-slate-200 disabled:opacity-50" disabled={zoomLevel <= 0.7}><ZoomOut size={18} /></button>
-                                <span className="text-xs font-mono w-12 text-center select-none">{Math.round(zoomLevel * 100)}%</span>
-                                <button onClick={handleZoomIn} title="Zoomer" className="p-1 rounded-md hover:bg-slate-200 disabled:opacity-50" disabled={zoomLevel >= 1.5}><ZoomIn size={18} /></button>
-                                <button onClick={handleResetZoom} title="Réinitialiser" className="p-1 rounded-md hover:bg-slate-200 ml-2"><RotateCw size={16} /></button>
+                        <CardHeader>
+                            <div className="flex justify-between items-center">
+                                <CardTitle>Résultats ({finalTableData.length} lignes)</CardTitle>
+                                <div className="flex items-center gap-1 text-slate-600">
+                                    <button onClick={handleZoomOut} title="Dézoomer" className="p-1 rounded-md hover:bg-slate-200 disabled:opacity-50" disabled={zoomLevel <= 0.7}><ZoomOut size={18} /></button>
+                                    <span className="text-xs font-mono w-12 text-center select-none">{Math.round(zoomLevel * 100)}%</span>
+                                    <button onClick={handleZoomIn} title="Zoomer" className="p-1 rounded-md hover:bg-slate-200 disabled:opacity-50" disabled={zoomLevel >= 1.5}><ZoomIn size={18} /></button>
+                                    <button onClick={handleResetZoom} title="Réinitialiser" className="p-1 rounded-md hover:bg-slate-200 ml-2"><RotateCw size={16} /></button>
+                                </div>
+                            </div>
+                            <div className="mt-2">
+                                <ActiveFiltersDisplay filters={activeFiltersForDisplay} onRemoveFilter={handleRemoveFilter} onClearAll={handleClearAll} />
                             </div>
                         </CardHeader>
                         <CardContent className="overflow-auto p-0">

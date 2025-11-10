@@ -8,6 +8,7 @@ import { Search, PlusCircle, Edit, ArrowUp, ArrowDown, Trash2 } from 'lucide-rea
 import { useAuth } from '../contexts/AuthContext';
 import CalendarDatePicker from '../components/ui/CalendarDatePicker';
 import CustomMultiSelect from '../components/ui/CustomMultiSelect';
+import ActiveFiltersDisplay from '../components/ui/ActiveFiltersDisplay';
 
 type SortKey = 'projectId' | 'title' | 'status' | 'projectManagerMOA' | 'projectManagerMOE' | 'totalProgress' | 'initiative';
 type SortDirection = 'ascending' | 'descending';
@@ -190,6 +191,24 @@ const Projects: React.FC = () => {
         return null;
     }
 
+    const activeFiltersForDisplay = useMemo(() => {
+        const filters: { [key: string]: string } = {};
+        if (statusFilter) filters['Statut'] = statusFilter;
+        if (top30Filter) filters['Top 30'] = top30Filter === 'true' ? 'Oui' : 'Non';
+        return filters;
+    }, [statusFilter, top30Filter]);
+
+    const handleRemoveFilter = (key: string) => {
+        if (key === 'Statut') setStatusFilter('');
+        if (key === 'Top 30') setTop30Filter('');
+    };
+
+    const handleClearAll = () => {
+        setStatusFilter('');
+        setTop30Filter('');
+        setSearchTerm('');
+    };
+
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center flex-wrap gap-4">
@@ -204,7 +223,7 @@ const Projects: React.FC = () => {
 
             <Card>
                 <CardHeader>
-                    <div className="flex flex-col md:flex-row flex-wrap gap-4">
+                    <div className="flex flex-col md:flex-row flex-wrap gap-4 mb-4">
                         <div className="relative flex-1 min-w-[200px]">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
                             <input
@@ -233,6 +252,7 @@ const Projects: React.FC = () => {
                             <option value="false">Hors Top 30</option>
                         </select>
                     </div>
+                    <ActiveFiltersDisplay filters={activeFiltersForDisplay} onRemoveFilter={handleRemoveFilter} onClearAll={handleClearAll} />
                 </CardHeader>
                 <CardContent>
                     <div className="overflow-x-auto">
