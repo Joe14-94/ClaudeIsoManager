@@ -30,42 +30,48 @@ import ProjectsExplorer from './pages/ProjectsExplorer';
 import { SidebarProvider } from './contexts/SidebarContext';
 import ActivitiesDashboard from './pages/ActivitiesDashboard';
 import ProjectsDashboardPage from './pages/ProjectsDashboardPage';
+import AccessRightsPage from './pages/AccessRightsPage';
+import Header from './components/layout/Header';
 
 const AppLayout: React.FC = () => {
   return (
-     <div className="flex h-screen bg-slate-100 font-sans">
+     <div className="relative min-h-screen bg-slate-100 font-sans md:flex">
       <Sidebar />
-      <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">
-        {/* FIX: Replaced v5 Switch with v6 Routes */}
-        <Routes>
-          {/* FIX: Replaced v5 Redirect and `exact` prop with v6 Navigate element. In v6, routes are exact by default. */}
-          <Route path="/" element={<Navigate to="/dashboard" />} />
-          {/* FIX: Updated Route components to use `element` prop for v6 */}
-          <Route path="/dashboard" element={<CustomDashboardPage />} />
-          <Route path="/projets" element={<Projects />} />
-          <Route path="/projects-dashboard" element={<ProjectsDashboardPage />} />
-          <Route path="/projects-explorer" element={<ProjectsExplorer />} />
-          <Route path="/projects-timeline" element={<ProjectsTimelinePage />} />
-          <Route path="/projects-budget" element={<ProjectsBudget />} />
-          <Route path="/projects-workload" element={<ProjectsWorkload />} />
-          <Route path="/activities-dashboard" element={<ActivitiesDashboard />} />
-          <Route path="/activities" element={<Activities />} />
-          <Route path="/explorer" element={<DataExplorer />} />
-          <Route path="/timeline" element={<TimelinePage />} />
-          <Route path="/graph" element={<GraphView />} />
-          <Route path="/d3-graph" element={<D3GraphView />} />
-          <Route path="/iso27002" element={<Iso27002 />} />
-          <Route path="/initiatives" element={<Initiatives />} />
-          <Route path="/orientations" element={<Orientations />} />
-          <Route path="/objectives" element={<Objectives />} />
-          <Route path="/chantiers" element={<Chantiers />} />
-          <Route path="/processes" element={<Processes />} />
-          <Route path="/resources" element={<Resources />} />
-          <Route path="/data-management" element={<DataManagement />} />
-          <Route path="/data-model" element={<DataModelView />} />
-          <Route path="/data-model-2" element={<DataModelView2 />} />
-        </Routes>
-      </main>
+      <div className={`flex-1 flex flex-col min-w-0`}>
+        <Header />
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">
+          {/* FIX: Replaced v5 Switch with v6 Routes */}
+          <Routes>
+            {/* FIX: Replaced v5 Redirect and `exact` prop with v6 Navigate element. In v6, routes are exact by default. */}
+            <Route path="/" element={<Navigate to="/dashboard" />} />
+            {/* FIX: Updated Route components to use `element` prop for v6 */}
+            <Route path="/dashboard" element={<CustomDashboardPage />} />
+            <Route path="/projets" element={<Projects />} />
+            <Route path="/projects-dashboard" element={<ProjectsDashboardPage />} />
+            <Route path="/projects-explorer" element={<ProjectsExplorer />} />
+            <Route path="/projects-timeline" element={<ProjectsTimelinePage />} />
+            <Route path="/projects-budget" element={<ProjectsBudget />} />
+            <Route path="/projects-workload" element={<ProjectsWorkload />} />
+            <Route path="/activities-dashboard" element={<ActivitiesDashboard />} />
+            <Route path="/activities" element={<Activities />} />
+            <Route path="/explorer" element={<DataExplorer />} />
+            <Route path="/timeline" element={<TimelinePage />} />
+            <Route path="/graph" element={<GraphView />} />
+            <Route path="/d3-graph" element={<D3GraphView />} />
+            <Route path="/iso27002" element={<Iso27002 />} />
+            <Route path="/initiatives" element={<Initiatives />} />
+            <Route path="/orientations" element={<Orientations />} />
+            <Route path="/objectives" element={<Objectives />} />
+            <Route path="/chantiers" element={<Chantiers />} />
+            <Route path="/processes" element={<Processes />} />
+            <Route path="/resources" element={<Resources />} />
+            <Route path="/data-management" element={<DataManagement />} />
+            <Route path="/data-model" element={<DataModelView />} />
+            <Route path="/data-model-2" element={<DataModelView2 />} />
+            <Route path="/droits-acces" element={<AccessRightsPage />} />
+          </Routes>
+        </main>
+      </div>
     </div>
   )
 }

@@ -74,18 +74,27 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen, onClo
         <div>
           <label className="block text-sm font-medium text-slate-700">Compte à modifier</label>
           <div className="mt-2 flex flex-wrap gap-x-6 gap-y-2">
-            <div className="flex items-center">
-              <input id="role-admin" name="role" type="radio" value="admin" checked={roleToChange === 'admin'} onChange={() => setRoleToChange('admin')} className="h-4 w-4 text-blue-600 border-slate-300 focus:ring-blue-500"/>
-              <label htmlFor="role-admin" className="ml-2 block text-sm text-slate-900">Administrateur</label>
-            </div>
-             <div className="flex items-center">
-              <input id="role-pmo" name="role" type="radio" value="pmo" checked={roleToChange === 'pmo'} onChange={() => setRoleToChange('pmo')} className="h-4 w-4 text-blue-600 border-slate-300 focus:ring-blue-500"/>
-              <label htmlFor="role-pmo" className="ml-2 block text-sm text-slate-900">PMO</label>
-            </div>
-            <div className="flex items-center">
-              <input id="role-readonly" name="role" type="radio" value="readonly" checked={roleToChange === 'readonly'} onChange={() => setRoleToChange('readonly')} className="h-4 w-4 text-blue-600 border-slate-300 focus:ring-blue-500"/>
-              <label htmlFor="role-readonly" className="ml-2 block text-sm text-slate-900">Lecture seule</label>
-            </div>
+            <label htmlFor="role-admin" className="flex items-center cursor-pointer">
+              <input id="role-admin" name="role" type="radio" value="admin" checked={roleToChange === 'admin'} onChange={() => setRoleToChange('admin')} className="sr-only peer"/>
+              <span className="w-4 h-4 rounded-full border-2 bg-white border-slate-400 grid place-items-center transition-colors peer-checked:border-blue-600 peer-focus:ring-2 peer-focus:ring-blue-500">
+                <span className="w-2 h-2 rounded-full bg-blue-600 transform scale-0 peer-checked:scale-100 transition-transform"></span>
+              </span>
+              <span className="ml-2 text-sm text-slate-900">Administrateur</span>
+            </label>
+             <label htmlFor="role-pmo" className="flex items-center cursor-pointer">
+              <input id="role-pmo" name="role" type="radio" value="pmo" checked={roleToChange === 'pmo'} onChange={() => setRoleToChange('pmo')} className="sr-only peer"/>
+               <span className="w-4 h-4 rounded-full border-2 bg-white border-slate-400 grid place-items-center transition-colors peer-checked:border-blue-600 peer-focus:ring-2 peer-focus:ring-blue-500">
+                <span className="w-2 h-2 rounded-full bg-blue-600 transform scale-0 peer-checked:scale-100 transition-transform"></span>
+              </span>
+              <span className="ml-2 text-sm text-slate-900">PMO</span>
+            </label>
+            <label htmlFor="role-readonly" className="flex items-center cursor-pointer">
+              <input id="role-readonly" name="role" type="radio" value="readonly" checked={roleToChange === 'readonly'} onChange={() => setRoleToChange('readonly')} className="sr-only peer"/>
+               <span className="w-4 h-4 rounded-full border-2 bg-white border-slate-400 grid place-items-center transition-colors peer-checked:border-blue-600 peer-focus:ring-2 peer-focus:ring-blue-500">
+                <span className="w-2 h-2 rounded-full bg-blue-600 transform scale-0 peer-checked:scale-100 transition-transform"></span>
+              </span>
+              <span className="ml-2 text-sm text-slate-900">Lecture seule</span>
+            </label>
           </div>
         </div>
         

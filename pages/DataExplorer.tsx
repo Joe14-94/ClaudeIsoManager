@@ -406,9 +406,9 @@ const DataExplorer: React.FC = () => {
 
       <div className="grid grid-cols-12 gap-4 flex-grow min-h-0">
         <div className="col-span-12 lg:col-span-3 xl:col-span-2 flex flex-col">
-          <Card className="flex-grow">
+          <Card className="flex-grow flex flex-col min-h-0">
             <CardHeader><CardTitle>Champs disponibles</CardTitle></CardHeader>
-            <CardContent className="space-y-2">
+            <CardContent className="flex-grow flex flex-col min-h-0 space-y-2 overflow-y-auto">
               {AVAILABLE_FIELDS.map(field => (
                 <div 
                   key={field.key} 
@@ -525,7 +525,9 @@ const FilterModal: React.FC<FilterModalProps> = ({ field, allValues, filters, se
     const handleToggle = (value: string) => {
         setFilters(prev => {
             const current = prev[field.key] || [];
-            const newValues = current.includes(value) ? current.filter(v => v !== value) : [...current, value];
+            const newValues = current.includes(value)
+                ? current.filter(v => v !== value)
+                : [...current, value];
             return { ...prev, [field.key]: newValues };
         });
     };

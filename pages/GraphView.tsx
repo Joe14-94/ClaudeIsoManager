@@ -351,23 +351,25 @@ const GraphView: React.FC = () => {
     }
 
     return (
-        <div className="h-[calc(100vh-6rem)] w-full flex flex-col relative">
-            <h1 className="text-3xl font-bold text-slate-800">Vue arborescente</h1>
-            <p className="text-slate-600 mb-4">Explorez les relations entre les différents éléments, des orientations stratégiques aux mesures ISO.</p>
+        <div className="h-full flex flex-col">
+            <div className="flex-shrink-0 mb-4">
+              <h1 className="text-3xl font-bold text-slate-800">Vue arborescente</h1>
+              <p className="text-slate-600">Explorez les relations entre les différents éléments, des orientations stratégiques aux mesures ISO.</p>
+            </div>
             
-            <div className="absolute top-16 right-4 z-10 flex items-center gap-2">
+            <div className="absolute top-16 right-4 z-10 flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                  <button
                     onClick={() => setViewMode(prev => prev === 'strategic' ? 'iso' : 'strategic')}
-                    className="px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm text-sm font-medium text-slate-700 hover:bg-slate-50 flex items-center"
+                    className="px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm text-sm font-medium text-slate-700 hover:bg-slate-50 flex items-center justify-center"
                     title="Changer de vue"
                 >
                     <ArrowLeftRight size={16} className="mr-2" />
-                    {viewMode === 'strategic' ? 'Vue par mesure ISO' : 'Vue stratégique'}
+                    <span className="truncate">{viewMode === 'strategic' ? 'Vue par mesure ISO' : 'Vue stratégique'}</span>
                 </button>
                 <div className='relative'>
                     <button
                         onClick={() => setIsNodeTypeFilterOpen(!isNodeTypeFilterOpen)}
-                        className="px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm text-sm font-medium text-slate-700 hover:bg-slate-50 flex items-center"
+                        className="w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm text-sm font-medium text-slate-700 hover:bg-slate-50 flex items-center justify-center"
                     >
                         Filtrer les types
                         {isNodeTypeFilterOpen ? <ChevronDown size={16} className="ml-2" /> : <ChevronRight size={16} className="ml-2" />}
@@ -399,9 +401,9 @@ const GraphView: React.FC = () => {
                     <div className='relative'>
                         <button
                             onClick={() => setIsOrientationFilterOpen(!isOrientationFilterOpen)}
-                            className="px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm text-sm font-medium text-slate-700 hover:bg-slate-50 flex items-center"
+                            className="w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm text-sm font-medium text-slate-700 hover:bg-slate-50 flex items-center justify-center"
                         >
-                            Filtrer les orientations
+                           <span className="truncate">Filtrer les orientations</span> 
                             {isOrientationFilterOpen ? <ChevronDown size={16} className="ml-2" /> : <ChevronRight size={16} className="ml-2" />}
                         </button>
                         {isOrientationFilterOpen && (
@@ -434,9 +436,9 @@ const GraphView: React.FC = () => {
                     <div className='relative'>
                         <button
                             onClick={() => setIsIsoFilterOpen(!isIsoFilterOpen)}
-                            className="px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm text-sm font-medium text-slate-700 hover:bg-slate-50 flex items-center"
+                            className="w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm text-sm font-medium text-slate-700 hover:bg-slate-50 flex items-center justify-center"
                         >
-                            Filtrer les mesures ISO
+                            <span className="truncate">Filtrer les mesures ISO</span>
                             {isIsoFilterOpen ? <ChevronDown size={16} className="ml-2" /> : <ChevronRight size={16} className="ml-2" />}
                         </button>
                         {isIsoFilterOpen && (
@@ -469,17 +471,20 @@ const GraphView: React.FC = () => {
 
             </div>
             
-            <ReactFlow
-                nodes={nodes}
-                edges={edges}
-                onNodeClick={onNodeClick}
-                fitView
-                className="bg-white rounded-lg border border-slate-200"
-            >
-                <MiniMap />
-                <Controls />
-                <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
-            </ReactFlow>
+            <div className="flex-grow">
+              <ReactFlow
+                  nodes={nodes}
+                  edges={edges}
+                  onNodeClick={onNodeClick}
+                  fitView
+                  className="bg-white rounded-lg border border-slate-200"
+              >
+                  <MiniMap />
+                  <Controls />
+                  <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
+              </ReactFlow>
+            </div>
+
 
             {selectedNode && (
                 <Modal 

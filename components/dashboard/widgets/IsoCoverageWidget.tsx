@@ -78,7 +78,8 @@ const IsoCoverageWidget: React.FC<IsoCoverageWidgetProps> = ({ isEditMode, width
                     <div key={chapter} className="mb-4">
                         <h4 className="text-md font-semibold text-slate-700 mb-2 non-draggable" style={{ fontSize: `${chapterTitleFontSize}px` }}>{chapter}</h4>
                         <div className="flex flex-wrap gap-1">
-                            {measures.slice().sort((a,b) => a.code.localeCompare(b.code, 'en', { numeric: true })).map((measure) => (
+                            {/* FIX: The `measures` variable was being inferred as `unknown`. Explicitly casting it to an array of `IsoMeasure` objects resolves the type error when calling `.slice()`. */}
+                            {(measures as Omit<IsoMeasure, 'id'>[]).slice().sort((a,b) => a.code.localeCompare(b.code, 'en', { numeric: true })).map((measure) => (
                                 <Tooltip key={measure.code} text={`${measure.code}: ${measure.title} (Activités: ${coverageMatrix[measure.code]?.activityCount || 0}, Projets: ${coverageMatrix[measure.code]?.projectCount || 0})`}>
                                 <div 
                                     style={{ width: `${boxSize}px`, height: `${boxSize}px` }}

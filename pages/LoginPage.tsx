@@ -23,7 +23,7 @@ const LoginPage: React.FC = () => {
 
     setIsLoading(false);
     if (success) {
-      navigate('/general-dashboard');
+      navigate('/dashboard');
     } else {
       setError('Mot de passe incorrect. Veuillez réessayer.');
     }

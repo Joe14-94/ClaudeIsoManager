@@ -6,6 +6,8 @@ import { useData } from '../contexts/DataContext';
 import { useAuth } from '../contexts/AuthContext';
 import Tooltip from '../components/ui/Tooltip';
 import { Activity, Chantier, Objective, StrategicOrientation, Resource, SecurityProcess, Project, ActivityStatus, TShirtSize, Initiative } from '../types';
+import Modal from '../components/ui/Modal';
+import { loadReferenceData } from '../utils/referenceData';
 
 const DataManagement: React.FC = () => {
   const { 
@@ -22,7 +24,11 @@ const DataManagement: React.FC = () => {
   const { userRole } = useAuth();
   const isReadOnly = userRole === 'readonly';
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error', message: string } | null>(null);
-  const [showResetConfirmation, setShowResetConfirmation] = useState(false);
+  
+  const [showResetActivitiesModal, setShowResetActivitiesModal] = useState(false);
+  const [showResetProjectsModal, setShowResetProjectsModal] = useState(false);
+  const [showAppInitModal, setShowAppInitModal] = useState(false);
+
 
   const showFeedback = (type: 'success' | 'error', message: string) => {
     setFeedback({ type, message });
@@ -177,7 +183,8 @@ const DataManagement: React.FC = () => {
             
             if (existingProject) {
                 updatedProjects.push({
-                    ...existingProject,
+// FIX: Explicitly cast `existingProject` to `Project` before spreading to resolve a potential type inference issue.
+                    ...(existingProject as Project),
                     internalWorkloadRequested,
                     internalWorkloadEngaged,
                     internalWorkloadConsumed,
@@ -285,7 +292,8 @@ const DataManagement: React.FC = () => {
               
               if (existingProject) {
                   updatedProjects.push({
-                      ...existingProject,
+// FIX: Explicitly cast `existingProject` to `Project` before spreading to resolve a potential type inference issue.
+                      ...(existingProject as Project),
                       ...budgetData,
                       updatedAt: new Date().toISOString(),
                   });
@@ -330,16 +338,43 @@ const DataManagement: React.FC = () => {
     }
   };
 
-  const handleResetActivities = () => {
-    if (isReadOnly) return;
-    setShowResetConfirmation(true);
-  };
-  
   const confirmResetActivities = () => {
+    if (isReadOnly) return;
     setActivities([]);
-    setShowResetConfirmation(false);
+    setShowResetActivitiesModal(false);
     showFeedback('success', 'Toutes les activités ont été supprimées.');
   }
+  
+  const confirmResetProjects = () => {
+    if (isReadOnly) return;
+    setProjects([]);
+    setShowResetProjectsModal(false);
+    showFeedback('success', 'Tous les projets ont été supprimés.');
+  }
+
+  const confirmAppInit = async () => {
+    if (isReadOnly) return;
+    try {
+        setActivities([]);
+        setProjects([]);
+        setInitiatives([]);
+        setResources([]);
+        setSecurityProcesses([]);
+        setDashboardLayouts({ lg: [] });
+
+        const refData = await loadReferenceData();
+        setOrientations(refData.orientations);
+        setChantiers(refData.chantiers);
+        setObjectives(refData.objectives);
+        
+        setShowAppInitModal(false);
+        showFeedback('success', "L'application a été réinitialisée avec succès.");
+    } catch (error) {
+        setShowAppInitModal(false);
+        showFeedback('error', "Une erreur est survenue lors de la réinitialisation de l'application.");
+        console.error("Erreur d'initialisation de l'application:", error);
+    }
+  };
 
   const buttonClasses = "flex items-center justify-center px-4 py-2 rounded-lg transition-colors";
   const disabledClasses = "bg-slate-300 text-slate-500 cursor-not-allowed";
@@ -527,40 +562,66 @@ const DataManagement: React.FC = () => {
             </CardTitle>
             <p className="text-sm text-slate-500 mt-1">Actions dangereuses à n'utiliser qu'en connaissance de cause.</p>
           </CardHeader>
-          <CardContent>
-              {showResetConfirmation ? (
-                  <div className="p-4 border border-red-200 rounded-lg bg-red-50">
-                      <h3 className="font-semibold text-red-800">Confirmation requise</h3>
-                      <p className="text-sm text-red-700 mt-1">Êtes-vous absolument certain de vouloir supprimer TOUTES les activités ? Cette action est irréversible.</p>
-                      <div className="flex gap-4 mt-4">
-                          <button onClick={confirmResetActivities} className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700">
-                              Oui, supprimer tout
-                          </button>
-                          <button onClick={() => setShowResetConfirmation(false)} className="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-200 rounded-md hover:bg-slate-300">
-                              Annuler
-                          </button>
-                      </div>
-                  </div>
-              ) : (
-                  <div className="p-4 border border-slate-200 rounded-lg bg-slate-50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                      <div>
-                      <h3 className="font-semibold text-slate-800">Supprimer toutes les activités</h3>
-                      <p className="text-sm text-slate-600 mt-1">Cette action supprimera définitivement toutes les activités de l'application. Utilisez-la pour nettoyer les données de test avant d'importer des données réelles.</p>
-                      </div>
-                      <Tooltip text="Cette action est irréversible.">
-                      <button
-                          onClick={handleResetActivities}
-                          disabled={isReadOnly}
-                          className={`${buttonClasses} ${isReadOnly ? disabledClasses : 'bg-red-600 text-white hover:bg-red-700'}`}
-                      >
-                          <Trash2 className="mr-2" size={18} />
-                          Supprimer les activités
-                      </button>
-                      </Tooltip>
-                  </div>
-              )}
+          <CardContent className="space-y-4">
+            <div className="p-4 border border-slate-200 rounded-lg bg-slate-50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div>
+                    <h3 className="font-semibold text-slate-800">Supprimer toutes les activités</h3>
+                    <p className="text-sm text-slate-600 mt-1">Cette action supprimera définitivement toutes les activités de l'application.</p>
+                </div>
+                <button onClick={() => setShowResetActivitiesModal(true)} disabled={isReadOnly} className={`${buttonClasses} ${isReadOnly ? disabledClasses : 'bg-red-600 text-white hover:bg-red-700'}`}>
+                    <Trash2 className="mr-2" size={18} /> Supprimer les activités
+                </button>
+            </div>
+            <div className="p-4 border border-slate-200 rounded-lg bg-slate-50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div>
+                    <h3 className="font-semibold text-slate-800">Supprimer tous les projets</h3>
+                    <p className="text-sm text-slate-600 mt-1">Cette action supprimera définitivement tous les projets de l'application.</p>
+                </div>
+                <button onClick={() => setShowResetProjectsModal(true)} disabled={isReadOnly} className={`${buttonClasses} ${isReadOnly ? disabledClasses : 'bg-red-600 text-white hover:bg-red-700'}`}>
+                    <Trash2 className="mr-2" size={18} /> Supprimer les projets
+                </button>
+            </div>
+             <div className="p-4 border border-slate-200 rounded-lg bg-slate-50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div>
+                    <h3 className="font-semibold text-slate-800">Initialisation de l'application</h3>
+                    <p className="text-sm text-slate-600 mt-1">Réinitialise toutes les données (projets, activités, etc.) et recharge les données de référence.</p>
+                </div>
+                <button onClick={() => setShowAppInitModal(true)} disabled={isReadOnly} className={`${buttonClasses} ${isReadOnly ? disabledClasses : 'bg-red-600 text-white hover:bg-red-700'}`}>
+                    <Workflow className="mr-2" size={18} /> Initialiser l'application
+                </button>
+            </div>
           </CardContent>
         </Card>
+      )}
+
+      {showResetActivitiesModal && (
+        <Modal isOpen={true} onClose={() => setShowResetActivitiesModal(false)} title="Confirmer la suppression des activités">
+            <p>Êtes-vous absolument certain de vouloir supprimer TOUTES les activités ? Cette action est irréversible.</p>
+            <div className="flex justify-end gap-2 pt-4 mt-4 border-t">
+                <button onClick={() => setShowResetActivitiesModal(false)} className="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-200 rounded-md hover:bg-slate-300">Annuler</button>
+                <button onClick={confirmResetActivities} className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700">Oui, supprimer tout</button>
+            </div>
+        </Modal>
+      )}
+
+      {showResetProjectsModal && (
+        <Modal isOpen={true} onClose={() => setShowResetProjectsModal(false)} title="Confirmer la suppression des projets">
+            <p>Êtes-vous absolument certain de vouloir supprimer TOUS les projets ? Cette action est irréversible.</p>
+            <div className="flex justify-end gap-2 pt-4 mt-4 border-t">
+                <button onClick={() => setShowResetProjectsModal(false)} className="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-200 rounded-md hover:bg-slate-300">Annuler</button>
+                <button onClick={confirmResetProjects} className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700">Oui, supprimer tout</button>
+            </div>
+        </Modal>
+      )}
+
+       {showAppInitModal && (
+        <Modal isOpen={true} onClose={() => setShowAppInitModal(false)} title="Confirmer la réinitialisation de l'application">
+            <p>Êtes-vous sûr de vouloir réinitialiser l'application ? Toutes les données (projets, activités, etc.) seront supprimées et les données de référence (orientations, chantiers, objectifs) seront rechargées. Cette action est irréversible.</p>
+            <div className="flex justify-end gap-2 pt-4 mt-4 border-t">
+                <button onClick={() => setShowAppInitModal(false)} className="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-200 rounded-md hover:bg-slate-300">Annuler</button>
+                <button onClick={confirmAppInit} className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700">Oui, réinitialiser</button>
+            </div>
+        </Modal>
       )}
     </div>
   );

@@ -146,7 +146,9 @@ const ProjectsExplorer: React.FC = () => {
         if (Object.keys(filters).length === 0) return processedData;
         return processedData.filter(row => {
             return Object.entries(filters).every(([key, values]) => {
-                if (!values?.length) return false;
+                if (!Array.isArray(values)) return true; // not an active filter
+                if (values.length === 0) return false; // filter has no values selected, so nothing matches
+
                 const field = AVAILABLE_FIELDS.find(f => f.key === key as FieldKey);
                 if (!field) return true;
                 const rowValue = field.getValue(row);
@@ -258,7 +260,7 @@ const ProjectsExplorer: React.FC = () => {
     return (
         <div className="flex flex-col h-full space-y-4">
             <div className="flex justify-between items-center">
-                <h1 className="text-3xl font-bold text-slate-800">Explorateur de projets</h1>
+                <h1 className="text-3xl font-bold text-slate-800">Explorateur de données projets</h1>
                 <button onClick={handleExport} disabled={columns.length === 0} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-slate-400">
                     <FileDown size={18} /><span>Exporter en CSV</span>
                 </button>
@@ -266,8 +268,9 @@ const ProjectsExplorer: React.FC = () => {
 
             <div className="grid grid-cols-12 gap-4 flex-grow min-h-0">
                 <div className="col-span-12 lg:col-span-3 xl:col-span-2 flex flex-col">
-                    <Card className="flex-grow"><CardHeader><CardTitle>Champs disponibles</CardTitle></CardHeader>
-                        <CardContent className="space-y-2 overflow-y-auto">
+                    <Card className="flex-grow flex flex-col min-h-0">
+                        <CardHeader><CardTitle>Champs disponibles</CardTitle></CardHeader>
+                        <CardContent className="flex-grow min-h-0 space-y-2 overflow-y-auto">
                             {AVAILABLE_FIELDS.map(field => (
                                 <div key={field.key} draggable onDragStart={() => setDraggedItem(field)} className="p-2 border rounded-md bg-slate-50 hover:bg-slate-100 text-slate-700 cursor-grab active:cursor-grabbing flex items-center gap-2">
                                     <GripVertical size={16} className="text-slate-400" />{field.label}

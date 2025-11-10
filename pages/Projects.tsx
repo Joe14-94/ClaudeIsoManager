@@ -4,7 +4,7 @@ import { Project, ActivityStatus, TShirtSize, Resource, Initiative } from '../ty
 import { STATUS_COLORS, ISO_MEASURES_DATA } from '../constants';
 import Card, { CardContent, CardHeader } from '../components/ui/Card';
 import Modal from '../components/ui/Modal';
-import { Search, PlusCircle, Edit, ArrowUp, ArrowDown } from 'lucide-react';
+import { Search, PlusCircle, Edit, ArrowUp, ArrowDown, Trash2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import CalendarDatePicker from '../components/ui/CalendarDatePicker';
 import CustomMultiSelect from '../components/ui/CustomMultiSelect';
@@ -27,8 +27,29 @@ const Projects: React.FC = () => {
     const [currentProject, setCurrentProject] = useState<Partial<Project> | null>(null);
     const [isoSearchTerm, setIsoSearchTerm] = useState('');
 
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
+
     const resourceMap = useMemo(() => new Map(resources.map(r => [r.id, r.name])), [resources]);
     const initiativeMap = useMemo(() => new Map(initiatives.map(i => [i.id, i.label])), [initiatives]);
+    
+    const handleOpenDeleteModal = (project: Project) => {
+        if (isReadOnly) return;
+        setProjectToDelete(project);
+        setIsDeleteModalOpen(true);
+    };
+
+    const handleCloseDeleteModal = () => {
+        setProjectToDelete(null);
+        setIsDeleteModalOpen(false);
+    };
+
+    const confirmDelete = () => {
+        if (isReadOnly || !projectToDelete) return;
+        setProjects(prev => prev.filter(p => p.id !== projectToDelete.id));
+        handleCloseDeleteModal();
+    };
+
 
     const handleOpenFormModal = (projectToEdit?: Project) => {
         if (projectToEdit) {
@@ -130,7 +151,7 @@ const Projects: React.FC = () => {
                     bValue = resourceMap.get(b.projectManagerMOA || '');
                     break;
                 case 'projectManagerMOE':
-                    aValue = resourceMap.get(a.projectManagerMOE || '');
+                    aValue = resourceMap.get(b.projectManagerMOE || '');
                     bValue = resourceMap.get(b.projectManagerMOE || '');
                     break;
                 case 'totalProgress':
@@ -240,8 +261,13 @@ const Projects: React.FC = () => {
                                     <td className="px-6 py-4">{resourceMap.get(project.projectManagerMOE || '') || '-'}</td>
                                     <td className="px-6 py-4">{getProjectProgress(project)}%</td>
                                     <td className="px-6 py-4">{project.isTop30 ? 'Oui' : 'Non'}</td>
-                                    <td className="px-6 py-4 text-right">
-                                        <button onClick={() => handleOpenFormModal(project)} className="p-1 text-slate-500 rounded-md hover:bg-slate-100 hover:text-blue-600"><Edit size={18} /></button>
+                                    <td className="px-6 py-4 text-right space-x-1">
+                                        <button onClick={() => handleOpenFormModal(project)} className="p-1 text-slate-500 rounded-md hover:bg-slate-100 hover:text-blue-600" title="Modifier le projet"><Edit size={18} /></button>
+                                        {!isReadOnly && (
+                                            <button onClick={() => handleOpenDeleteModal(project)} className="p-1 text-slate-500 rounded-md hover:bg-slate-100 hover:text-red-600" title="Supprimer le projet">
+                                                <Trash2 size={18} />
+                                            </button>
+                                        )}
                                     </td>
                                 </tr>
                             ))}
@@ -267,6 +293,24 @@ const Projects: React.FC = () => {
                         isoSearchTerm={isoSearchTerm}
                         setIsoSearchTerm={setIsoSearchTerm}
                     />
+                </Modal>
+            )}
+
+            {isDeleteModalOpen && projectToDelete && (
+                <Modal
+                    isOpen={isDeleteModalOpen}
+                    onClose={handleCloseDeleteModal}
+                    title="Confirmer la suppression"
+                >
+                    <p>Êtes-vous sûr de vouloir supprimer le projet "{projectToDelete.title}" ? Cette action est irréversible.</p>
+                    <div className="flex justify-end gap-2 pt-4 mt-4 border-t">
+                        <button type="button" onClick={handleCloseDeleteModal} className="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 rounded-md hover:bg-slate-200">
+                            Annuler
+                        </button>
+                        <button type="button" onClick={confirmDelete} className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700">
+                            Supprimer
+                        </button>
+                    </div>
                 </Modal>
             )}
         </div>
