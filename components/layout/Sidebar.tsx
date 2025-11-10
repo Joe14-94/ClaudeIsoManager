@@ -6,6 +6,7 @@ import ChangePasswordModal from '../auth/ChangePasswordModal';
 import { APP_VERSION } from '../../config';
 import { useSidebar } from '../../contexts/SidebarContext';
 import Tooltip from '../ui/Tooltip';
+import { useData } from '../../contexts/DataContext';
 
 interface NavItemProps {
   to: string;
@@ -36,6 +37,17 @@ const NavItem: React.FC<NavItemProps> = ({ to, icon, label, isCollapsed }) => {
 
 const Sidebar: React.FC = () => {
   const { logout, userRole } = useAuth();
+  const { 
+    activities,
+    objectives,
+    orientations,
+    resources,
+    chantiers,
+    securityProcesses,
+    projects,
+    initiatives,
+    dashboardLayouts
+  } = useData();
   const navigate = useNavigate();
   const { isCollapsed, toggleSidebar, isMobileOpen, closeMobileSidebar } = useSidebar();
   const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false);
@@ -49,6 +61,30 @@ const Sidebar: React.FC = () => {
   const handleLogout = () => {
     logout();
     navigate('/login');
+    closeMobileSidebar();
+  };
+  
+  const handleExport = () => {
+    const allData = {
+      activities,
+      objectives,
+      orientations,
+      resources,
+      chantiers,
+      securityProcesses,
+      projects,
+      initiatives,
+      dashboardLayouts
+    };
+    const blob = new Blob([JSON.stringify(allData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `iso-manager-backup-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
     closeMobileSidebar();
   };
   
@@ -197,6 +233,15 @@ const Sidebar: React.FC = () => {
               </button>
             </div>
         
+           {(userRole === 'admin' || userRole === 'pmo') && (
+            <Tooltip text="Sauvegarder les données">
+                <button onClick={handleExport} className={`${navItemClasses} ${inactiveClasses} ${isCollapsed ? 'justify-center' : ''}`}>
+                    <FileDown size={18} className={isCollapsed ? '' : 'mr-3'} />
+                    {!isCollapsed && <span className="flex-1 truncate">Sauvegarder</span>}
+                </button>
+            </Tooltip>
+           )}
+
            {userRole === 'admin' && (
             <Tooltip text="Changer le mot de passe">
                 <button onClick={() => { setIsChangePasswordModalOpen(true); closeMobileSidebar(); }} className={`${navItemClasses} ${inactiveClasses} ${isCollapsed ? 'justify-center' : ''}`}>

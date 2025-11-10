@@ -82,6 +82,7 @@ const ProjectsExplorer: React.FC = () => {
     const [filters, setFilters] = useState<Partial<Record<FieldKey, string[]>>>(() => loadState().filters || {});
     const [filterModalField, setFilterModalField] = useState<Field | null>(null);
     const [draggedItem, setDraggedItem] = useState<Field | null>(null);
+    const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
     const [sortConfig, setSortConfig] = useState<{ key: FieldKey; direction: 'asc' | 'desc' } | null>(() => loadState().sortConfig || null);
     
     const [columnWidths, setColumnWidths] = useState<Record<string, number>>(() => loadState().columnWidths || {});
@@ -146,8 +147,8 @@ const ProjectsExplorer: React.FC = () => {
         if (Object.keys(filters).length === 0) return processedData;
         return processedData.filter(row => {
             return Object.entries(filters).every(([key, values]) => {
-                if (!Array.isArray(values)) return true; // not an active filter
-                if (values.length === 0) return false; // filter has no values selected, so nothing matches
+                if (!Array.isArray(values)) return true;
+                if (values.length === 0) return false;
 
                 const field = AVAILABLE_FIELDS.find(f => f.key === key as FieldKey);
                 if (!field) return true;
@@ -202,22 +203,73 @@ const ProjectsExplorer: React.FC = () => {
         }
     }, [filterModalField, filters, uniqueValuesForFilter]);
     
-    const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
-        e.preventDefault();
-        if (draggedItem && !columns.find(c => c.key === draggedItem.key)) {
-            setColumns([...columns, draggedItem]);
-            setColumnWidths(prev => ({ ...prev, [draggedItem.key]: 200 }));
-        }
-        setDraggedItem(null);
-        e.currentTarget.classList.remove('border-blue-500', 'bg-blue-50');
+    const handleColumnToggle = (field: Field) => {
+        setColumns(prev => {
+            const isSelected = prev.some(c => c.key === field.key);
+            if (isSelected) {
+                return prev.filter(c => c.key !== field.key);
+            } else {
+                return [...prev, field];
+            }
+        });
     };
     
     const removeColumn = (key: FieldKey) => {
         setColumns(columns.filter(c => c.key !== key));
-        setFilters(prev => { const newFilters = {...prev}; delete newFilters[key]; return newFilters; });
-        setColumnWidths(prev => { const newWidths = {...prev}; delete newWidths[key]; return newWidths; });
     };
     
+    const handleReorderStart = (e: React.DragEvent<HTMLDivElement>, field: Field) => {
+        setDraggedItem(field);
+        e.dataTransfer.effectAllowed = 'move';
+    };
+
+    const handlePillDragOver = (e: React.DragEvent<HTMLDivElement>, index: number) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!draggedItem) return;
+
+        const targetElement = e.currentTarget as HTMLDivElement;
+        const rect = targetElement.getBoundingClientRect();
+        const midpoint = rect.left + rect.width / 2;
+        
+        const newIndex = e.clientX < midpoint ? index : index + 1;
+        
+        if (newIndex !== dragOverIndex) {
+            setDragOverIndex(newIndex);
+        }
+    };
+
+    const handleReorderDrop = (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        if (!draggedItem || dragOverIndex === null) {
+            setDraggedItem(null);
+            setDragOverIndex(null);
+            return;
+        }
+        
+        const dragIndex = columns.findIndex(c => c.key === draggedItem.key);
+        if (dragIndex === -1) return;
+
+        const newColumns = [...columns];
+        const [removed] = newColumns.splice(dragIndex, 1);
+        
+        const dropIndex = dragIndex < dragOverIndex ? dragOverIndex - 1 : dragOverIndex;
+        
+        if (dragIndex !== dropIndex) {
+            newColumns.splice(dropIndex, 0, removed);
+            setColumns(newColumns);
+        }
+        
+        setDraggedItem(null);
+        setDragOverIndex(null);
+    };
+
+    const handleReorderEnd = (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        setDraggedItem(null);
+        setDragOverIndex(null);
+    };
+
     const handleExport = () => {
         if (columns.length === 0) return;
         const headers = columns.map(c => c.label).join(',');
@@ -270,29 +322,61 @@ const ProjectsExplorer: React.FC = () => {
                 <div className="col-span-12 lg:col-span-3 xl:col-span-2 flex flex-col">
                     <Card className="flex-grow flex flex-col min-h-0">
                         <CardHeader><CardTitle>Champs disponibles</CardTitle></CardHeader>
-                        <CardContent className="flex-grow min-h-0 space-y-2 overflow-y-auto">
+                        <CardContent className="flex-grow overflow-y-auto">
+                           <div className="space-y-1">
                             {AVAILABLE_FIELDS.map(field => (
-                                <div key={field.key} draggable onDragStart={() => setDraggedItem(field)} className="p-2 border rounded-md bg-slate-50 hover:bg-slate-100 text-slate-700 cursor-grab active:cursor-grabbing flex items-center gap-2">
-                                    <GripVertical size={16} className="text-slate-400" />{field.label}
-                                </div>
+                                <label key={field.key} className="flex items-center p-2 rounded-md hover:bg-slate-100 cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        checked={columns.some(c => c.key === field.key)}
+                                        onChange={() => handleColumnToggle(field)}
+                                        className="sr-only peer"
+                                    />
+                                    <div className="w-4 h-4 bg-white border border-slate-400 rounded flex-shrink-0 flex items-center justify-center peer-checked:bg-blue-600 peer-checked:border-blue-600 transition-colors">
+                                       <svg className="hidden peer-checked:block w-3 h-3 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor"><path d="M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z" /></svg>
+                                    </div>
+                                    <span className="ml-3 text-sm text-slate-700">{field.label}</span>
+                                </label>
                             ))}
+                           </div>
                         </CardContent>
                     </Card>
                 </div>
 
                 <div className="col-span-12 lg:col-span-9 xl:col-span-10 grid grid-rows-[auto_1fr] gap-4 min-h-0">
                     <Card>
-                        <CardHeader><CardTitle>Colonnes du tableau</CardTitle><p className="text-sm text-slate-500 mt-1">Glissez-déposez les champs ici.</p></CardHeader>
-                        <CardContent onDrop={handleDrop} onDragOver={e => e.preventDefault()} className="min-h-[80px] p-2 border-2 border-dashed border-slate-300 rounded-md">
-                            <div className="flex flex-wrap gap-2">
-                                {columns.length === 0 && <p className="text-slate-500 text-sm p-4 text-center w-full">Déposez un champ...</p>}
-                                {columns.map(col => (
-                                    <div key={col.key} className="flex items-center gap-1 bg-blue-100 text-blue-800 rounded-full px-3 py-1 text-sm font-medium">
-                                        <span>{col.label}</span>
-                                        <button onClick={() => openFilterModal(col)} className="p-0.5 rounded-full hover:bg-blue-200" title="Filtrer"><Filter size={14} /></button>
-                                        <button onClick={() => removeColumn(col.key)} className="p-0.5 rounded-full hover:bg-blue-200" title="Retirer"><X size={14} /></button>
-                                    </div>
+                        <CardHeader><CardTitle>Colonnes du tableau</CardTitle><p className="text-sm text-slate-500 mt-1">Cochez des champs pour les ajouter. Glissez-déposez les pastilles pour les réordonner.</p></CardHeader>
+                        <CardContent 
+                            className="min-h-[80px] p-2 border-2 border-dashed border-slate-200 rounded-md"
+                            onDrop={handleReorderDrop}
+                            onDragLeave={() => setDragOverIndex(null)}
+                             onDragOver={(e) => { e.preventDefault(); if (draggedItem) { setDragOverIndex(columns.length); }}}
+                        >
+                            <div className="flex flex-wrap items-center">
+                                {columns.length === 0 && !draggedItem && <p className="text-slate-500 text-sm p-4 text-center w-full">Sélectionnez un champ pour commencer...</p>}
+                                
+                                {columns.map((col, index) => (
+                                    <React.Fragment key={col.key}>
+                                        {dragOverIndex === index && <div className="w-2 h-10 bg-blue-500 rounded-full" />}
+                                        <div 
+                                            className="p-1"
+                                            onDragOver={e => handlePillDragOver(e, index)}
+                                        >
+                                            <div 
+                                                draggable 
+                                                onDragStart={e => handleReorderStart(e, col)}
+                                                onDragEnd={handleReorderEnd}
+                                                className={`flex items-center gap-1 bg-slate-100 border border-slate-200 rounded-full px-3 py-1 text-sm font-medium cursor-grab active:cursor-grabbing ${draggedItem?.key === col.key ? 'opacity-50' : ''}`}
+                                            >
+                                                <GripVertical size={14} className="text-slate-400" />
+                                                <span>{col.label}</span>
+                                                <button onClick={() => openFilterModal(col)} className="p-0.5 rounded-full hover:bg-slate-200" title="Filtrer"><Filter size={14} /></button>
+                                                <button onClick={() => removeColumn(col.key)} className="p-0.5 rounded-full hover:bg-slate-200" title="Retirer"><X size={14} /></button>
+                                            </div>
+                                        </div>
+                                    </React.Fragment>
                                 ))}
+                                 {dragOverIndex === columns.length && <div className="w-2 h-10 bg-blue-500 rounded-full" />}
                             </div>
                         </CardContent>
                     </Card>
@@ -323,7 +407,7 @@ const ProjectsExplorer: React.FC = () => {
                                     <tbody className="bg-white">
                                         {finalTableData.map((row, index) => (
                                             <tr key={index} className="border-b hover:bg-slate-50">
-                                                {columns.map(col => <td key={col.key} className="px-4 py-3 align-top break-words">{col.getValue(row)}</td>)}
+                                                {columns.map(col => <td key={col.key} className="px-4 py-3 align-top break-words">{String(col.getValue(row) ?? '')}</td>)}
                                             </tr>
                                         ))}
                                     </tbody>
