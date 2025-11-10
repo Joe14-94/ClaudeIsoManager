@@ -1,482 +1,59 @@
+
 [
   {
-    "id": "ch-1.1.1",
-    "code": "1.1.1",
-    "label": "Structurer le pilotage cybersécurité du réseau dans une logique d'amélioration continue",
-    "description": "",
-    "strategicOrientationId": "so-1.1",
+    "id": "ch-demo-1.1",
+    "code": "C-DEMO-1.1",
+    "label": "Cadre Politique et Documentaire",
+    "description": "Structurer et maintenir le corpus documentaire de la cybersécurité.",
+    "strategicOrientationId": "so-demo-1",
     "createdAt": "2025-11-01T10:00:00Z"
   },
   {
-    "id": "ch-1.1.2",
-    "code": "1.1.2",
-    "label": "Cadrer et formaliser de façon exhaustive la documentation cybersécurité du réseau",
-    "description": "",
-    "strategicOrientationId": "so-1.1",
+    "id": "ch-demo-1.2",
+    "code": "C-DEMO-1.2",
+    "label": "Gestion des Risques et des Tiers",
+    "description": "Piloter les risques et sécuriser les relations avec les fournisseurs.",
+    "strategicOrientationId": "so-demo-1",
     "createdAt": "2025-11-01T10:00:00Z"
   },
   {
-    "id": "ch-1.1.3",
-    "code": "1.1.3",
-    "label": "Définir et suivre les budgets liés à la cybersécurité",
-    "description": "",
-    "strategicOrientationId": "so-1.1",
+    "id": "ch-demo-2.1",
+    "code": "C-DEMO-2.1",
+    "label": "Sécurisation des Données et des Accès",
+    "description": "Protéger l'information par la classification et le contrôle des accès.",
+    "strategicOrientationId": "so-demo-2",
     "createdAt": "2025-11-01T10:00:00Z"
   },
   {
-    "id": "ch-1.2.1",
-    "code": "1.2.1",
-    "label": "Identifier les enjeux cybersécurité liés aux données, aux ressources et aux tiers du réseau",
-    "description": "",
-    "strategicOrientationId": "so-1.2",
+    "id": "ch-demo-2.2",
+    "code": "C-DEMO-2.2",
+    "label": "Renforcement des Infrastructures",
+    "description": "Durcir les systèmes, les réseaux et les postes de travail.",
+    "strategicOrientationId": "so-demo-2",
     "createdAt": "2025-11-01T10:00:00Z"
   },
   {
-    "id": "ch-1.2.2",
-    "code": "1.2.2",
-    "label": "Cibler les périmètres sur lesquels concentrer les efforts de sécurisation",
-    "description": "",
-    "strategicOrientationId": "so-1.2",
+    "id": "ch-demo-3.1",
+    "code": "C-DEMO-3.1",
+    "label": "Surveillance et Détection",
+    "description": "Améliorer les capacités de détection des incidents de sécurité.",
+    "strategicOrientationId": "so-demo-3",
     "createdAt": "2025-11-01T10:00:00Z"
   },
   {
-    "id": "ch-1.3.1",
-    "code": "1.3.1",
-    "label": "Définir et mettre en œuvre la démarche d'approche par les risques à l'échelle du réseau",
-    "description": "",
-    "strategicOrientationId": "so-1.3",
+    "id": "ch-demo-4.1",
+    "code": "C-DEMO-4.1",
+    "label": "Planification de la Continuité",
+    "description": "Définir et formaliser les stratégies de continuité et de reprise.",
+    "strategicOrientationId": "so-demo-4",
     "createdAt": "2025-11-01T10:00:00Z"
   },
   {
-    "id": "ch-1.3.2",
-    "code": "1.3.2",
-    "label": "Suivre et évaluer régulièrement la cartographie des risques",
-    "description": "",
-    "strategicOrientationId": "so-1.3",
-    "createdAt": "2025-11-01T10:00:00Z"
-  },
-  {
-    "id": "ch-1.5.1",
-    "code": "1.5.1",
-    "label": "Garantir que les nouveaux individus intervenant au sein du réseau ne soient pas des menaces",
-    "description": "",
-    "strategicOrientationId": "so-1.5",
-    "createdAt": "2025-11-01T10:00:00Z"
-  },
-  {
-    "id": "ch-1.5.2",
-    "code": "1.5.2",
-    "label": "Définir un cadre de sécurité aux fournisseurs",
-    "description": "",
-    "strategicOrientationId": "so-1.5",
-    "createdAt": "2025-11-01T10:00:00Z"
-  },
-  {
-    "id": "ch-1.6.1",
-    "code": "1.6.1",
-    "label": "Evaluer la conformité du SI aux réglementations, mettre le SI en conformité et assurer le maintien en conformité",
-    "description": "",
-    "strategicOrientationId": "so-1.6",
-    "createdAt": "2025-11-01T10:00:00Z"
-  },
-  {
-    "id": "ch-1.7.1",
-    "code": "1.7.1",
-    "label": "Mettre en place un dispositif de contrôle permanent et d'audit cybersécurité",
-    "description": "",
-    "strategicOrientationId": "so-1.7",
-    "createdAt": "2025-11-01T10:00:00Z"
-  },
-  {
-    "id": "ch-1.7.2",
-    "code": "1.7.2",
-    "label": "Etendre et compléter les CSSI",
-    "description": "",
-    "strategicOrientationId": "so-1.7",
-    "createdAt": "2025-11-01T10:00:00Z"
-  },
-  {
-    "id": "ch-2.1.1",
-    "code": "2.1.1",
-    "label": "Déterminer et mettre en œuvre la cible en terme de ressources et de compétences cybersécurité",
-    "description": "",
-    "strategicOrientationId": "so-2.1",
-    "createdAt": "2025-11-01T10:00:00Z"
-  },
-  {
-    "id": "ch-2.1.2",
-    "code": "2.1.2",
-    "label": "Définir et mettre en œuvre une stratégie permettant d'atteindre la cible",
-    "description": "",
-    "strategicOrientationId": "so-2.1",
-    "createdAt": "2025-11-01T10:00:00Z"
-  },
-  {
-    "id": "ch-2.1.3",
-    "code": "2.1.3",
-    "label": "Recruter et conserver les ressources cybersécurité dans un secteur sous tension",
-    "description": "",
-    "strategicOrientationId": "so-2.1",
-    "createdAt": "2025-11-01T10:00:00Z"
-  },
-  {
-    "id": "ch-2.2.1",
-    "code": "2.2.1",
-    "label": "Définir les cibles liées à la sensibilisation et à la formation des collaborateurs du réseau puis les accompagner dans leur montée en compétence et leur responsabilisation",
-    "description": "",
-    "strategicOrientationId": "so-2.2",
-    "createdAt": "2025-11-01T10:00:00Z"
-  },
-  {
-    "id": "ch-1.4.1",
-    "code": "1.4.1",
-    "label": "Mettre en place un processus d'intégration de la sécurité dans les projets",
-    "description": "",
-    "strategicOrientationId": "so-1.4",
-    "createdAt": "2025-11-01T10:00:00Z"
-  },
-  {
-    "id": "ch-1.4.3",
-    "code": "1.4.3",
-    "label": "Mettre en place une organisation efficace pour appliquer l'ISP aux principes DevOps",
-    "description": "",
-    "strategicOrientationId": "so-1.4",
-    "createdAt": "2025-11-01T10:00:00Z"
-  },
-  {
-    "id": "ch-3.1.1",
-    "code": "3.1.1",
-    "label": "Définir une stratégie de protection et de maintien en conditions de sécurité des infrastructures et des socles",
-    "description": "",
-    "strategicOrientationId": "so-3.1",
-    "createdAt": "2025-11-01T10:00:00Z"
-  },
-  {
-    "id": "ch-3.1.2",
-    "code": "3.1.2",
-    "label": "Se mettre en capacité d'avoir des infrastructures et des socles à jour",
-    "description": "",
-    "strategicOrientationId": "so-3.1",
-    "createdAt": "2025-11-01T10:00:00Z"
-  },
-  {
-    "id": "ch-3.1.3",
-    "code": "3.1.3",
-    "label": "Identifier les vulnérabilités sur les infrastructures et des socles et renforcer leur protection contre les menaces externes",
-    "description": "",
-    "strategicOrientationId": "so-3.1",
-    "createdAt": "2025-11-01T10:00:00Z"
-  },
-  {
-    "id": "ch-3.1.4",
-    "code": "3.1.4",
-    "label": "Renforcer le durcissement des infrastructures et des socles",
-    "description": "",
-    "strategicOrientationId": "so-3.1",
-    "createdAt": "2025-11-01T10:00:00Z"
-  },
-  {
-    "id": "ch-3.1.5",
-    "code": "3.1.5",
-    "label": "Renforcer la gestion de l'obsolescence des infrastructures et des socles",
-    "description": "",
-    "strategicOrientationId": "so-3.1",
-    "createdAt": "2025-11-01T10:00:00Z"
-  },
-  {
-    "id": "ch-3.2.1",
-    "code": "3.2.1",
-    "label": "Industrialiser la gestion de la politique de filtrage",
-    "description": "",
-    "strategicOrientationId": "so-3.2",
-    "createdAt": "2025-11-01T10:00:00Z"
-  },
-  {
-    "id": "ch-3.2.2",
-    "code": "3.2.2",
-    "label": "Renforcer la logique de cloisonnement et de filtrage réseau",
-    "description": "",
-    "strategicOrientationId": "so-3.2",
-    "createdAt": "2025-11-01T10:00:00Z"
-  },
-  {
-    "id": "ch-3.2.3",
-    "code": "3.2.3",
-    "label": "Protéger les accès réseaux au SI",
-    "description": "",
-    "strategicOrientationId": "so-3.2",
-    "createdAt": "2025-11-01T10:00:00Z"
-  },
-  {
-    "id": "ch-3.3.1",
-    "code": "3.3.1",
-    "label": "Renforcer la sécurisation du poste de travail",
-    "description": "",
-    "strategicOrientationId": "so-3.3",
-    "createdAt": "2025-11-01T10:00:00Z"
-  },
-  {
-    "id": "ch-3.3.2",
-    "code": "3.3.2",
-    "label": "Contrôler la sécurisation du poste de travail",
-    "description": "",
-    "strategicOrientationId": "so-3.3",
-    "createdAt": "2025-11-01T10:00:00Z"
-  },
-  {
-    "id": "ch-3.3.3",
-    "code": "3.3.3",
-    "label": "Limiter les impacts de l'obsolescence des postes de travail",
-    "description": "",
-    "strategicOrientationId": "so-3.3",
-    "createdAt": "2025-11-01T10:00:00Z"
-  },
-  {
-    "id": "ch-3.4.1",
-    "code": "3.4.1",
-    "label": "Définir et mettre en place les solutions de gestion des identités et des accès de demain",
-    "description": "",
-    "strategicOrientationId": "so-3.4",
-    "createdAt": "2025-11-01T10:00:00Z"
-  },
-  {
-    "id": "ch-3.4.2",
-    "code": "3.4.2",
-    "label": "Faciliter la mise en œuvre des certificats et de la signature électronique",
-    "description": "",
-    "strategicOrientationId": "so-3.4",
-    "createdAt": "2025-11-01T10:00:00Z"
-  },
-  {
-    "id": "ch-3.5.1",
-    "code": "3.5.1",
-    "label": "Etendre progressivement l'application des principes d'ISP à tous les projets",
-    "description": "",
-    "strategicOrientationId": "so-3.5",
-    "createdAt": "2025-11-01T10:00:00Z"
-  },
-  {
-    "id": "ch-3.5.2",
-    "code": "3.5.2",
-    "label": "Mettre en place dans tous les projets des dispositifs de contrôle de l'application de principes de sécurisation",
-    "description": "",
-    "strategicOrientationId": "so-3.5",
-    "createdAt": "2025-11-01T10:00:00Z"
-  },
-  {
-    "id": "ch-3.6.1",
-    "code": "3.6.1",
-    "label": "Lutter contre l'obsolescence applicative",
-    "description": "",
-    "strategicOrientationId": "so-3.6",
-    "createdAt": "2025-11-01T10:00:00Z"
-  },
-  {
-    "id": "ch-3.6.2",
-    "code": "3.6.2",
-    "label": "Mettre ou maintenir en conditions de sécurité les applications déjà en production",
-    "description": "",
-    "strategicOrientationId": "so-3.6",
-    "createdAt": "2025-11-01T10:00:00Z"
-  },
-  {
-    "id": "ch-3.6.3",
-    "code": "3.6.3",
-    "label": "Garantir la sécurité des accès via des flux applicatifs",
-    "description": "",
-    "strategicOrientationId": "so-3.6",
-    "createdAt": "2025-11-01T10:00:00Z"
-  },
-  {
-    "id": "ch-3.7.1 [NEW]",
-    "code": "3.7.1",
-    "label": "Mettre en place des solutions de sécurité adaptées aux métiers",
-    "description": "",
-    "strategicOrientationId": "so-3.7",
-    "createdAt": "2025-11-01T10:00:00Z"
-  },
-  {
-    "id": "ch-3.8.1",
-    "code": "3.8.1",
-    "label": "Maîtriser la gestion et les accès aux données sensibles",
-    "description": "",
-    "strategicOrientationId": "so-3.8",
-    "createdAt": "2025-11-01T10:00:00Z"
-  },
-  {
-    "id": "ch-3.8.2",
-    "code": "3.8.2",
-    "label": "Maîtriser les équipements en maintenance contenant des données sensibles",
-    "description": "",
-    "strategicOrientationId": "so-3.8",
-    "createdAt": "2025-11-01T10:00:00Z"
-  },
-  {
-    "id": "ch-3.8.3",
-    "code": "3.8.3",
-    "label": "Contrôler la mise au rebut ou l'archivage des ressources",
-    "description": "",
-    "strategicOrientationId": "so-3.8",
-    "createdAt": "2025-11-01T10:00:00Z"
-  },
-  {
-    "id": "ch-3.8.4",
-    "code": "3.8.4",
-    "label": "Maîtriser les données en format papier",
-    "description": "",
-    "strategicOrientationId": "so-3.8",
-    "createdAt": "2025-11-01T10:00:00Z"
-  },
-  {
-    "id": "ch-3.9.1",
-    "code": "3.9.1",
-    "label": "Assurer la prise en compte de la sécurité du Cloud Interne",
-    "description": "",
-    "strategicOrientationId": "so-3.9",
-    "createdAt": "2025-11-01T10:00:00Z"
-  },
-  {
-    "id": "ch-3.9.2",
-    "code": "3.9.2",
-    "label": "Garantir l'apport sécurité des prestataires Cloud",
-    "description": "",
-    "strategicOrientationId": "so-3.9",
-    "createdAt": "2025-11-01T10:00:00Z"
-  },
-  {
-    "id": "ch-3.10.1",
-    "code": "3.10.1",
-    "label": "Rendre les sites plus résistant aux attaques physiques",
-    "description": "",
-    "strategicOrientationId": "so-3.10",
-    "createdAt": "2025-11-01T10:00:00Z"
-  },
-  {
-    "id": "ch-3.10.2",
-    "code": "3.10.2",
-    "label": "Homogénéiser le suivi des accès aux sites physiques",
-    "description": "",
-    "strategicOrientationId": "so-3.10",
-    "createdAt": "2025-11-01T10:00:00Z"
-  },
-  {
-    "id": "ch-3.11.1",
-    "code": "3.11.1",
-    "label": "Dédier des ressources à l'administration",
-    "description": "",
-    "strategicOrientationId": "so-3.11",
-    "createdAt": "2025-11-01T10:00:00Z"
-  },
-  {
-    "id": "ch-3.11.2",
-    "code": "3.11.2",
-    "label": "Améliorer la gestion des droits d'administration sur les postes de travail",
-    "description": "",
-    "strategicOrientationId": "so-3.11",
-    "createdAt": "2025-11-01T10:00:00Z"
-  },
-  {
-    "id": "ch-4.1.1 [NEW]",
-    "code": "4.1.1",
-    "label": "Établir une stratégie de journalisation et de détection",
-    "description": "",
-    "strategicOrientationId": "so-4.1",
-    "createdAt": "2025-11-01T10:00:00Z"
-  },
-  {
-    "id": "ch-4.2.1 [NEW]",
-    "code": "4.2.1",
-    "label": "Mettre en œuvre la stratégie de journalisation et de détection",
-    "description": "",
-    "strategicOrientationId": "so-4.2",
-    "createdAt": "2025-11-01T10:00:00Z"
-  },
-  {
-    "id": "ch-4.3.1 [NEW]",
-    "code": "4.3.1",
-    "label": "Définir et implémenter les cas d'usage de détection",
-    "description": "",
-    "strategicOrientationId": "so-4.3",
-    "createdAt": "2025-11-01T10:00:00Z"
-  },
-  {
-    "id": "ch-4.4.1 [NEW]",
-    "code": "4.4.1",
-    "label": "Mettre en place et exécuter une stratégie de test de la détection",
-    "description": "",
-    "strategicOrientationId": "so-4.4",
-    "createdAt": "2025-11-01T10:00:00Z"
-  },
-  {
-    "id": "ch-4.5.1 [NEW]",
-    "code": "4.5.1",
-    "label": "Renforcer le processus de gestion des incidents et de crise",
-    "description": "",
-    "strategicOrientationId": "so-4.5",
-    "createdAt": "2025-11-01T10:00:00Z"
-  },
-  {
-    "id": "ch-4.6.1 [NEW]",
-    "code": "4.6.1",
-    "label": "Formaliser et tester l'organisation de crise",
-    "description": "",
-    "strategicOrientationId": "so-4.6",
-    "createdAt": "2025-11-01T10:00:00Z"
-  },
-  {
-    "id": "ch-5.1",
-    "code": "5.1",
-    "label": "Définir une gouvernance dédiée à la continuité d'activité",
-    "description": "",
-    "strategicOrientationId": "so-5.0",
-    "createdAt": "2025-11-01T10:00:00Z"
-  },
-  {
-    "id": "ch-5.2",
-    "code": "5.2",
-    "label": "Définir une stratégie globale de résilience à l'échelle du réseau",
-    "description": "",
-    "strategicOrientationId": "so-5.0",
-    "createdAt": "2025-11-01T10:00:00Z"
-  },
-  {
-    "id": "ch-5.3",
-    "code": "5.3",
-    "label": "Renforcer la résilience des activités métiers DSI et cybersécurité du réseau en cas d'indisponibilité de leurs outils",
-    "description": "",
-    "strategicOrientationId": "so-5.0",
-    "createdAt": "2025-11-01T10:00:00Z"
-  },
-  {
-    "id": "ch-5.4",
-    "code": "5.4",
-    "label": "Renforcer la résilience du SI du réseau contre les accidents",
-    "description": "",
-    "strategicOrientationId": "so-5.0",
-    "createdAt": "2025-11-01T10:00:00Z"
-  },
-  {
-    "id": "ch-5.5",
-    "code": "5.5",
-    "label": "Renforcer la résilience du SI du réseau contre les cyber-attaques",
-    "description": "",
-    "strategicOrientationId": "so-5.0",
-    "createdAt": "2025-11-01T10:00:00Z"
-  },
-  {
-    "id": "ch-5.6",
-    "code": "5.6",
-    "label": "Réaliser des sauvegardes cohérentes",
-    "description": "",
-    "strategicOrientationId": "so-5.0",
-    "createdAt": "2025-11-01T10:00:00Z"
-  },
-  {
-    "id": "ch-5.7",
-    "code": "5.7",
-    "label": "Tester les dispositifs de continuité d'activité et de crise existants",
-    "description": "",
-    "strategicOrientationId": "so-5.0",
+    "id": "ch-demo-4.2",
+    "code": "C-DEMO-4.2",
+    "label": "Tests et Exercices de Résilience",
+    "description": "Valider régulièrement l'efficacité des plans de continuité d'activité.",
+    "strategicOrientationId": "so-demo-4",
     "createdAt": "2025-11-01T10:00:00Z"
   }
 ]

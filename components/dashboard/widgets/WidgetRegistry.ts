@@ -8,6 +8,7 @@ import ProjectBudgetSummaryWidget from './ProjectBudgetSummaryWidget';
 import ProjectWorkloadSummaryWidget from './ProjectWorkloadSummaryWidget';
 import KpiCardWidget from './KpiCardWidget';
 import StrategicAlignmentWidget from './StrategicAlignmentWidget';
+import ProjectInitiativeAlignmentWidget from './ProjectInitiativeAlignmentWidget';
 
 export interface WidgetConfig {
   id: string;
@@ -77,9 +78,16 @@ export const WIDGET_REGISTRY: WidgetConfig[] = [
   // Charts & complex widgets
   {
     id: 'strategicAlignment',
-    name: 'Graphique : Alignement stratégique',
+    name: 'Graphique : Alignement Activités par Orientation',
     description: "Répartit la charge de travail (J/H) des activités par orientation stratégique pour visualiser l'alignement de l'effort. Données utilisées : `activities.workloadInPersonDays`, `activities.strategicOrientations`.",
     component: StrategicAlignmentWidget,
+    defaultLayout: { w: 6, h: 5, minW: 5, minH: 4 },
+  },
+  {
+    id: 'projectInitiativeAlignment',
+    name: 'Graphique : Alignement Projets par Initiative',
+    description: "Répartit la charge de travail engagée (J/H) des projets par initiative.",
+    component: ProjectInitiativeAlignmentWidget,
     defaultLayout: { w: 6, h: 5, minW: 5, minH: 4 },
   },
   {
