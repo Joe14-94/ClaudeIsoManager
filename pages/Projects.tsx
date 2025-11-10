@@ -210,7 +210,7 @@ const Projects: React.FC = () => {
     };
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 h-full flex flex-col">
             <div className="flex justify-between items-center flex-wrap gap-4">
                 <h1 className="text-3xl font-bold text-slate-800">Projets</h1>
                 {!isReadOnly && (
@@ -221,7 +221,7 @@ const Projects: React.FC = () => {
                 )}
             </div>
 
-            <Card>
+            <Card className="flex-grow flex flex-col min-h-0">
                 <CardHeader>
                     <div className="flex flex-col md:flex-row flex-wrap gap-4 mb-4">
                         <div className="relative flex-1 min-w-[200px]">
@@ -254,10 +254,10 @@ const Projects: React.FC = () => {
                     </div>
                     <ActiveFiltersDisplay filters={activeFiltersForDisplay} onRemoveFilter={handleRemoveFilter} onClearAll={handleClearAll} />
                 </CardHeader>
-                <CardContent>
+                <CardContent className="flex-grow overflow-y-auto">
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm text-left text-slate-500">
-                        <thead className="text-xs text-slate-700 uppercase bg-slate-100">
+                        <thead className="text-xs text-slate-700 uppercase bg-slate-100 sticky top-0">
                             <tr>
                                 <th scope="col" className="px-6 py-3 cursor-pointer" onClick={() => requestSort('projectId')}>ID {renderSortArrow('projectId')}</th>
                                 <th scope="col" className="px-6 py-3 cursor-pointer" onClick={() => requestSort('title')}>Titre {renderSortArrow('title')}</th>

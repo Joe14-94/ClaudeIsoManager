@@ -104,7 +104,7 @@ const ProjectsWorkload: React.FC = () => {
     const totalProgress = totalEngaged > 0 ? Math.round((totalConsumed / totalEngaged) * 100) : 0;
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 h-full flex flex-col">
             <h1 className="text-3xl font-bold text-slate-800">Vue des charges projets (J/H)</h1>
             
             <Card>
@@ -120,7 +120,7 @@ const ProjectsWorkload: React.FC = () => {
                 </CardContent>
             </Card>
 
-            <Card>
+            <Card className="flex-grow flex flex-col min-h-0">
                 <CardHeader>
                     <div className="relative flex-1 max-w-sm">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
@@ -133,10 +133,10 @@ const ProjectsWorkload: React.FC = () => {
                         />
                     </div>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="flex-grow overflow-y-auto">
                     <div className="overflow-x-auto">
                         <table className="w-full text-sm text-left text-slate-500">
-                            <thead className="text-xs text-slate-700 uppercase bg-slate-100">
+                            <thead className="text-xs text-slate-700 uppercase bg-slate-100 sticky top-0">
                                 <tr>
                                     {headers.map(header => (
                                         <th key={header.key} scope="col" className="px-6 py-3 cursor-pointer whitespace-nowrap" onClick={() => requestSort(header.key)}>

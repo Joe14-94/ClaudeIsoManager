@@ -36,7 +36,7 @@ import { NotificationProvider } from './contexts/NotificationContext';
 
 const AppLayout: React.FC = () => {
   return (
-     <div className="relative min-h-screen bg-slate-100 font-sans md:flex">
+     <div className="relative h-screen bg-slate-100 font-sans md:flex overflow-hidden">
       <Sidebar />
       <div className={`flex-1 flex flex-col min-w-0`}>
         <Header />

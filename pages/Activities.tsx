@@ -366,7 +366,7 @@ const Activities: React.FC = () => {
 
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 h-full flex flex-col">
       <div className="flex justify-between items-center flex-wrap gap-4">
         <h1 className="text-3xl font-bold text-slate-800">Activités</h1>
         {!isReadOnly && (
@@ -379,7 +379,7 @@ const Activities: React.FC = () => {
         )}
       </div>
       
-      <Card>
+      <Card className="flex-grow flex flex-col min-h-0">
         <CardHeader>
           <ActivityFilter 
             searchTerm={searchTerm}
@@ -399,10 +399,10 @@ const Activities: React.FC = () => {
           />
           <ActiveFiltersDisplay filters={activeFiltersForDisplay} onRemoveFilter={handleRemoveFilter} onClearAll={handleClearAll} />
         </CardHeader>
-        <CardContent>
+        <CardContent className="flex-grow overflow-y-auto">
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left text-slate-500">
-              <thead className="text-xs text-slate-700 uppercase bg-slate-100">
+              <thead className="text-xs text-slate-700 uppercase bg-slate-100 sticky top-0">
                 <tr>
                   <th scope="col" className="px-6 py-3 cursor-pointer hover:bg-slate-200 transition-colors" onClick={() => requestSort('activityId')}>
                     <div className="flex items-center gap-1.5">

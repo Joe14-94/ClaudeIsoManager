@@ -1,5 +1,3 @@
-
-
 import React, { useState, useMemo, useEffect } from 'react';
 // FIX: The project appears to use react-router-dom v5. The `useLocation` hook is available in v5.1+, and the error likely stems from a project-wide version mismatch with v6. Updated to v6.
 import { useLocation } from 'react-router-dom';
@@ -325,127 +323,130 @@ const Iso27002: React.FC = () => {
   const totalFilteredMeasures = filteredMeasures.length;
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center flex-wrap gap-4">
-        <h1 className="text-3xl font-bold text-slate-800">Référentiel ISO 27002:2022</h1>
-         <div className="flex items-center gap-2">
-            <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                <input
-                    type="text"
-                    placeholder="Recherche plein texte..."
-                    value={searchTerm}
-                    onChange={handleSearchChange}
-                    className="w-full sm:w-64 pl-10 pr-4 py-2 border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-            </div>
-            <button 
-                onClick={() => { setShowFilters(!showFilters); setSearchTerm(''); setCodeFilter(null); }} 
-                className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-100 transition-colors shadow-sm"
-                aria-expanded={showFilters}
-            >
-                <SlidersHorizontal size={18} />
-                <span>Filtrer</span>
-            </button>
+    <div className="space-y-6 h-full flex flex-col">
+      <div className="flex-shrink-0">
+        <div className="flex justify-between items-center flex-wrap gap-4">
+          <h1 className="text-3xl font-bold text-slate-800">Référentiel ISO 27002:2022</h1>
+          <div className="flex items-center gap-2">
+              <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                  <input
+                      type="text"
+                      placeholder="Recherche plein texte..."
+                      value={searchTerm}
+                      onChange={handleSearchChange}
+                      className="w-full sm:w-64 pl-10 pr-4 py-2 border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+              </div>
+              <button 
+                  onClick={() => { setShowFilters(!showFilters); setSearchTerm(''); setCodeFilter(null); }} 
+                  className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-100 transition-colors shadow-sm"
+                  aria-expanded={showFilters}
+              >
+                  <SlidersHorizontal size={18} />
+                  <span>Filtrer</span>
+              </button>
+          </div>
+        </div>
+        <p className="text-slate-600 mt-2">
+          Explorez les 93 mesures de sécurité de l'information, organisées en 4 chapitres. Cliquez sur une mesure pour voir le détail.
+        </p>
+
+        {showFilters && (
+          <Card className="my-4">
+              <CardHeader>
+                  <CardTitle>Filtrer les mesures</CardTitle>
+              </CardHeader>
+              <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
+                      {(Object.keys(filterOptions) as FilterableDetailKey[]).map((category) => (
+                          <div key={category}>
+                              <h4 className="font-semibold text-slate-700 mb-2">{filterLabels[category]}</h4>
+                              <div className="space-y-1 max-h-48 overflow-y-auto pr-2">
+                                  {(filterOptions[category]).map(value => (
+                                      <div key={value} className="flex items-center justify-between">
+                                          <label className="flex items-center cursor-pointer select-none" htmlFor={`${category}-${value}`}>
+                                              <input
+                                                  type="checkbox"
+                                                  id={`${category}-${value}`}
+                                                  checked={activeFilters[category]?.includes(value) || false}
+                                                  onChange={() => handleFilterChange(category, value)}
+                                                  className="sr-only peer"
+                                              />
+                                              <div className="w-4 h-4 bg-white border border-slate-300 rounded flex-shrink-0 flex items-center justify-center peer-checked:bg-blue-600 peer-checked:border-blue-600 peer-focus-visible:ring-2 peer-focus-visible:ring-offset-2 peer-focus-visible:ring-blue-500 transition-colors">
+                                                  <svg className="hidden peer-checked:block w-3 h-3 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
+                                                      <path d="M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z" />
+                                                  </svg>
+                                              </div>
+                                              <span className="ml-2 text-sm text-slate-600">
+                                                  {value.replace(/_/g, ' ')}
+                                              </span>
+                                          </label>
+                                          <span className="text-xs text-slate-500 font-medium">
+                                              {filterCounts[category]?.[value] || 0}
+                                          </span>
+                                      </div>
+                                  ))}
+                              </div>
+                          </div>
+                      ))}
+                  </div>
+                  <div className="mt-6 flex justify-end">
+                      <button onClick={resetFilters} className="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-200 border border-transparent rounded-md hover:bg-slate-300">
+                          Réinitialiser les filtres
+                      </button>
+                  </div>
+              </CardContent>
+          </Card>
+        )}
+
+        <ActiveFiltersDisplay filters={activeFiltersForDisplay} onRemoveFilter={handleRemoveFilter} onClearAll={resetFilters} />
+
+        <div className="text-sm text-slate-500 font-medium mt-4">
+          {searchTerm 
+              ? `${totalFilteredMeasures} mesure(s) trouvée(s) pour "${searchTerm}".`
+              : `${totalFilteredMeasures} sur ${allMeasures.length} mesure(s) affichée(s).`
+          }
         </div>
       </div>
-      <p className="text-slate-600">
-        Explorez les 93 mesures de sécurité de l'information, organisées en 4 chapitres. Cliquez sur une mesure pour voir le détail.
-      </p>
-
-      {showFilters && (
-        <Card className="mb-6">
-            <CardHeader>
-                <CardTitle>Filtrer les mesures</CardTitle>
-            </CardHeader>
-            <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4">
-                    {(Object.keys(filterOptions) as FilterableDetailKey[]).map((category) => (
-                        <div key={category}>
-                            <h4 className="font-semibold text-slate-700 mb-2">{filterLabels[category]}</h4>
-                            <div className="space-y-1 max-h-48 overflow-y-auto pr-2">
-                                {(filterOptions[category]).map(value => (
-                                    <div key={value} className="flex items-center justify-between">
-                                        <label className="flex items-center cursor-pointer select-none" htmlFor={`${category}-${value}`}>
-                                            <input
-                                                type="checkbox"
-                                                id={`${category}-${value}`}
-                                                checked={activeFilters[category]?.includes(value) || false}
-                                                onChange={() => handleFilterChange(category, value)}
-                                                className="sr-only peer"
-                                            />
-                                            <div className="w-4 h-4 bg-white border border-slate-300 rounded flex-shrink-0 flex items-center justify-center peer-checked:bg-blue-600 peer-checked:border-blue-600 peer-focus-visible:ring-2 peer-focus-visible:ring-offset-2 peer-focus-visible:ring-blue-500 transition-colors">
-                                                <svg className="hidden peer-checked:block w-3 h-3 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
-                                                    <path d="M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z" />
-                                                </svg>
-                                            </div>
-                                            <span className="ml-2 text-sm text-slate-600">
-                                                {value.replace(/_/g, ' ')}
-                                            </span>
-                                        </label>
-                                        <span className="text-xs text-slate-500 font-medium">
-                                            {filterCounts[category]?.[value] || 0}
-                                        </span>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    ))}
-                </div>
-                <div className="mt-6 flex justify-end">
-                    <button onClick={resetFilters} className="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-200 border border-transparent rounded-md hover:bg-slate-300">
-                        Réinitialiser les filtres
-                    </button>
-                </div>
-            </CardContent>
-        </Card>
-      )}
-
-      <ActiveFiltersDisplay filters={activeFiltersForDisplay} onRemoveFilter={handleRemoveFilter} onClearAll={resetFilters} />
-
-      <div className="text-sm text-slate-500 font-medium">
-        {searchTerm 
-            ? `${totalFilteredMeasures} mesure(s) trouvée(s) pour "${searchTerm}".`
-            : `${totalFilteredMeasures} sur ${allMeasures.length} mesure(s) affichée(s).`
-        }
+      
+      <div className="flex-grow overflow-y-auto space-y-6 pr-2">
+        {totalFilteredMeasures > 0 ? (
+          Object.entries(measuresByChapter).map(([chapter, measures]) => (
+              (measures as IsoMeasure[]).length > 0 && (
+                  <div key={chapter}>
+                      <h2 className={`text-xl font-semibold text-slate-700 mb-3 pl-3 border-l-4 ${CHAPTER_COLORS[chapter as IsoChapter]}`}>
+                          {chapter}
+                      </h2>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                          {(measures as IsoMeasure[]).map((measure) => (
+                          <Card key={measure.code} className="cursor-pointer hover:shadow-md transition-shadow duration-200" onClick={() => setSelectedMeasure(measure)}>
+                              <CardContent>
+                              <div className="font-semibold text-slate-800">
+                                  <span className="font-mono text-blue-600">{measure.code}</span> - {measure.title}
+                              </div>
+                              <p className="text-sm text-slate-500 mt-2">{measure.description}</p>
+                              </CardContent>
+                          </Card>
+                          ))}
+                      </div>
+                  </div>
+              )
+          ))
+        ) : (
+          <Card>
+              <CardContent className="text-center text-slate-500 py-16">
+                  <p className="font-semibold">
+                    {searchTerm 
+                      ? `Aucune mesure ne correspond à votre recherche "${searchTerm}".`
+                      : "Aucune mesure ne correspond aux filtres sélectionnés."
+                    }
+                  </p>
+                  <p className="text-sm mt-1">Essayez d'ajuster ou de réinitialiser vos filtres.</p>
+              </CardContent>
+          </Card>
+        )}
       </div>
-
-
-      {totalFilteredMeasures > 0 ? (
-        Object.entries(measuresByChapter).map(([chapter, measures]) => (
-            (measures as IsoMeasure[]).length > 0 && (
-                <div key={chapter}>
-                    <h2 className={`text-xl font-semibold text-slate-700 mb-3 pl-3 border-l-4 ${CHAPTER_COLORS[chapter as IsoChapter]}`}>
-                        {chapter}
-                    </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {(measures as IsoMeasure[]).map((measure) => (
-                        <Card key={measure.code} className="cursor-pointer hover:shadow-md transition-shadow duration-200" onClick={() => setSelectedMeasure(measure)}>
-                            <CardContent>
-                            <div className="font-semibold text-slate-800">
-                                <span className="font-mono text-blue-600">{measure.code}</span> - {measure.title}
-                            </div>
-                            <p className="text-sm text-slate-500 mt-2">{measure.description}</p>
-                            </CardContent>
-                        </Card>
-                        ))}
-                    </div>
-                </div>
-            )
-        ))
-      ) : (
-        <Card>
-            <CardContent className="text-center text-slate-500 py-16">
-                <p className="font-semibold">
-                  {searchTerm 
-                    ? `Aucune mesure ne correspond à votre recherche "${searchTerm}".`
-                    : "Aucune mesure ne correspond aux filtres sélectionnés."
-                  }
-                </p>
-                <p className="text-sm mt-1">Essayez d'ajuster ou de réinitialiser vos filtres.</p>
-            </CardContent>
-        </Card>
-      )}
 
 
       {selectedMeasure && (
