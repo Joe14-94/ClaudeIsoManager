@@ -1,7 +1,7 @@
 // FIX: The import statement was malformed and was missing the 'useState' hook import.
 import React, { useState } from 'react';
 import Card, { CardContent, CardHeader, CardTitle } from '../components/ui/Card';
-import { Upload, HelpCircle, DatabaseBackup, Info, AlertTriangle, Trash2, Workflow } from 'lucide-react';
+import { Upload, HelpCircle, DatabaseBackup, Info, AlertTriangle, Trash2, Workflow, FileDown } from 'lucide-react';
 import { useData } from '../contexts/DataContext';
 import { useAuth } from '../contexts/AuthContext';
 import Tooltip from '../components/ui/Tooltip';
@@ -54,6 +54,27 @@ const DataManagement: React.FC = () => {
     const a = document.createElement('a');
     a.href = url;
     a.download = `iso-manager-backup-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleExportReferentiel = () => {
+    if (isReadOnly) return;
+    const referentielData = {
+      initiatives,
+      orientations,
+      chantiers,
+      objectives,
+      securityProcesses,
+      resources
+    };
+    const blob = new Blob([JSON.stringify(referentielData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `referentiel-backup-${new Date().toISOString().split('T')[0]}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -438,6 +459,25 @@ const DataManagement: React.FC = () => {
                 Restaurer une sauvegarde
                 <input type="file" className="hidden" accept=".json" onChange={(e) => handleFileImport(e, 'Sauvegarde Complète')} disabled={isReadOnly} />
             </label>
+          </CardContent>
+        </Card>
+      )}
+
+      {(userRole === 'admin' || userRole === 'pmo') && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Export du Référentiel</CardTitle>
+            <p className="text-sm text-slate-500 mt-1">Sauvegardez les données de référence principales de l'application dans un fichier JSON.</p>
+          </CardHeader>
+          <CardContent>
+            <button
+              onClick={handleExportReferentiel}
+              disabled={isReadOnly}
+              className={`${buttonClasses} ${isReadOnly ? disabledClasses : 'bg-purple-600 text-white hover:bg-purple-700'}`}
+            >
+              <FileDown className="mr-2" size={18} />
+              Exporter le Référentiel (JSON)
+            </button>
           </CardContent>
         </Card>
       )}
