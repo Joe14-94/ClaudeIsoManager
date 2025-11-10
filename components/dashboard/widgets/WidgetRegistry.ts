@@ -6,6 +6,8 @@ import ActivityTimelineWidget from './ActivityTimelineWidget';
 import ProjectTimelineWidget from './ProjectTimelineWidget';
 import ProjectBudgetSummaryWidget from './ProjectBudgetSummaryWidget';
 import ProjectWorkloadSummaryWidget from './ProjectWorkloadSummaryWidget';
+import KpiCardWidget from './KpiCardWidget';
+import StrategicAlignmentWidget from './StrategicAlignmentWidget';
 
 export interface WidgetConfig {
   id: string;
@@ -25,7 +27,7 @@ export const WIDGET_REGISTRY: WidgetConfig[] = [
   // Stat cards
   {
     id: 'totalActivities',
-    name: 'Stat: Activités totales',
+    name: 'Stat : Activités totales',
     description: "Affiche le nombre total d'activités.",
     component: StatCardWidget,
     defaultLayout: { w: 3, h: 2, minW: 2, minH: 2 },
@@ -33,7 +35,7 @@ export const WIDGET_REGISTRY: WidgetConfig[] = [
   },
   {
     id: 'totalProjects',
-    name: 'Stat: Projets totaux',
+    name: 'Stat : Projets totaux',
     description: 'Affiche le nombre total de projets.',
     component: StatCardWidget,
     defaultLayout: { w: 3, h: 2, minW: 2, minH: 2 },
@@ -41,13 +43,45 @@ export const WIDGET_REGISTRY: WidgetConfig[] = [
   },
   {
     id: 'coveredMeasures',
-    name: 'Stat: Couverture ISO',
+    name: 'Stat : Couverture ISO',
     description: 'Affiche le nombre de mesures ISO couvertes.',
     component: StatCardWidget,
     defaultLayout: { w: 3, h: 2, minW: 2, minH: 2 },
     props: { type: 'coveredMeasures' },
   },
+   // Nouveaux indicateurs KPI
+  {
+    id: 'scheduleSlippage',
+    name: 'KPI : Dérive calendrier',
+    description: "Calcule l'écart moyen en jours entre la date de fin planifiée et la date de fin réelle/prévisionnelle des projets. Données utilisées : `projectEndDate`, `goLiveDate`.",
+    component: KpiCardWidget,
+    defaultLayout: { w: 3, h: 2, minW: 2, minH: 2 },
+    props: { type: 'scheduleSlippage' },
+  },
+  {
+    id: 'budgetForecast',
+    name: 'KPI : Atterrissage budgétaire',
+    description: "Estime le coût final moyen des projets en se basant sur la performance actuelle (rapport réalisé/engagé). Données utilisées : `budgetApproved`, `completedPV`, `budgetCommitted`.",
+    component: KpiCardWidget,
+    defaultLayout: { w: 3, h: 2, minW: 2, minH: 2 },
+    props: { type: 'budgetForecast' },
+  },
+  {
+    id: 'avgActivityAge',
+    name: 'KPI : Âge moyen des activités "en cours"',
+    description: "Calcule la durée moyenne en jours depuis laquelle les activités sont au statut 'En cours', pour identifier les points de blocage. Données utilisées : `activities.status`, `activities.startDate`.",
+    component: KpiCardWidget,
+    defaultLayout: { w: 3, h: 2, minW: 2, minH: 2 },
+    props: { type: 'avgActivityAge' },
+  },
   // Charts & complex widgets
+  {
+    id: 'strategicAlignment',
+    name: 'Graphique : Alignement stratégique',
+    description: "Répartit la charge de travail (J/H) des activités par orientation stratégique pour visualiser l'alignement de l'effort. Données utilisées : `activities.workloadInPersonDays`, `activities.strategicOrientations`.",
+    component: StrategicAlignmentWidget,
+    defaultLayout: { w: 6, h: 5, minW: 5, minH: 4 },
+  },
   {
     id: 'isoCoverageMatrix',
     name: 'Matrice de couverture ISO',
@@ -58,7 +92,7 @@ export const WIDGET_REGISTRY: WidgetConfig[] = [
   },
   {
     id: 'domainDonutChart',
-    name: 'Activités par domaine',
+    name: 'Graphique : Activités par domaine',
     description: 'Répartition des activités par domaine de sécurité.',
     component: DomainDonutChartWidget,
     defaultLayout: { w: 6, h: 5, minW: 4, minH: 4 },
@@ -82,7 +116,7 @@ export const WIDGET_REGISTRY: WidgetConfig[] = [
   },
     {
     id: 'projectBudgetSummary',
-    name: 'Résumé Budgétaire Projets',
+    name: 'Résumé budgétaire projets',
     description: 'Synthèse des budgets demandés, accordés et engagés pour les projets.',
     component: ProjectBudgetSummaryWidget,
     defaultLayout: { w: 12, h: 2, minW: 6, minH: 2 },
@@ -90,7 +124,7 @@ export const WIDGET_REGISTRY: WidgetConfig[] = [
   },
   {
     id: 'projectWorkloadSummary',
-    name: 'Résumé des Charges Projets',
+    name: 'Résumé des charges projets',
     description: 'Synthèse des charges (J/H) pour les projets.',
     component: ProjectWorkloadSummaryWidget,
     defaultLayout: { w: 12, h: 3, minW: 6, minH: 3 },

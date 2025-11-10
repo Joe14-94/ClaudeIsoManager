@@ -28,6 +28,7 @@ const DataManagement: React.FC = () => {
   const [showResetActivitiesModal, setShowResetActivitiesModal] = useState(false);
   const [showResetProjectsModal, setShowResetProjectsModal] = useState(false);
   const [showAppInitModal, setShowAppInitModal] = useState(false);
+  const [showDeleteAllDataModal, setShowDeleteAllDataModal] = useState(false);
 
 
   const showFeedback = (type: 'success' | 'error', message: string) => {
@@ -375,6 +376,21 @@ const DataManagement: React.FC = () => {
         console.error("Erreur d'initialisation de l'application:", error);
     }
   };
+  
+    const confirmDeleteAllData = () => {
+    if (isReadOnly) return;
+    setActivities([]);
+    setProjects([]);
+    setObjectives([]);
+    setChantiers([]);
+    setOrientations([]);
+    setInitiatives([]);
+    setResources([]);
+    setSecurityProcesses([]);
+    setShowDeleteAllDataModal(false);
+    showFeedback('success', 'Toutes les données de l\'application ont été supprimées.');
+  };
+
 
   const buttonClasses = "flex items-center justify-center px-4 py-2 rounded-lg transition-colors";
   const disabledClasses = "bg-slate-300 text-slate-500 cursor-not-allowed";
@@ -590,6 +606,15 @@ const DataManagement: React.FC = () => {
                     <Workflow className="mr-2" size={18} /> Initialiser l'application
                 </button>
             </div>
+            <div className="p-4 border border-red-200 rounded-lg bg-red-50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div>
+                    <h3 className="font-semibold text-red-800">Supprimer toutes les données</h3>
+                    <p className="text-sm text-red-600 mt-1">Supprime DÉFINITIVEMENT toutes les données : projets, activités, et l'ensemble du référentiel (orientations, chantiers, etc.).</p>
+                </div>
+                <button onClick={() => setShowDeleteAllDataModal(true)} disabled={isReadOnly} className={`${buttonClasses} ${isReadOnly ? disabledClasses : 'bg-red-600 text-white hover:bg-red-700'}`}>
+                    <Trash2 className="mr-2" size={18} /> Supprimer toutes les données
+                </button>
+            </div>
           </CardContent>
         </Card>
       )}
@@ -620,6 +645,24 @@ const DataManagement: React.FC = () => {
             <div className="flex justify-end gap-2 pt-4 mt-4 border-t">
                 <button onClick={() => setShowAppInitModal(false)} className="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-200 rounded-md hover:bg-slate-300">Annuler</button>
                 <button onClick={confirmAppInit} className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700">Oui, réinitialiser</button>
+            </div>
+        </Modal>
+      )}
+
+      {showDeleteAllDataModal && (
+        <Modal isOpen={true} onClose={() => setShowDeleteAllDataModal(false)} title="Confirmer la suppression TOTALE des données">
+            <div className="space-y-4">
+                <p className="text-lg font-medium text-slate-800">Êtes-vous absolument certain de vouloir supprimer <strong class="text-red-600">TOUTES</strong> les données de l'application ?</p>
+                <p className="text-sm text-slate-600">Cette action est irréversible et videra complètement les données suivantes :</p>
+                <ul className="list-disc list-inside text-sm text-slate-600 space-y-1">
+                    <li>Tous les Projets</li>
+                    <li>Toutes les Activités</li>
+                    <li>Tout le référentiel (Orientations, Chantiers, Objectifs, Initiatives, Processus, Ressources)</li>
+                </ul>
+            </div>
+            <div className="flex justify-end gap-2 pt-4 mt-6 border-t">
+                <button onClick={() => setShowDeleteAllDataModal(false)} className="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-200 rounded-md hover:bg-slate-300">Annuler</button>
+                <button onClick={confirmDeleteAllData} className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700">Oui, tout supprimer</button>
             </div>
         </Modal>
       )}

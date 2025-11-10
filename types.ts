@@ -11,6 +11,7 @@ export interface SecurityProcess {
   id: string;
   name: string;
   description: string;
+  isoMeasureIds: string[];
 }
 
 export interface IsoMeasureDetails {

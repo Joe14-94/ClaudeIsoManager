@@ -104,27 +104,23 @@ const DataExplorer: React.FC = () => {
     const rows: ProcessedRow[] = [];
     const { objectivesMap, chantiersMap, orientationsMap, processusMap, isoMeasuresMap } = dataMaps;
 
-    const addedIds = {
-        activities: new Set<string>(),
-        objectives: new Set<string>(),
-        chantiers: new Set<string>(),
-        orientations: new Set<string>(),
-        isoMeasures: new Set<string>(),
-        processes: new Set<string>(),
-    };
-
+    // 1. Add all base entities to ensure they are represented
+    orientations.forEach(o => rows.push({ orientation: o }));
+    chantiers.forEach(c => rows.push({ chantier: c }));
+    objectives.forEach(o => rows.push({ objectif: o }));
+    allIsoMeasures.forEach(m => rows.push({ mesure_iso: m }));
+    securityProcesses.forEach(p => rows.push({ processus: p }));
+    // Activities will be the starting point for linked rows, so they are implicitly included.
+    
+    // 2. Build comprehensive linked rows starting from activities
     activities.forEach(activite => {
-        addedIds.activities.add(activite.id);
         const processus = processusMap.get(activite.functionalProcessId);
-        if (processus) addedIds.processes.add(processus.id);
         
         const linkedObjectives = activite.objectives.length > 0 ? activite.objectives.map(id => objectivesMap.get(id)).filter((o): o is Objective => !!o) : [undefined];
         const linkedIsos = activite.isoMeasures.length > 0 ? activite.isoMeasures.map(code => isoMeasuresMap.get(code)).filter((m): m is IsoMeasure => !!m) : [undefined];
 
         linkedObjectives.forEach(objectif => {
-            if (objectif) addedIds.objectives.add(objectif.id);
             const chantier = objectif ? chantiersMap.get(objectif.chantierId) : undefined;
-            if (chantier) addedIds.chantiers.add(chantier.id);
             
             const allOrientationIds = new Set<string>();
             if (chantier) allOrientationIds.add(chantier.strategicOrientationId);
@@ -134,45 +130,24 @@ const DataExplorer: React.FC = () => {
             const linkedOrientations = allOrientationIds.size > 0 ? Array.from(allOrientationIds).map(id => orientationsMap.get(id)).filter((o): o is StrategicOrientation => !!o) : [undefined];
               
             linkedOrientations.forEach(orientation => {
-                if (orientation) addedIds.orientations.add(orientation.id);
                 linkedIsos.forEach(mesure_iso => {
-                    if (mesure_iso) addedIds.isoMeasures.add(mesure_iso.id);
                     rows.push({ activite, processus, objectif, chantier, orientation, mesure_iso });
                 });
             });
         });
     });
 
-    objectives.forEach(objectif => {
-        if (addedIds.objectives.has(objectif.id)) return;
-        addedIds.objectives.add(objectif.id);
-        const chantier = chantiersMap.get(objectif.chantierId);
-        if (chantier) addedIds.chantiers.add(chantier.id);
-        const orientationIds = new Set<string>();
-        if (chantier) orientationIds.add(chantier.strategicOrientationId);
-        objectif.strategicOrientations.forEach(id => orientationIds.add(id));
-        const linkedOrientations = Array.from(orientationIds).map(id => orientationsMap.get(id)).filter((o): o is StrategicOrientation => !!o);
-        if (linkedOrientations.length > 0) {
-            linkedOrientations.forEach(orientation => {
-                if (orientation) addedIds.orientations.add(orientation.id);
-                rows.push({ objectif, chantier, orientation });
-            });
-        } else {
-            rows.push({ objectif, chantier });
-        }
+    // 3. Add direct Processus <-> Mesure ISO links
+    securityProcesses.forEach(processus => {
+      if (processus.isoMeasureIds && processus.isoMeasureIds.length > 0) {
+        processus.isoMeasureIds.forEach(isoCode => {
+          const mesure_iso = isoMeasuresMap.get(isoCode);
+          if (mesure_iso) {
+            rows.push({ processus, mesure_iso });
+          }
+        });
+      }
     });
-
-    chantiers.forEach(chantier => {
-        if (addedIds.chantiers.has(chantier.id)) return;
-        addedIds.chantiers.add(chantier.id);
-        const orientation = orientationsMap.get(chantier.strategicOrientationId);
-        if (orientation) addedIds.orientations.add(orientation.id);
-        rows.push({ chantier, orientation });
-    });
-
-    orientations.forEach(o => { if (!addedIds.orientations.has(o.id)) rows.push({ orientation: o }); });
-    allIsoMeasures.forEach(m => { if (!addedIds.isoMeasures.has(m.id)) rows.push({ mesure_iso: m }); });
-    securityProcesses.forEach(p => { if (!addedIds.processes.has(p.id)) rows.push({ processus: p }); });
 
     return rows;
 }, [activities, objectives, chantiers, orientations, securityProcesses, allIsoMeasures, dataMaps]);
@@ -218,19 +193,51 @@ const DataExplorer: React.FC = () => {
  const finalTableData = useMemo(() => {
     if (columns.length === 0) return [];
 
+    // 1. Gather all unique combinations.
     const uniqueCombinations = new Map<string, ProcessedRow>();
-    
     filteredData.forEach(row => {
         const key = columns.map(c => c.getValue(row) ?? 'null').join('||');
-        
         const isAllNull = columns.every(c => c.getValue(row) === undefined);
 
         if (!isAllNull && !uniqueCombinations.has(key)) {
             uniqueCombinations.set(key, row);
         }
     });
-    
-    let items = Array.from(uniqueCombinations.values());
+
+    const combinationEntries = Array.from(uniqueCombinations.entries());
+
+    // 2. Filter out rows that are subsets of other, more complete, rows.
+    const filteredEntries = combinationEntries.filter(([key]) => {
+        const values = key.split('||');
+        
+        const isSubset = combinationEntries.some(([otherKey]) => {
+            if (key === otherKey) return false; // Not a subset of itself
+            
+            const otherValues = otherKey.split('||');
+            
+            let matchesAllDefinedValues = true;
+            let isStrictSuperset = false;
+            
+            for (let i = 0; i < values.length; i++) {
+                if (values[i] !== 'null') { // If current row has a value
+                    if (values[i] !== otherValues[i]) { // The other row must have the same value
+                        matchesAllDefinedValues = false;
+                        break;
+                    }
+                } else { // If current row has a null
+                    if (otherValues[i] !== 'null') { // And the other row has a value here
+                        isStrictSuperset = true;
+                    }
+                }
+            }
+            
+            return matchesAllDefinedValues && isStrictSuperset;
+        });
+        
+        return !isSubset;
+    });
+
+    let items = filteredEntries.map(([, row]) => row);
 
     if (sortConfig !== null) {
       const fieldToSort = AVAILABLE_FIELDS.find(f => f.key === sortConfig.key);
@@ -258,7 +265,7 @@ const DataExplorer: React.FC = () => {
     processedData.forEach(row => {
         const value = filterModalField.getValue(row);
         if (value !== undefined) {
-            values.add(value);
+            values.add(String(value));
         }
     });
     return Array.from(values).sort((a, b) => a.localeCompare(b, 'fr', {numeric: true}));
