@@ -31,14 +31,11 @@ const CustomDashboardPage: React.FC = () => {
       .filter((w): w is WidgetItem => w !== null);
   }, [dashboardLayouts, currentBreakpoint]);
   
-  const handleLayoutChange = useCallback((layout: Layout[]) => {
+  const handleLayoutChange = useCallback((layout: Layout[], allLayouts: { [breakpoint: string]: Layout[] }) => {
     if (isEditMode) {
-      setDashboardLayouts(prev => ({
-        ...prev,
-        [currentBreakpoint]: layout,
-      }));
+      setDashboardLayouts(allLayouts);
     }
-  }, [isEditMode, currentBreakpoint, setDashboardLayouts]);
+  }, [isEditMode, setDashboardLayouts]);
 
   const onBreakpointChange = useCallback((newBreakpoint: string) => {
     setCurrentBreakpoint(newBreakpoint);
@@ -54,8 +51,10 @@ const CustomDashboardPage: React.FC = () => {
     
     setDashboardLayouts(prevLayouts => {
       const newLayouts = { ...prevLayouts };
-      Object.keys(newLayouts).forEach(breakpoint => {
-        newLayouts[breakpoint] = [...(newLayouts[breakpoint] || []), { ...newItem }];
+      const definedBreakpoints = ['lg', 'md', 'sm', 'xs', 'xxs'];
+      
+      definedBreakpoints.forEach(bp => {
+        newLayouts[bp] = [...(newLayouts[bp] || []).filter(l => l.i !== newItem.i), { ...newItem }];
       });
       return newLayouts;
     });
@@ -113,8 +112,7 @@ const CustomDashboardPage: React.FC = () => {
           cols={{ lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 }}
           rowHeight={80}
           onBreakpointChange={onBreakpointChange}
-          onDragStop={handleLayoutChange}
-          onResizeStop={handleLayoutChange}
+          onLayoutChange={handleLayoutChange}
           isDraggable={isEditMode}
           isResizable={isEditMode}
           draggableCancel=".non-draggable"

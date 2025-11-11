@@ -4,25 +4,17 @@ import { useData } from '../../../contexts/DataContext';
 import { CardHeader, CardTitle, CardContent } from '../../ui/Card';
 import { Objective, Chantier } from '../../../types';
 
-const formatCurrency = (value?: number) => {
-    if (value === undefined || value === null || isNaN(value)) return 'N/A';
-    return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', notation: 'compact' }).format(value);
-};
-
 const StrategicAlignmentWidget: React.FC = () => {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const { activities, orientations, objectives, chantiers, projects } = useData();
+  const { activities, orientations, objectives, chantiers } = useData();
 
-  const alignmentData = useMemo(() => {
-    const data: { [key: string]: { label: string, workload: number, budget: number } } = {};
-    const orientationMap = new Map<string, { label: string }>(orientations.map(o => [o.id, { label: `${o.code} - ${o.label}` }]));
+  const alignmentData: { code: string, fullLabel: string, workload: number }[] = useMemo(() => {
+    const data: { [key: string]: { code: string, fullLabel: string, workload: number } } = {};
+    // FIX: Explicitly type the Map to help TypeScript infer the correct type for its values.
+    const orientationMap = new Map<string, { code: string; fullLabel: string; }>(orientations.map(o => [o.id, { code: o.code, fullLabel: `${o.code} - ${o.label}` }]));
     const objectiveMap = new Map<string, Objective>(objectives.map(o => [o.id, o]));
     const chantierMap = new Map<string, Chantier>(chantiers.map(c => [c.id, c]));
-
-    const totalBudget = projects.reduce((sum, p) => sum + (p.budgetApproved || 0), 0);
-    const totalWorkloadAllProjects = projects.reduce((sum, p) => sum + (p.internalWorkloadEngaged || 0) + (p.externalWorkloadEngaged || 0), 0);
-    const costPerDay = totalWorkloadAllProjects > 0 ? totalBudget / totalWorkloadAllProjects : 750;
 
     activities.forEach(activity => {
       if (activity.workloadInPersonDays && activity.workloadInPersonDays > 0) {
@@ -45,16 +37,15 @@ const StrategicAlignmentWidget: React.FC = () => {
           if (!orientationDetails) return;
 
           if (!data[orientationId]) {
-            data[orientationId] = { label: orientationDetails.label, workload: 0, budget: 0 };
+            data[orientationId] = { code: orientationDetails.code, fullLabel: orientationDetails.fullLabel, workload: 0 };
           }
           data[orientationId].workload += activity.workloadInPersonDays!;
-          data[orientationId].budget += activity.workloadInPersonDays! * costPerDay;
         });
       }
     });
 
     return Object.values(data).sort((a, b) => b.workload - a.workload);
-  }, [activities, orientations, objectives, chantiers, projects]);
+  }, [activities, orientations, objectives, chantiers]);
 
   useEffect(() => {
     if (!svgRef.current || !containerRef.current || alignmentData.length === 0) {
@@ -70,8 +61,18 @@ const StrategicAlignmentWidget: React.FC = () => {
       svg.selectAll('*').remove();
       const { width, height } = container.getBoundingClientRect();
       svg.attr('width', width).attr('height', height);
+      
+      let maxLabelWidth = 0;
+      const tempSvg = d3.select(container).append('svg').attr('class', 'temp-svg').style('position', 'absolute').style('visibility', 'hidden').style('pointer-events', 'none');
+      alignmentData.forEach(d => {
+          const textNode = tempSvg.append('text').attr('class', 'text-sm fill-slate-600').text(d.code).node();
+          if (textNode) {
+              maxLabelWidth = Math.max(maxLabelWidth, textNode.getComputedTextLength());
+          }
+      });
+      tempSvg.remove();
 
-      const margin = { top: 50, right: 30, bottom: 50, left: 220 };
+      const margin = { top: 30, right: 30, bottom: 50, left: Math.min(maxLabelWidth + 15, width / 2.5) };
       const innerWidth = width - margin.left - margin.right;
       const innerHeight = height - margin.top - margin.bottom;
 
@@ -80,82 +81,53 @@ const StrategicAlignmentWidget: React.FC = () => {
       const g = svg.append('g').attr('transform', `translate(${margin.left}, ${margin.top})`);
 
       const maxWorkload = d3.max(alignmentData, d => d.workload) || 0;
-      const maxBudget = d3.max(alignmentData, d => d.budget) || 0;
       
       const xScaleWorkload = d3.scaleLinear().domain([0, maxWorkload]).range([0, innerWidth]).nice();
-      const xScaleBudget = d3.scaleLinear().domain([0, maxBudget]).range([0, innerWidth]).nice();
       
-      const yScale0 = d3.scaleBand()
-        .domain(alignmentData.map(d => d.label))
+      const yScale = d3.scaleBand()
+        .domain(alignmentData.map(d => d.code))
         .range([0, innerHeight])
-        .padding(0.3);
-
-      const yScale1 = d3.scaleBand()
-        .domain(['workload', 'budget'])
-        .range([0, yScale0.bandwidth()])
-        .padding(0.1);
+        .padding(0.4);
 
       const xAxisWorkload = g.append('g').attr('transform', `translate(0, ${innerHeight})`).call(d3.axisBottom(xScaleWorkload).ticks(Math.min(5, innerWidth / 80)));
-      const xAxisBudget = g.append('g').call(d3.axisTop(xScaleBudget).ticks(Math.min(5, innerWidth / 80)).tickFormat(d3.format("~s")));
-      const yAxis = g.append('g').call(d3.axisLeft(yScale0).tickSize(0));
+      const yAxis = g.append('g').call(d3.axisLeft(yScale).tickSize(0));
       
-      [xAxisWorkload, xAxisBudget, yAxis].forEach(axis => axis.select(".domain").remove());
+      [xAxisWorkload, yAxis].forEach(axis => axis.select(".domain").remove());
       xAxisWorkload.selectAll("line").remove();
-      xAxisBudget.selectAll("line").remove();
       yAxis.selectAll("text").attr('class', 'text-sm fill-slate-600');
 
       svg.append('text').attr('x', margin.left + innerWidth / 2).attr('y', height - 10).attr('text-anchor', 'middle').attr('class', 'text-xs fill-slate-500 font-medium').text('Charge (J/H)');
-      svg.append('text').attr('x', margin.left + innerWidth / 2).attr('y', 20).attr('text-anchor', 'middle').attr('class', 'text-xs fill-slate-500 font-medium').text('Budget Estimé (€)');
 
       g.append('g').attr('class', 'grid').call(d3.axisBottom(xScaleWorkload).ticks(5).tickSize(innerHeight)).selectAll('.tick line').attr('stroke', '#e2e8f0').attr('stroke-dasharray', '2,2');
       g.selectAll('.grid .domain, .grid .tick text').remove();
 
-      const orientationGroup = g.selectAll('.orientation-group').data(alignmentData).enter().append('g').attr('transform', d => `translate(0, ${yScale0(d.label)!})`);
-
-      const bars = orientationGroup.selectAll('rect')
-        .data(d => [{key: 'workload', value: d.workload, label: d.label}, {key: 'budget', value: d.budget, label: d.label}])
+      const bars = g.selectAll('.bar')
+        .data(alignmentData)
         .enter().append('rect')
-        .attr('x', 0).attr('y', d => yScale1(d.key)!)
-        .attr('height', yScale1.bandwidth())
-        .attr('fill', d => d.key === 'workload' ? '#7dd3fc' : '#818cf8')
+        .attr('class', 'bar')
+        .attr('x', 0)
+        .attr('y', d => yScale((d as any).code)!)
+        .attr('height', yScale.bandwidth())
+        .attr('fill', '#7dd3fc')
+        .attr('rx', 3)
         .attr('width', 0);
         
-      bars.transition().duration(800).ease(d3.easeCubicOut).attr('width', d => d.key === 'workload' ? xScaleWorkload(d.value) : xScaleBudget(d.value));
+      bars.transition().duration(800).ease(d3.easeCubicOut).attr('width', d => xScaleWorkload((d as any).workload));
 
       bars.on('mouseover', function(event, d) {
             d3.select(this).style('opacity', 0.85);
-            const fullData = alignmentData.find(item => item.label === d.label);
-            tooltip.style('opacity', 1).html(`<strong>${d.label}</strong><br/>Charge: ${fullData?.workload.toFixed(1)} J/H<br/>Budget Estimé: ${formatCurrency(fullData?.budget)}`);
+            tooltip.style('opacity', 1).html(`<strong>${(d as any).fullLabel}</strong><br/>Charge: ${(d as any).workload.toFixed(1)} J/H`);
         })
         .on('mousemove', (event) => {
             const tooltipNode = tooltip.node();
             if (!tooltipNode) return;
-
-            const tooltipWidth = tooltipNode.offsetWidth;
-            const tooltipHeight = tooltipNode.offsetHeight;
-            const { clientX, clientY } = event;
-            const margin = 15;
-            const horizontalOffset = 25;
-            const verticalOffset = 75; // Increased offset to move tooltip higher
-
-            // Calculate desired position (up and left of cursor)
-            let x = clientX - tooltipWidth - horizontalOffset;
-            let y = clientY - tooltipHeight - verticalOffset;
-
-            // Adjust for viewport boundaries without flipping
-            if (x < margin) {
-                x = margin;
-            }
-            if (y < margin) {
-                y = margin;
-            }
-            if (x + tooltipWidth > window.innerWidth - margin) {
-                x = window.innerWidth - tooltipWidth - margin;
-            }
-            if (y + tooltipHeight > window.innerHeight - margin) {
-                y = window.innerHeight - tooltipHeight - margin;
-            }
-
+            const { offsetWidth: tooltipWidth, offsetHeight: tooltipHeight } = tooltipNode;
+            const { pageX, pageY } = event;
+            const offset = 15;
+            let x = pageX + offset;
+            let y = pageY + offset;
+            if (x + tooltipWidth > window.innerWidth) x = pageX - tooltipWidth - offset;
+            if (y + tooltipHeight > window.innerHeight) y = pageY - tooltipHeight - offset;
             tooltip.style('left', `${x}px`).style('top', `${y}px`);
         })
         .on('mouseout', function() {
@@ -164,10 +136,9 @@ const StrategicAlignmentWidget: React.FC = () => {
         });
 
       const legend = svg.append('g').attr('transform', `translate(${margin.left}, 0)`);
-      const legendItems = [{ key: 'workload', label: 'Charge (J/H)', color: '#7dd3fc' }, { key: 'budget', label: 'Budget Estimé (€)', color: '#818cf8' }];
-      const legendItem = legend.selectAll('.legend-item').data(legendItems).enter().append('g').attr('transform', (d, i) => `translate(${i * 160}, 0)`);
-      legendItem.append('rect').attr('width', 12).attr('height', 12).attr('fill', d => d.color).attr('rx', 2);
-      legendItem.append('text').attr('x', 16).attr('y', 10).text(d => d.label).attr('class', 'text-xs fill-slate-600');
+      const legendItem = legend.append('g');
+      legendItem.append('rect').attr('width', 12).attr('height', 12).attr('fill', '#7dd3fc').attr('rx', 2);
+      legendItem.append('text').attr('x', 16).attr('y', 10).text('Charge (J/H)').attr('class', 'text-xs fill-slate-600');
     };
 
     const resizeObserver = new ResizeObserver(drawChart);
@@ -180,7 +151,7 @@ const StrategicAlignmentWidget: React.FC = () => {
     <div className="h-full w-full flex flex-col">
       <CardHeader className="non-draggable">
         <CardTitle>Alignement des activités par orientation</CardTitle>
-        <p className="text-sm text-slate-500 mt-1">Charge (J/H) et budget (€) des activités par orientation.</p>
+        <p className="text-sm text-slate-500 mt-1">Charge (J/H) des activités par orientation.</p>
       </CardHeader>
       <CardContent className="flex-grow min-h-0" ref={containerRef}>
         {alignmentData.length === 0 ? (

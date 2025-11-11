@@ -165,6 +165,15 @@ export interface Activity {
   createdAt: DateTime;
   updatedAt: DateTime;
   functionalProcessId: string;
+  isExternalService?: boolean;
+  
+  // Budget fields
+  budgetRequested?: number;
+  budgetApproved?: number;
+  budgetCommitted?: number;
+  validatedPurchaseOrders?: number;
+  completedPV?: number;
+  forecastedPurchaseOrders?: number;
 }
 
 export interface Resource {

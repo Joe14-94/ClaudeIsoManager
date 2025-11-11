@@ -268,7 +268,14 @@ const Activities: React.FC = () => {
         chantierIds: [],
         objectives: [],
         owner: resources[0]?.id || '',
-        functionalProcessId: securityProcesses[0]?.id || ''
+        functionalProcessId: securityProcesses[0]?.id || '',
+        isExternalService: false,
+        budgetRequested: undefined,
+        budgetApproved: undefined,
+        budgetCommitted: undefined,
+        validatedPurchaseOrders: undefined,
+        completedPV: undefined,
+        forecastedPurchaseOrders: undefined,
       });
       setIsEditMode(false);
     }
@@ -286,11 +293,16 @@ const Activities: React.FC = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     if (currentActivity) {
-      const { name, value } = e.target;
-      if (name === 'workloadInPersonDays') {
-          setCurrentActivity({ ...currentActivity, workloadInPersonDays: value ? parseFloat(value) : undefined });
+      const { name, value, type } = e.target;
+      const isCheckbox = type === 'checkbox';
+      const isNumber = type === 'number';
+
+      if (isCheckbox) {
+        setCurrentActivity({ ...currentActivity, [name]: (e.target as HTMLInputElement).checked });
+      } else if (isNumber) {
+        setCurrentActivity({ ...currentActivity, [name]: value ? parseFloat(value) : undefined });
       } else {
-          setCurrentActivity({ ...currentActivity, [name]: value });
+        setCurrentActivity({ ...currentActivity, [name]: value });
       }
     }
   };
@@ -548,6 +560,41 @@ const Activities: React.FC = () => {
               </div>
             </div>
             
+            <div className="pt-2">
+                <label htmlFor="isExternalService" className="flex items-center cursor-pointer">
+                    <input type="checkbox" id="isExternalService" name="isExternalService" checked={currentActivity.isExternalService || false} onChange={handleChange} disabled={isReadOnly} className="sr-only peer" />
+                    <div className={`w-4 h-4 border rounded flex-shrink-0 flex items-center justify-center transition-colors ${
+                        isReadOnly ? 'bg-slate-200 border-slate-300' : 'bg-white border-slate-400'
+                    } peer-checked:bg-blue-600 peer-checked:border-blue-600 peer-focus-visible:ring-2 peer-focus-visible:ring-offset-2 peer-focus-visible:ring-blue-500`}>
+                        <svg className="hidden peer-checked:block w-3 h-3 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
+                            <path d="M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z" />
+                        </svg>
+                    </div>
+                    <span className="ml-2 text-sm font-medium text-slate-700">Prestation externe</span>
+                </label>
+            </div>
+            
+            {currentActivity.isExternalService && (
+                 <div className="space-y-4 pt-4 border-t">
+                    <h3 className="text-md font-semibold text-slate-800">Budget ADF (€)</h3>
+                    <div className="space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-2 border rounded-md bg-slate-50">
+                            <div><label htmlFor="budgetRequested">Demandé</label><input type="number" name="budgetRequested" value={currentActivity.budgetRequested || ''} onChange={handleChange} readOnly={isReadOnly} min="0" step="any"/></div>
+                            <div><label htmlFor="budgetApproved">Accordé</label><input type="number" name="budgetApproved" value={currentActivity.budgetApproved || ''} onChange={handleChange} readOnly={isReadOnly} min="0" step="any"/></div>
+                            <div><label htmlFor="budgetCommitted">Engagé</label><input type="number" name="budgetCommitted" value={currentActivity.budgetCommitted || ''} onChange={handleChange} readOnly={isReadOnly} min="0" step="any"/></div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-2 border rounded-md bg-slate-50">
+                            <div><label htmlFor="validatedPurchaseOrders">Demandes d’achat validées</label><input type="number" name="validatedPurchaseOrders" value={currentActivity.validatedPurchaseOrders || ''} onChange={handleChange} readOnly={isReadOnly} min="0" step="any"/></div>
+                            <div><label htmlFor="completedPV">Réalisé (PV)</label><input type="number" name="completedPV" value={currentActivity.completedPV || ''} onChange={handleChange} readOnly={isReadOnly} min="0" step="any"/></div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-1 gap-4 p-2 border rounded-md bg-slate-50">
+                           <div><label htmlFor="forecastedPurchaseOrders">Demandes d’achat prévues</label><input type="number" name="forecastedPurchaseOrders" value={currentActivity.forecastedPurchaseOrders || ''} onChange={handleChange} readOnly={isReadOnly} min="0" step="any"/></div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+
             <div className="grid grid-cols-2 gap-4">
                 <div>
                     <label htmlFor="startDate" className="block text-sm font-medium text-slate-700">Date de début (prévue)</label>

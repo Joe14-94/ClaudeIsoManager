@@ -397,18 +397,18 @@ const D3GraphView: React.FC = () => {
 
                     const { offsetWidth: tooltipWidth, offsetHeight: tooltipHeight } = tooltipNode;
                     const { pageX, pageY } = event;
-                    
-                    let x = pageX + 5;
-                    let y = pageY - 5;
+                    const offset = 15;
 
+                    // Position bottom-right of cursor
+                    let x = pageX + offset;
+                    let y = pageY + offset;
+
+                    // Adjust if it overflows viewport
                     if (x + tooltipWidth > window.innerWidth) {
-                        x = pageX - 5 - tooltipWidth;
+                        x = pageX - tooltipWidth - offset; // switch to left
                     }
                     if (y + tooltipHeight > window.innerHeight) {
-                        y = pageY - 5 - tooltipHeight;
-                    }
-                    if (y < 0) {
-                        y = pageY + 5;
+                        y = pageY - tooltipHeight - offset; // switch to top
                     }
 
                     tooltip.style('left', `${x}px`).style('top', `${y}px`);
