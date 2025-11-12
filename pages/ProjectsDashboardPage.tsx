@@ -3,11 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import Card, { CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import { useData } from '../contexts/DataContext';
 import { ActivityStatus, Project } from '../types';
-import { ClipboardList, Star, TrendingUp, DollarSign } from 'lucide-react';
+import { ClipboardList, Star, TrendingUp, DollarSign, Info } from 'lucide-react';
 import ProjectStatusDonutChart from '../components/charts/ProjectStatusDonutChart';
 import ProjectTimeline from '../components/charts/ProjectTimeline';
 import ActiveFiltersDisplay from '../components/ui/ActiveFiltersDisplay';
 import { STATUS_COLORS } from '../constants';
+import Tooltip from '../components/ui/Tooltip';
+
 
 const StatCard: React.FC<{ title: string; value: string | number; icon: React.ReactNode; onClick?: () => void }> = ({ title, value, icon, onClick }) => (
   <Card className={`transition-shadow hover:shadow-md ${onClick ? 'cursor-pointer' : ''}`} onClick={onClick}>
@@ -28,7 +30,7 @@ const formatCurrency = (value: number) => {
 };
 
 const ProjectsDashboardPage: React.FC = () => {
-  const { projects } = useData();
+  const { projects, lastCsvImportDate } = useData();
   const navigate = useNavigate();
   const timelineContainerRef = useRef<HTMLDivElement>(null);
   
@@ -82,7 +84,15 @@ const ProjectsDashboardPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold text-slate-800">Tableau de bord des projets</h1>
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <h1 className="text-3xl font-bold text-slate-800">Tableau de bord des projets</h1>
+        {lastCsvImportDate && (
+            <div className="flex items-center gap-2 text-xs text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
+                <Info size={14} />
+                <span>Données FDR mises à jour le {new Date(lastCsvImportDate).toLocaleString('fr-FR')}</span>
+            </div>
+        )}
+      </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard 

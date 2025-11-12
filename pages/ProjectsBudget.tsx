@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useData } from '../contexts/DataContext';
 import { Project } from '../types';
 import Card, { CardContent, CardHeader, CardTitle } from '../components/ui/Card';
-import { Search, ArrowUp, ArrowDown } from 'lucide-react';
+import { Search, ArrowUp, ArrowDown, Info } from 'lucide-react';
 
 type SortKey = 'projectId' | 'title' | 'budgetRequested' | 'budgetApproved' | 'budgetCommitted' | 'validatedPurchaseOrders' | 'completedPV' | 'forecastedPurchaseOrders';
 type SortDirection = 'ascending' | 'descending';
@@ -13,7 +13,7 @@ const formatCurrency = (value?: number) => {
 };
 
 const ProjectsBudget: React.FC = () => {
-    const { projects } = useData();
+    const { projects, lastCsvImportDate } = useData();
     const [searchTerm, setSearchTerm] = useState('');
     const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: SortDirection } | null>({ key: 'projectId', direction: 'ascending' });
 
@@ -85,7 +85,15 @@ const ProjectsBudget: React.FC = () => {
 
     return (
         <div className="space-y-6 h-full flex flex-col">
-            <h1 className="text-3xl font-bold text-slate-800">Vue budgétaire des projets</h1>
+            <div className="flex items-center justify-between flex-wrap gap-2">
+                <h1 className="text-3xl font-bold text-slate-800">Vue budgétaire des projets</h1>
+                 {lastCsvImportDate && (
+                    <div className="flex items-center gap-2 text-xs text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
+                        <Info size={14} />
+                        <span>Données mises à jour le {new Date(lastCsvImportDate).toLocaleString('fr-FR')}</span>
+                    </div>
+                )}
+            </div>
             
             <Card>
                 <CardHeader>

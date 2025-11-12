@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, ListChecks, Network, ShieldCheck, Target, TrendingUp, Users, Database, FileUp, FileDown, Workflow, GitMerge, ClipboardCheck, LogOut, KeyRound, DatabaseZap, GanttChart, LayoutGrid, Flag, ClipboardList, ChevronUp, ChevronDown, Coins, Timer, GitBranch, ChevronsLeft, ChevronsRight, UserCog } from 'lucide-react';
+import { LayoutDashboard, ListChecks, Network, ShieldCheck, Target, TrendingUp, Users, Database, FileUp, FileDown, Workflow, GitMerge, ClipboardCheck, LogOut, KeyRound, DatabaseZap, GanttChart, LayoutGrid, Flag, ClipboardList, ChevronUp, ChevronDown, Coins, Timer, GitBranch, ChevronsLeft, ChevronsRight, UserCog, HelpCircle } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import ChangePasswordModal from '../auth/ChangePasswordModal';
 import { APP_VERSION } from '../../config';
@@ -57,6 +57,7 @@ const Sidebar: React.FC = () => {
   const [isReferentielsOpen, setIsReferentielsOpen] = useState(false);
   const [isDonneesOpen, setIsDonneesOpen] = useState(false);
   const [isDroitsAccesOpen, setIsDroitsAccesOpen] = useState(false);
+  const [isAideOpen, setIsAideOpen] = useState(true);
 
   const handleLogout = () => {
     logout();
@@ -220,6 +221,20 @@ const Sidebar: React.FC = () => {
                 </div>
                 </div>
             )}
+            
+            <div className="py-2">
+              <div className={`flex justify-between items-center px-4 mb-2 ${isCollapsed ? 'md:hidden' : ''}`}>
+                <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">AIDE ET INFORMATIONS</h2>
+                <button onClick={() => setIsAideOpen(!isAideOpen)} className="text-slate-400 hover:text-slate-600">
+                  {isAideOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                </button>
+              </div>
+              <div className={`${isCollapsed ? 'md:hidden' : ''} ${isAideOpen ? 'block' : 'hidden'}`}>
+                <div className='space-y-1'>
+                  <NavItem to="/aide" icon={<HelpCircle />} label="Aide" isCollapsed={isCollapsed} />
+                </div>
+              </div>
+            </div>
         </nav>
 
         <div className="mt-auto space-y-2">

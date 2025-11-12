@@ -19,7 +19,8 @@ const DataManagement: React.FC = () => {
     securityProcesses, setSecurityProcesses,
     projects, setProjects,
     initiatives, setInitiatives,
-    dashboardLayouts, setDashboardLayouts
+    dashboardLayouts, setDashboardLayouts,
+    setLastCsvImportDate
   } = useData();
   const { userRole } = useAuth();
   const isReadOnly = userRole === 'readonly';
@@ -243,7 +244,7 @@ const DataManagement: React.FC = () => {
             newProjects.forEach(p => prevMap.set(p.projectId, p));
             return Array.from(prevMap.values());
           });
-
+          setLastCsvImportDate(new Date().toISOString());
           showFeedback('success', `${newProjects.length} projet(s) créé(s) et ${updatedProjects.length} projet(s) mis à jour.`);
 
         } catch (error) {
@@ -342,7 +343,7 @@ const DataManagement: React.FC = () => {
             newProjects.forEach(p => prevMap.set(p.projectId, p));
             return Array.from(prevMap.values());
           });
-
+          setLastCsvImportDate(new Date().toISOString());
           showFeedback('success', `${newProjects.length} projet(s) créé(s) et ${updatedProjects.length} projet(s) mis à jour.`);
 
         } catch (error) {

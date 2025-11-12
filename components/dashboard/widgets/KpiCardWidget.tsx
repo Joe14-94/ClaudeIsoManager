@@ -73,10 +73,12 @@ const getAvgActivityAge = (activities: Activity[]): { value: number, count: numb
 
 
 const KpiCardWidget: React.FC<KpiCardWidgetProps> = ({ type, isEditMode }) => {
-  const { projects, activities } = useData();
+  const { projects, activities, lastCsvImportDate } = useData();
   const navigate = useNavigate();
 
   const kpiData = useMemo(() => {
+    const dateInfo = lastCsvImportDate ? ` Données FDR du ${new Date(lastCsvImportDate).toLocaleDateString('fr-FR')}.` : '';
+
     switch (type) {
       case 'scheduleSlippage': {
         const { value, count } = getScheduleSlippage(projects);
@@ -87,7 +89,7 @@ const KpiCardWidget: React.FC<KpiCardWidgetProps> = ({ type, isEditMode }) => {
           icon: isLate ? <AlertCircle className="text-red-500" /> : <CalendarClock />,
           onClick: () => navigate('/projects-timeline'),
           colorClass: isLate ? 'text-red-500' : 'text-green-600',
-          tooltip: `Sur ${count} projet(s) analysé(s).`
+          tooltip: `Sur ${count} projet(s) analysé(s).` + dateInfo
         };
       }
       case 'budgetForecast': {
@@ -98,7 +100,7 @@ const KpiCardWidget: React.FC<KpiCardWidgetProps> = ({ type, isEditMode }) => {
           icon: <TrendingUp />,
           onClick: () => navigate('/projects-budget'),
           colorClass: 'text-slate-900',
-          tooltip: `Estimation moyenne sur ${count} projet(s) avec données budgétaires.`
+          tooltip: `Estimation moyenne sur ${count} projet(s) avec données budgétaires.` + dateInfo
         };
       }
       case 'avgActivityAge': {
@@ -116,7 +118,7 @@ const KpiCardWidget: React.FC<KpiCardWidgetProps> = ({ type, isEditMode }) => {
       default:
         return null;
     }
-  }, [type, projects, activities, navigate]);
+  }, [type, projects, activities, navigate, lastCsvImportDate]);
 
   if (!kpiData) return null;
 

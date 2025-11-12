@@ -1,4 +1,5 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useData } from '../contexts/DataContext';
 import { Project, ActivityStatus, TShirtSize, Resource, Initiative } from '../types';
 import { STATUS_COLORS, ISO_MEASURES_DATA } from '../constants';
@@ -18,6 +19,10 @@ const Projects: React.FC = () => {
     const { userRole } = useAuth();
     const isReadOnly = userRole === 'readonly';
 
+    const location = useLocation();
+    const navigate = useNavigate();
+
+    const [isModalOnly, setIsModalOnly] = useState(false);
     const [statusFilter, setStatusFilter] = useState('');
     const [top30Filter, setTop30Filter] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
@@ -30,6 +35,22 @@ const Projects: React.FC = () => {
 
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
+
+    useEffect(() => {
+        const projectToOpenId = location.state?.openProject;
+        if (projectToOpenId && !isFormModalOpen) {
+            const projectToOpen = projects.find(p => p.id === projectToOpenId);
+            if (projectToOpen) {
+                setIsModalOnly(true);
+                // Directly open modal instead of calling handler to avoid dependency issues
+                setCurrentProject(projectToOpen);
+                setIsEditMode(true);
+                setIsoSearchTerm('');
+                setIsFormModalOpen(true);
+                navigate(location.pathname, { replace: true, state: {} });
+            }
+        }
+    }, [location.state, projects, navigate, isFormModalOpen]);
 
     const resourceMap = useMemo(() => new Map(resources.map(r => [r.id, r.name])), [resources]);
     const initiativeMap = useMemo(() => new Map(initiatives.map(i => [i.id, i.label])), [initiatives]);
@@ -87,9 +108,13 @@ const Projects: React.FC = () => {
     };
 
     const handleCloseModal = () => {
-        setIsFormModalOpen(false);
-        setCurrentProject(null);
-        setIsEditMode(false);
+        if (isModalOnly) {
+            navigate(-1);
+        } else {
+            setIsFormModalOpen(false);
+            setCurrentProject(null);
+            setIsEditMode(false);
+        }
     };
 
     const handleSave = (e: React.FormEvent) => {
@@ -211,92 +236,96 @@ const Projects: React.FC = () => {
 
     return (
         <div className="space-y-6 h-full flex flex-col">
-            <div className="flex justify-between items-center flex-wrap gap-4">
-                <h1 className="text-3xl font-bold text-slate-800">Projets</h1>
-                {!isReadOnly && (
-                <button onClick={() => handleOpenFormModal()} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                    <PlusCircle size={20} />
-                    <span>Nouveau projet</span>
-                </button>
-                )}
-            </div>
+            {!isModalOnly && (
+                <>
+                    <div className="flex justify-between items-center flex-wrap gap-4">
+                        <h1 className="text-3xl font-bold text-slate-800">Projets</h1>
+                        {!isReadOnly && (
+                        <button onClick={() => handleOpenFormModal()} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                            <PlusCircle size={20} />
+                            <span>Nouveau projet</span>
+                        </button>
+                        )}
+                    </div>
 
-            <Card className="flex-grow flex flex-col min-h-0">
-                <CardHeader>
-                    <div className="flex flex-col md:flex-row flex-wrap gap-4 mb-4">
-                        <div className="relative flex-1 min-w-[200px]">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
-                            <input
-                            type="text"
-                            placeholder="Rechercher un projet..."
-                            className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            />
-                        </div>
-                        <select 
-                            value={statusFilter}
-                            onChange={(e) => setStatusFilter(e.target.value)}
-                            className="px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                        >
-                            <option value="">Tous les statuts</option>
-                            {Object.values(ActivityStatus).map(s => <option key={s} value={s}>{s}</option>)}
-                        </select>
-                         <select 
-                            value={top30Filter}
-                            onChange={(e) => setTop30Filter(e.target.value)}
-                            className="px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-                        >
-                            <option value="">Tous les projets</option>
-                            <option value="true">Top 30</option>
-                            <option value="false">Hors Top 30</option>
-                        </select>
-                    </div>
-                    <ActiveFiltersDisplay filters={activeFiltersForDisplay} onRemoveFilter={handleRemoveFilter} onClearAll={handleClearAll} />
-                </CardHeader>
-                <CardContent className="flex-grow overflow-y-auto">
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-sm text-left text-slate-500">
-                        <thead className="text-xs text-slate-700 uppercase bg-slate-100 sticky top-0">
-                            <tr>
-                                <th scope="col" className="px-6 py-3 cursor-pointer" onClick={() => requestSort('projectId')}>ID {renderSortArrow('projectId')}</th>
-                                <th scope="col" className="px-6 py-3 cursor-pointer" onClick={() => requestSort('title')}>Titre {renderSortArrow('title')}</th>
-                                <th scope="col" className="px-6 py-3 cursor-pointer" onClick={() => requestSort('initiative')}>Initiative {renderSortArrow('initiative')}</th>
-                                <th scope="col" className="px-6 py-3 cursor-pointer" onClick={() => requestSort('status')}>Statut {renderSortArrow('status')}</th>
-                                <th scope="col" className="px-6 py-3 cursor-pointer" onClick={() => requestSort('projectManagerMOA')}>CP MOA {renderSortArrow('projectManagerMOA')}</th>
-                                <th scope="col" className="px-6 py-3 cursor-pointer" onClick={() => requestSort('projectManagerMOE')}>CP MOE {renderSortArrow('projectManagerMOE')}</th>
-                                <th scope="col" className="px-6 py-3 cursor-pointer" onClick={() => requestSort('totalProgress')}>Avancement {renderSortArrow('totalProgress')}</th>
-                                <th scope="col" className="px-6 py-3">Top 30</th>
-                                <th scope="col" className="px-6 py-3"><span className="sr-only">Actions</span></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {sortedProjects.map(project => (
-                                <tr key={project.id} className="bg-white border-b hover:bg-slate-50">
-                                    <th scope="row" className="px-6 py-4 font-medium text-slate-900 whitespace-nowrap">{project.projectId}</th>
-                                    <td className="px-6 py-4">{project.title}</td>
-                                    <td className="px-6 py-4">{initiativeMap.get(project.initiativeId || '') || '-'}</td>
-                                    <td className="px-6 py-4"><span className={`px-2 py-1 text-xs font-medium rounded-full ${STATUS_COLORS[project.status]}`}>{project.status}</span></td>
-                                    <td className="px-6 py-4">{resourceMap.get(project.projectManagerMOA || '') || '-'}</td>
-                                    <td className="px-6 py-4">{resourceMap.get(project.projectManagerMOE || '') || '-'}</td>
-                                    <td className="px-6 py-4">{getProjectProgress(project)}%</td>
-                                    <td className="px-6 py-4">{project.isTop30 ? 'Oui' : 'Non'}</td>
-                                    <td className="px-6 py-4 text-right space-x-1">
-                                        <button onClick={() => handleOpenFormModal(project)} className="p-1 text-slate-500 rounded-md hover:bg-slate-100 hover:text-blue-600" title="Modifier le projet"><Edit size={18} /></button>
-                                        {!isReadOnly && (
-                                            <button onClick={() => handleOpenDeleteModal(project)} className="p-1 text-slate-500 rounded-md hover:bg-slate-100 hover:text-red-600" title="Supprimer le projet">
-                                                <Trash2 size={18} />
-                                            </button>
-                                        )}
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                        </table>
-                        {sortedProjects.length === 0 && <div className="text-center py-8 text-slate-500">Aucun projet ne correspond à vos critères.</div>}
-                    </div>
-                </CardContent>
-            </Card>
+                    <Card className="flex-grow flex flex-col min-h-0">
+                        <CardHeader>
+                            <div className="flex flex-col md:flex-row flex-wrap gap-4 mb-4">
+                                <div className="relative flex-1 min-w-[200px]">
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+                                    <input
+                                    type="text"
+                                    placeholder="Rechercher un projet..."
+                                    className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    />
+                                </div>
+                                <select 
+                                    value={statusFilter}
+                                    onChange={(e) => setStatusFilter(e.target.value)}
+                                    className="px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                                >
+                                    <option value="">Tous les statuts</option>
+                                    {Object.values(ActivityStatus).map(s => <option key={s} value={s}>{s}</option>)}
+                                </select>
+                                <select 
+                                    value={top30Filter}
+                                    onChange={(e) => setTop30Filter(e.target.value)}
+                                    className="px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                                >
+                                    <option value="">Tous les projets</option>
+                                    <option value="true">Top 30</option>
+                                    <option value="false">Hors Top 30</option>
+                                </select>
+                            </div>
+                            <ActiveFiltersDisplay filters={activeFiltersForDisplay} onRemoveFilter={handleRemoveFilter} onClearAll={handleClearAll} />
+                        </CardHeader>
+                        <CardContent className="flex-grow overflow-y-auto">
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-sm text-left text-slate-500">
+                                <thead className="text-xs text-slate-700 uppercase bg-slate-100 sticky top-0">
+                                    <tr>
+                                        <th scope="col" className="px-6 py-3 cursor-pointer" onClick={() => requestSort('projectId')}>ID {renderSortArrow('projectId')}</th>
+                                        <th scope="col" className="px-6 py-3 cursor-pointer" onClick={() => requestSort('title')}>Titre {renderSortArrow('title')}</th>
+                                        <th scope="col" className="px-6 py-3 cursor-pointer" onClick={() => requestSort('initiative')}>Initiative {renderSortArrow('initiative')}</th>
+                                        <th scope="col" className="px-6 py-3 cursor-pointer" onClick={() => requestSort('status')}>Statut {renderSortArrow('status')}</th>
+                                        <th scope="col" className="px-6 py-3 cursor-pointer" onClick={() => requestSort('projectManagerMOA')}>CP MOA {renderSortArrow('projectManagerMOA')}</th>
+                                        <th scope="col" className="px-6 py-3 cursor-pointer" onClick={() => requestSort('projectManagerMOE')}>CP MOE {renderSortArrow('projectManagerMOE')}</th>
+                                        <th scope="col" className="px-6 py-3 cursor-pointer" onClick={() => requestSort('totalProgress')}>Avancement {renderSortArrow('totalProgress')}</th>
+                                        <th scope="col" className="px-6 py-3">Top 30</th>
+                                        <th scope="col" className="px-6 py-3"><span className="sr-only">Actions</span></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {sortedProjects.map(project => (
+                                        <tr key={project.id} className="bg-white border-b hover:bg-slate-50">
+                                            <th scope="row" className="px-6 py-4 font-medium text-slate-900 whitespace-nowrap">{project.projectId}</th>
+                                            <td className="px-6 py-4">{project.title}</td>
+                                            <td className="px-6 py-4">{initiativeMap.get(project.initiativeId || '') || '-'}</td>
+                                            <td className="px-6 py-4"><span className={`px-2 py-1 text-xs font-medium rounded-full ${STATUS_COLORS[project.status]}`}>{project.status}</span></td>
+                                            <td className="px-6 py-4">{resourceMap.get(project.projectManagerMOA || '') || '-'}</td>
+                                            <td className="px-6 py-4">{resourceMap.get(project.projectManagerMOE || '') || '-'}</td>
+                                            <td className="px-6 py-4">{getProjectProgress(project)}%</td>
+                                            <td className="px-6 py-4">{project.isTop30 ? 'Oui' : 'Non'}</td>
+                                            <td className="px-6 py-4 text-right space-x-1">
+                                                <button onClick={() => handleOpenFormModal(project)} className="p-1 text-slate-500 rounded-md hover:bg-slate-100 hover:text-blue-600" title="Modifier le projet"><Edit size={18} /></button>
+                                                {!isReadOnly && (
+                                                    <button onClick={() => handleOpenDeleteModal(project)} className="p-1 text-slate-500 rounded-md hover:bg-slate-100 hover:text-red-600" title="Supprimer le projet">
+                                                        <Trash2 size={18} />
+                                                    </button>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                                </table>
+                                {sortedProjects.length === 0 && <div className="text-center py-8 text-slate-500">Aucun projet ne correspond à vos critères.</div>}
+                            </div>
+                        </CardContent>
+                    </Card>
+                </>
+            )}
 
              {isFormModalOpen && currentProject && (
                 <Modal 

@@ -33,6 +33,7 @@ import ProjectsDashboardPage from './pages/ProjectsDashboardPage';
 import AccessRightsPage from './pages/AccessRightsPage';
 import Header from './components/layout/Header';
 import { NotificationProvider } from './contexts/NotificationContext';
+import HelpPage from './pages/HelpPage';
 
 const AppLayout: React.FC = () => {
   return (
@@ -70,6 +71,7 @@ const AppLayout: React.FC = () => {
             <Route path="/data-model" element={<DataModelView />} />
             <Route path="/data-model-2" element={<DataModelView2 />} />
             <Route path="/droits-acces" element={<AccessRightsPage />} />
+            <Route path="/aide" element={<HelpPage />} />
           </Routes>
         </main>
       </div>

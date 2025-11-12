@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { CardContent, CardHeader, CardTitle } from '../../ui/Card';
 import { useData } from '../../../contexts/DataContext';
+import { Info } from 'lucide-react';
 
 const formatJH = (value?: number) => {
     if (value === undefined || value === null || isNaN(value)) return 'N/A';
@@ -8,7 +9,7 @@ const formatJH = (value?: number) => {
 };
 
 const ProjectWorkloadSummaryWidget: React.FC = () => {
-    const { projects } = useData();
+    const { projects, lastCsvImportDate } = useData();
 
     const totalStats = useMemo(() => {
         return projects.reduce((acc, p) => {
@@ -29,7 +30,15 @@ const ProjectWorkloadSummaryWidget: React.FC = () => {
     return (
         <div className="h-full w-full flex flex-col">
             <CardHeader className="non-draggable">
-                <CardTitle>Résumé des charges projets</CardTitle>
+                 <div className="flex justify-between items-start">
+                    <CardTitle>Résumé des charges projets</CardTitle>
+                    {lastCsvImportDate && (
+                        <div className="flex items-center gap-1 text-xs text-slate-500">
+                            <Info size={14} />
+                            <span>MàJ: {new Date(lastCsvImportDate).toLocaleDateString('fr-FR')}</span>
+                        </div>
+                    )}
+                </div>
             </CardHeader>
             <CardContent className="flex-grow flex items-center justify-around">
                 <div className="text-center">
