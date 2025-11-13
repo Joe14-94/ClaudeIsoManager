@@ -1,12 +1,13 @@
+
 import React, { useRef, useEffect, useMemo } from 'react';
 // FIX: Replace monolithic d3 import with specific named imports to resolve type errors.
 import { select, arc, pie, sum } from 'd3';
-import { Project, ActivityStatus } from '../../types';
-import { STATUS_HEX_COLORS } from '../../constants';
+import { Project, ProjectStatus } from '../../types';
+import { PROJECT_STATUS_HEX_COLORS } from '../../constants';
 
 interface ProjectStatusDonutChartProps {
   data: Project[];
-  onSliceClick?: (status: ActivityStatus) => void;
+  onSliceClick?: (status: ProjectStatus) => void;
 }
 
 const ProjectStatusDonutChart: React.FC<ProjectStatusDonutChartProps> = ({ data, onSliceClick }) => {
@@ -17,10 +18,10 @@ const ProjectStatusDonutChart: React.FC<ProjectStatusDonutChartProps> = ({ data,
     const counts = data.reduce((acc, project) => {
       acc[project.status] = (acc[project.status] || 0) + 1;
       return acc;
-    }, {} as { [key in ActivityStatus]: number });
+    }, {} as { [key in ProjectStatus]: number });
 
     return Object.entries(counts).map(([status, count]) => ({
-      status: status as ActivityStatus,
+      status: status as ProjectStatus,
       count,
     })).sort((a, b) => a.status.localeCompare(b.status));
 
@@ -55,7 +56,7 @@ const ProjectStatusDonutChart: React.FC<ProjectStatusDonutChartProps> = ({ data,
             .enter()
             .append('path')
             .attr('d', arcGenerator)
-            .attr('fill', d => STATUS_HEX_COLORS[d.data.status])
+            .attr('fill', d => PROJECT_STATUS_HEX_COLORS[d.data.status])
             .attr('stroke', '#fff')
             .style('stroke-width', '2px')
             .style('cursor', 'pointer')
@@ -121,7 +122,7 @@ const ProjectStatusDonutChart: React.FC<ProjectStatusDonutChartProps> = ({ data,
             <ul className="space-y-2">
                 {statusData.map(({ status, count }) => (
                     <li key={status} className="flex items-center text-sm">
-                        <span className="w-3 h-3 rounded-full mr-3" style={{ backgroundColor: STATUS_HEX_COLORS[status] }}></span>
+                        <span className="w-3 h-3 rounded-full mr-3" style={{ backgroundColor: PROJECT_STATUS_HEX_COLORS[status] }}></span>
                         <span className="text-slate-700">{status}</span>
                         <span className="ml-auto text-slate-600 font-medium">{count}</span>
                     </li>

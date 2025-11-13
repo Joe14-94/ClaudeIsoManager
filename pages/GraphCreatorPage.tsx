@@ -1,16 +1,18 @@
+
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useData } from '../contexts/DataContext';
 import Card, { CardContent, CardHeader, CardTitle } from '../components/ui/Card';
-import { Project } from '../types';
+import { Project, IsoMeasure } from '../types';
+import { ISO_MEASURES_DATA } from '../constants';
 import { saveToLocalStorage, loadFromLocalStorage } from '../utils/storage';
 import { Trash2, BarChart3, Donut, LineChart as LineChartIcon, AreaChart, ScatterChart, Disc as BubbleChartIcon, LayoutPanelTop, Download, Aperture } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import DynamicChartRenderer from '../components/charts/creator/DynamicChartRenderer';
 
 type ChartType = 'bar' | 'pie' | 'line' | 'area' | 'scatter' | 'bubble' | 'treemap' | 'sunburst';
-type DimensionField = 'status' | 'tShirtSize' | 'projectManagerMOA' | 'projectManagerMOE' | 'initiativeId' | 'isTop30' | 'projectStartDate' | 'projectEndDate' | 'projectId';
+type DimensionField = 'status' | 'tShirtSize' | 'projectManagerMOA' | 'projectManagerMOE' | 'initiativeId' | 'isTop30' | 'category' | 'projectStartDate' | 'projectEndDate' | 'goLiveDate' | 'endDate' | 'projectId' | 'projectTitle' | 'isoMeasure';
 type DimensionField2 = DimensionField | 'none';
-type MeasureField = 'count' | 'budgetApproved' | 'budgetCommitted' | 'internalWorkloadEngaged' | 'externalWorkloadEngaged' | 'internalWorkloadConsumed' | 'externalWorkloadConsumed';
+type MeasureField = 'count' | 'budgetRequested' | 'budgetApproved' | 'budgetCommitted' | 'validatedPurchaseOrders' | 'completedPV' | 'forecastedPurchaseOrders' | 'internalWorkloadRequested' | 'internalWorkloadEngaged' | 'internalWorkloadConsumed' | 'externalWorkloadRequested' | 'externalWorkloadEngaged' | 'externalWorkloadConsumed' | 'totalWorkloadRequested' | 'totalWorkloadEngaged' | 'totalWorkloadConsumed';
 type AggregationType = 'sum' | 'average';
 type ColorPalette = 'vibrant' | 'professional' | 'pastel' | 'monochromatic';
 type SortOrder = 'value-desc' | 'value-asc' | 'label-asc' | 'label-desc';
@@ -35,23 +37,37 @@ interface SavedConfig {
 const dimensionOptions: { value: DimensionField, label: string, isDate?: boolean }[] = [
     { value: 'status', label: 'Statut' },
     { value: 'tShirtSize', label: 'Taille (T-shirt)' },
+    { value: 'category', label: 'Catégorie' },
     { value: 'projectManagerMOA', label: 'Chef de projet MOA' },
     { value: 'projectManagerMOE', label: 'Chef de projet MOE' },
     { value: 'initiativeId', label: 'Initiative' },
+    { value: 'isoMeasure', label: 'Mesure ISO' },
     { value: 'isTop30', label: 'Projet Top 30' },
-    { value: 'projectId', label: 'Projet (pour Scatter/Bubble)' },
+    { value: 'projectId', label: 'Projet (ID)' },
+    { value: 'projectTitle', label: 'Titre du projet' },
     { value: 'projectStartDate', label: 'Date de début du projet', isDate: true },
     { value: 'projectEndDate', label: 'Date de fin du projet', isDate: true },
+    { value: 'goLiveDate', label: 'Date de passage en NO', isDate: true },
+    { value: 'endDate', label: 'Date de passage en NF', isDate: true },
 ];
 
 const measureOptions: { value: MeasureField, label: string }[] = [
     { value: 'count', label: 'Nombre de projets' },
+    { value: 'budgetRequested', label: 'Budget demandé' },
     { value: 'budgetApproved', label: 'Budget accordé' },
     { value: 'budgetCommitted', label: 'Budget engagé' },
+    { value: 'validatedPurchaseOrders', label: 'DA validées' },
+    { value: 'completedPV', label: 'Réalisé (PV)' },
+    { value: 'forecastedPurchaseOrders', label: 'DA prévues' },
+    { value: 'internalWorkloadRequested', label: 'Charge interne demandée' },
     { value: 'internalWorkloadEngaged', label: 'Charge interne engagée' },
-    { value: 'externalWorkloadEngaged', label: 'Charge externe engagée' },
     { value: 'internalWorkloadConsumed', label: 'Charge interne consommée' },
+    { value: 'externalWorkloadRequested', label: 'Charge externe demandée' },
+    { value: 'externalWorkloadEngaged', label: 'Charge externe engagée' },
     { value: 'externalWorkloadConsumed', label: 'Charge externe consommée' },
+    { value: 'totalWorkloadRequested', label: 'Charge totale demandée' },
+    { value: 'totalWorkloadEngaged', label: 'Charge totale engagée' },
+    { value: 'totalWorkloadConsumed', label: 'Charge totale consommée' },
 ];
 
 const aggregationOptions: { value: AggregationType, label: string }[] = [
@@ -82,6 +98,7 @@ const ChartTypeButton: React.FC<{ icon: React.ReactNode, label: string, isActive
 const GraphCreatorPage: React.FC = () => {
     const { projects, resources, initiatives } = useData();
     const navigate = useNavigate();
+    const allIsoMeasures = useMemo(() => ISO_MEASURES_DATA.map(m => ({...m, id: m.code}) as unknown as IsoMeasure), []);
 
     const [panelSize, setPanelSize] = useState(() => loadFromLocalStorage('graphCreatorPanelSize', 384));
     const handleRef = useRef<HTMLDivElement>(null);
@@ -131,25 +148,39 @@ const GraphCreatorPage: React.FC = () => {
         resources: new Map(resources.map(r => [r.id, r.name])),
         initiatives: new Map(initiatives.map(i => [i.id, i.label])),
         projects: new Map(projects.map(p => [p.projectId, p.title])),
-    }), [resources, initiatives, projects]);
+        isoMeasures: new Map(allIsoMeasures.map(m => [m.code, m.title])),
+    }), [resources, initiatives, projects, allIsoMeasures]);
 
     const processedData = useMemo(() => {
-        if (!dimension || !measure) return [];
+        if (!dimension) return [];
 
         const getMeasureValue = (project: Project, field: MeasureField) => {
             switch (field) {
                 case 'count': return 1;
+                case 'budgetRequested': return project.budgetRequested || 0;
                 case 'budgetApproved': return project.budgetApproved || 0;
                 case 'budgetCommitted': return project.budgetCommitted || 0;
+                case 'validatedPurchaseOrders': return project.validatedPurchaseOrders || 0;
+                case 'completedPV': return project.completedPV || 0;
+                case 'forecastedPurchaseOrders': return project.forecastedPurchaseOrders || 0;
+                case 'internalWorkloadRequested': return project.internalWorkloadRequested || 0;
                 case 'internalWorkloadEngaged': return project.internalWorkloadEngaged || 0;
-                case 'externalWorkloadEngaged': return project.externalWorkloadEngaged || 0;
                 case 'internalWorkloadConsumed': return project.internalWorkloadConsumed || 0;
+                case 'externalWorkloadRequested': return project.externalWorkloadRequested || 0;
+                case 'externalWorkloadEngaged': return project.externalWorkloadEngaged || 0;
                 case 'externalWorkloadConsumed': return project.externalWorkloadConsumed || 0;
+                case 'totalWorkloadRequested': return (project.internalWorkloadRequested || 0) + (project.externalWorkloadRequested || 0);
+                case 'totalWorkloadEngaged': return (project.internalWorkloadEngaged || 0) + (project.externalWorkloadEngaged || 0);
+                case 'totalWorkloadConsumed': return (project.internalWorkloadConsumed || 0) + (project.externalWorkloadConsumed || 0);
                 default: return 0;
             }
         };
         
-        const getDimensionLabel = (project: Project, field: DimensionField): string => {
+        const getDimensionLabel = (project: Project, field: DimensionField, isoCode?: string): string => {
+            if (field === 'isoMeasure') {
+                if (!isoCode) return 'Non applicable';
+                return dataMaps.isoMeasures.get(isoCode) ? `${isoCode} - ${dataMaps.isoMeasures.get(isoCode)}` : isoCode;
+            }
             const value = project[field as keyof Project];
             switch (field) {
                 case 'projectManagerMOA':
@@ -161,9 +192,13 @@ const GraphCreatorPage: React.FC = () => {
                     return value ? 'Oui' : 'Non';
                 case 'projectStartDate':
                 case 'projectEndDate':
+                case 'goLiveDate':
+                case 'endDate':
                      if (!value) return 'Date non définie';
                      const date = new Date(value as string);
                      return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`; // YYYY-MM for grouping
+                case 'projectTitle':
+                    return project.title;
                 default:
                     return String(value) || 'Non défini';
             }
@@ -179,26 +214,46 @@ const GraphCreatorPage: React.FC = () => {
             }));
         }
         
+        const needsFlattening = dimension === 'isoMeasure' || dimension2 === 'isoMeasure';
+        let baseData: { project: Project; isoMeasure?: string }[] = [];
+
+        if (needsFlattening) {
+            projects.forEach(p => {
+                if (p.isoMeasures && p.isoMeasures.length > 0) {
+                    p.isoMeasures.forEach(iso => {
+                        baseData.push({ project: p, isoMeasure: iso });
+                    });
+                } else {
+                    baseData.push({ project: p, isoMeasure: 'Non spécifié' });
+                }
+            });
+        } else {
+            baseData = projects.map(p => ({ project: p }));
+        }
+        
         if (chartType === 'treemap' || chartType === 'sunburst') {
             const root: { name: string, children: any[] } = { name: "root", children: [] };
             const groups: { [key: string]: { name: string, children: any[] } } = {};
 
-            projects.forEach(p => {
-                const dim1Value = getDimensionLabel(p, dimension);
+            baseData.forEach(item => {
+                const { project, isoMeasure } = item;
+                const dim1Value = getDimensionLabel(project, dimension, dimension === 'isoMeasure' ? isoMeasure : undefined);
+                
                 if (!groups[dim1Value]) {
                     groups[dim1Value] = { name: dim1Value, children: [] };
                     root.children.push(groups[dim1Value]);
                 }
+
                 if (dimension2 !== 'none') {
-                     const dim2Value = getDimensionLabel(p, dimension2 as DimensionField);
+                     const dim2Value = getDimensionLabel(project, dimension2 as DimensionField, dimension2 === 'isoMeasure' ? isoMeasure : undefined);
                      let subGroup = groups[dim1Value].children.find(c => c.name === dim2Value);
                      if (!subGroup) {
                          subGroup = { name: dim2Value, children: [] };
                          groups[dim1Value].children.push(subGroup);
                      }
-                     subGroup.children.push({ name: p.projectId, value: getMeasureValue(p, measure), rawItems: [p] });
+                     subGroup.children.push({ name: project.projectId, value: getMeasureValue(project, measure), rawItems: [project] });
                 } else {
-                     groups[dim1Value].children.push({ name: p.projectId, value: getMeasureValue(p, measure), rawItems: [p] });
+                     groups[dim1Value].children.push({ name: project.projectId, value: getMeasureValue(project, measure), rawItems: [project] });
                 }
             });
             return root;
@@ -206,21 +261,22 @@ const GraphCreatorPage: React.FC = () => {
 
         if (isDateDimension) {
             const timeData: { [key: string]: { values: number[], rawItems: Project[] } } = {};
-            projects.forEach(p => {
-                const label = getDimensionLabel(p, dimension);
+            baseData.forEach(item => {
+                const { project } = item;
+                const label = getDimensionLabel(project, dimension);
                 if (label !== 'Date non définie') {
                     if (!timeData[label]) {
                         timeData[label] = { values: [], rawItems: [] };
                     }
-                    timeData[label].values.push(getMeasureValue(p, measure));
-                    timeData[label].rawItems.push(p);
+                    timeData[label].values.push(getMeasureValue(project, measure));
+                    timeData[label].rawItems.push(project);
                 }
             });
             return Object.entries(timeData)
                 .map(([dateStr, data]) => {
                     let value: number;
                     if (measure === 'count') {
-                        value = data.values.length;
+                        value = new Set(data.rawItems.map(p => p.id)).size;
                     } else if (aggregation === 'sum') {
                         value = data.values.reduce((sum, val) => sum + val, 0);
                     } else { // average
@@ -232,19 +288,20 @@ const GraphCreatorPage: React.FC = () => {
         }
 
         const groupedData: { [key: string]: { values: number[], rawItems: Project[] } } = {};
-        projects.forEach(p => {
-            const label = getDimensionLabel(p, dimension);
+        baseData.forEach(item => {
+            const { project, isoMeasure } = item;
+            const label = getDimensionLabel(project, dimension, dimension === 'isoMeasure' ? isoMeasure : undefined);
             if (!groupedData[label]) {
                 groupedData[label] = { values: [], rawItems: [] };
             }
-            groupedData[label].values.push(getMeasureValue(p, measure));
-            groupedData[label].rawItems.push(p);
+            groupedData[label].values.push(getMeasureValue(project, measure));
+            groupedData[label].rawItems.push(project);
         });
 
         let aggregated = Object.entries(groupedData).map(([label, data]) => {
             let value: number;
             if (measure === 'count') {
-                value = data.values.length;
+                value = new Set(data.rawItems.map(p => p.id)).size;
             } else if (aggregation === 'sum') {
                 value = data.values.reduce((sum, val) => sum + val, 0);
             } else { // average

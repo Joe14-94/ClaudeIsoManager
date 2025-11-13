@@ -19,7 +19,7 @@ const getProjectProgress = (project: Project): number => {
     return engaged > 0 ? Math.round((consumed / engaged) * 100) : 0;
 };
 
-type FieldKey = 'projectId' | 'title' | 'status' | 'tShirtSize' | 'isTop30' | 'isEPA' | 'initiative' | 'projectManagerMOA' | 'projectManagerMOE' | 'projectStartDate' | 'projectEndDate' | 'goLiveDate' | 'endDate' | 'isoMeasure' | 'internalWorkloadRequested' | 'internalWorkloadEngaged' | 'internalWorkloadConsumed' | 'externalWorkloadRequested' | 'externalWorkloadEngaged' | 'externalWorkloadConsumed' | 'totalProgress' | 'budgetRequested' | 'budgetApproved' | 'budgetCommitted' | 'validatedPurchaseOrders' | 'completedPV' | 'forecastedPurchaseOrders' | 'availableBudget' | 'budgetCommitmentRate' | 'budgetCompletionRate';
+type FieldKey = 'projectId' | 'title' | 'status' | 'tShirtSize' | 'isTop30' | 'category' | 'initiative' | 'projectManagerMOA' | 'projectManagerMOE' | 'projectStartDate' | 'projectEndDate' | 'goLiveDate' | 'endDate' | 'isoMeasure' | 'internalWorkloadRequested' | 'internalWorkloadEngaged' | 'internalWorkloadConsumed' | 'externalWorkloadRequested' | 'externalWorkloadEngaged' | 'externalWorkloadConsumed' | 'totalProgress' | 'budgetRequested' | 'budgetApproved' | 'budgetCommitted' | 'validatedPurchaseOrders' | 'completedPV' | 'forecastedPurchaseOrders' | 'availableBudget' | 'budgetCommitmentRate' | 'budgetCompletionRate';
 
 interface Field {
   key: FieldKey;
@@ -41,7 +41,7 @@ const AVAILABLE_FIELDS: Field[] = [
     { key: 'status', label: 'Statut', getValue: row => row.project.status },
     { key: 'tShirtSize', label: 'Taille', getValue: row => row.project.tShirtSize },
     { key: 'isTop30', label: 'Top 30', getValue: row => row.project.isTop30 ? 'Oui' : 'Non' },
-    { key: 'isEPA', label: 'EPA', getValue: row => row.project.isEPA ? 'Oui' : 'Non' },
+    { key: 'category', label: 'Catégorie', getValue: row => row.project.category },
     { key: 'initiative', label: 'Initiative', getValue: row => row.initiative ? `${row.initiative.code} - ${row.initiative.label}` : undefined },
     { key: 'projectManagerMOA', label: 'CP MOA', getValue: row => row.managerMOA?.name },
     { key: 'projectManagerMOE', label: 'CP MOE', getValue: row => row.managerMOE?.name },
@@ -103,7 +103,7 @@ const ProjectsExplorer: React.FC = () => {
         } catch (e) { console.error("Failed to save project explorer state", e); }
     }, [columns, filters, sortConfig, columnWidths, zoomLevel]);
 
-    const allIsoMeasures = useMemo(() => ISO_MEASURES_DATA.map(m => ({...m, id: m.code}) as IsoMeasure), []);
+    const allIsoMeasures = useMemo(() => ISO_MEASURES_DATA.map(m => ({...m, id: m.code}) as unknown as IsoMeasure), []);
     
     const dataMaps = useMemo(() => ({
         initiativesMap: new Map(initiatives.map(i => [i.id, i])),

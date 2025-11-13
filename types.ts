@@ -191,13 +191,28 @@ export enum TShirtSize {
   XL = "XL",
 }
 
+export enum ProjectCategory {
+  OPPORTUNITY = "Opportunité",
+  EPA = "EPA",
+  MCO = "MCO",
+  PROJECT = "Projet",
+}
+
+export enum ProjectStatus {
+  IDENTIFIED = "Identifié",
+  NO = "NO",
+  NF = "NF",
+  NT = "NT",
+}
+
 export interface Project {
   id: string;
   projectId: string; // e.g., P25-123
   title: string;
   description?: string;
-  status: ActivityStatus; // Re-using ActivityStatus as it fits well
+  status: ProjectStatus;
   tShirtSize: TShirtSize;
+  category: ProjectCategory;
   projectManagerMOA?: string; // Resource ID
   projectManagerMOE?: string; // Resource ID
   projectStartDate?: DateTime;
@@ -211,7 +226,6 @@ export interface Project {
   externalWorkloadEngaged?: number;
   externalWorkloadConsumed?: number;
   isTop30: boolean;
-  isEPA?: boolean;
   createdAt: DateTime;
   updatedAt: DateTime;
   initiativeId: string;

@@ -26,6 +26,7 @@ const PieChart: React.FC<PieChartProps> = ({ data, config, colorPalette, onSlice
   const tooltipRef = useRef<HTMLDivElement | null>(null);
 
   const isCurrency = config.measure.toLowerCase().includes('budget');
+  const isWorkload = config.measure.toLowerCase().includes('workload');
 
   useEffect(() => {
     if (!svgRef.current || !containerRef.current || !tooltipRef.current) return;
@@ -68,8 +69,13 @@ const PieChart: React.FC<PieChartProps> = ({ data, config, colorPalette, onSlice
         .on('mouseover', (event, d) => {
           select(event.currentTarget).transition().duration(200).attr('d', arcHover);
           const percentage = (d.value / total) * 100;
+          const valueString = isCurrency 
+              ? d.data.value.toLocaleString('fr-FR', {style: 'currency', currency: 'EUR', maximumFractionDigits: 0}) 
+              : isWorkload 
+                  ? `${d.data.value.toLocaleString('fr-FR')} j/h`
+                  : d.data.value.toLocaleString('fr-FR');
           tooltip.style('opacity', .9)
-                 .html(`<strong>${d.data.label}</strong><br/>Valeur: ${isCurrency ? d.data.value.toLocaleString('fr-FR', {style: 'currency', currency: 'EUR', maximumFractionDigits: 0}) : d.data.value.toLocaleString('fr-FR')}<br/>(${percentage.toFixed(1)}%)`)
+                 .html(`<strong>${d.data.label}</strong><br/>Valeur: ${valueString}<br/>(${percentage.toFixed(1)}%)`)
                  .style('left', `${event.pageX + 15}px`)
                  .style('top', `${event.pageY - 28}px`);
         })
@@ -107,7 +113,19 @@ const PieChart: React.FC<PieChartProps> = ({ data, config, colorPalette, onSlice
         .call(g => g.append('text').attr('class', 'value-text text-2xl font-bold fill-slate-800').attr('dy', '-0.5em'))
         .call(g => g.append('text').attr('class', 'label-text text-sm fill-slate-500').attr('dy', '1em').text('Total'));
 
-      centerGroup.select('.value-text').text(isCurrency ? formatCurrency(total) : total.toLocaleString('fr-FR'));
+      const formatCurrency = (value: number) => {
+        if (value > 1000000) return `${(value / 1000000).toFixed(1)} M€`;
+        if (value > 1000) return `${(value / 1000).toFixed(0)} k€`;
+        return value.toLocaleString('fr-FR', {style: 'currency', currency: 'EUR', maximumFractionDigits: 0});
+      }
+      
+      const totalText = isCurrency 
+        ? formatCurrency(total) 
+        : isWorkload 
+            ? `${Math.round(total).toLocaleString('fr-FR')} j/h` 
+            : total.toLocaleString('fr-FR');
+
+      centerGroup.select('.value-text').text(totalText);
       
       // Legend
       const legend = svg.append('g').attr('transform', `translate(${chartWidth + 20}, 20)`);
@@ -130,16 +148,12 @@ const PieChart: React.FC<PieChartProps> = ({ data, config, colorPalette, onSlice
 
     };
 
-    const formatCurrency = (value: number) => {
-        if (value > 1000000) return `${(value / 1000000).toFixed(1)} M€`;
-        if (value > 1000) return `${(value / 1000).toFixed(0)} k€`;
-        return value.toLocaleString('fr-FR', {style: 'currency', currency: 'EUR', maximumFractionDigits: 0});
-    }
+    drawChart();
 
     const resizeObserver = new ResizeObserver(drawChart);
     resizeObserver.observe(container);
     return () => resizeObserver.disconnect();
-  }, [data, config, isCurrency, colorPalette, onSliceClick, hiddenLabels, setHiddenLabels]);
+  }, [data, config, isCurrency, isWorkload, colorPalette, onSliceClick, hiddenLabels, setHiddenLabels]);
 
   return (
     <div className="w-full h-full relative" ref={containerRef}>

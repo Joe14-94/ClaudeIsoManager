@@ -1,5 +1,5 @@
 
-import { SecurityDomain, ActivityStatus, Priority, IsoChapter, IsoMeasure } from './types';
+import { SecurityDomain, ActivityStatus, Priority, IsoChapter, IsoMeasure, ProjectStatus } from './types';
 import { organizationalControls } from './data/iso/organizationalControls';
 import { peopleControls } from './data/iso/peopleControls';
 import { physicalControls } from './data/iso/physicalControls';
@@ -33,6 +33,20 @@ export const STATUS_HEX_COLORS: { [key in ActivityStatus]: string } = {
   [ActivityStatus.ON_HOLD]: '#fef08a',    // yellow-200
   [ActivityStatus.COMPLETED]: '#a7f3d0',  // emerald-200
   [ActivityStatus.CANCELLED]: '#fecaca',   // rose-200
+};
+
+export const PROJECT_STATUS_COLORS: { [key in ProjectStatus]: string } = {
+  [ProjectStatus.IDENTIFIED]: 'bg-slate-200 text-slate-800',
+  [ProjectStatus.NO]: 'bg-sky-200 text-sky-800',
+  [ProjectStatus.NF]: 'bg-emerald-200 text-emerald-800',
+  [ProjectStatus.NT]: 'bg-yellow-200 text-yellow-800',
+};
+
+export const PROJECT_STATUS_HEX_COLORS: { [key in ProjectStatus]: string } = {
+  [ProjectStatus.IDENTIFIED]: '#e2e8f0', // slate-200
+  [ProjectStatus.NO]: '#bae6fd', // sky-200
+  [ProjectStatus.NF]: '#a7f3d0',  // emerald-200
+  [ProjectStatus.NT]: '#fef08a',    // yellow-200
 };
 
 

@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-import { select, hierarchy, partition, arc, scaleOrdinal, schemeTableau10, schemePastel1, schemeBlues } from 'd3';
+import { select, hierarchy, partition, arc, scaleOrdinal, schemeTableau10, schemePastel1, schemeBlues, descending } from 'd3';
 
 type ColorPalette = 'vibrant' | 'professional' | 'pastel' | 'monochromatic';
 
@@ -22,6 +22,7 @@ const SunburstChart: React.FC<SunburstChartProps> = ({ data, config, colorPalett
   const tooltipRef = useRef<HTMLDivElement | null>(null);
   
   const isCurrency = config.measure.toLowerCase().includes('budget');
+  const isWorkload = config.measure.toLowerCase().includes('workload');
 
   useEffect(() => {
     if (!svgRef.current || !containerRef.current || !tooltipRef.current) return;
@@ -42,7 +43,7 @@ const SunburstChart: React.FC<SunburstChartProps> = ({ data, config, colorPalett
 
       const root = hierarchy(data)
           .sum(d => d.value)
-          .sort((a, b) => b.value! - a.value!);
+          .sort((a, b) => descending(a.value, b.value));
           
       partition().size([2 * Math.PI, radius])(root);
       
@@ -52,12 +53,12 @@ const SunburstChart: React.FC<SunburstChartProps> = ({ data, config, colorPalett
       const arcGenerator = arc<any>()
           .startAngle(d => d.x0)
           .endAngle(d => d.x1)
-          .padAngle(d => Math.min((d.x1 - d.x0) / 2, 0.005))
+          .padAngle(0.01)
           .padRadius(radius / 2)
           .innerRadius(d => d.y0)
           .outerRadius(d => d.y1 - 1);
 
-      g.selectAll('path')
+      const paths = g.selectAll('path')
         .data(root.descendants().filter(d => d.depth > 0))
         .join('path')
         .attr('fill', d => {
@@ -67,12 +68,18 @@ const SunburstChart: React.FC<SunburstChartProps> = ({ data, config, colorPalett
             }
             return colorScale((ancestor.data as any).name);
         })
+        .attr('fill-opacity', d => 1 - (d.depth * 0.15))
         .attr('d', arcGenerator)
         .on('mouseover', (event, d) => {
             const path = d.ancestors().map(node => (node.data as any).name).reverse().slice(1).join(" > ");
             const value = d.value || 0;
+            const valueString = isCurrency
+                ? value.toLocaleString('fr-FR', {style: 'currency', currency: 'EUR', maximumFractionDigits: 0})
+                : isWorkload
+                    ? `${value.toLocaleString('fr-FR')} j/h`
+                    : value.toLocaleString('fr-FR');
             tooltip.style('opacity', .9)
-                   .html(`<strong>${path}</strong><br/>Valeur: ${isCurrency ? value.toLocaleString('fr-FR', {style: 'currency', currency: 'EUR', maximumFractionDigits: 0}) : value.toLocaleString('fr-FR')}`)
+                   .html(`<strong>${path}</strong><br/>Valeur: ${valueString}`)
                    .style('left', `${event.pageX + 15}px`)
                    .style('top', `${event.pageY - 28}px`);
             select(event.currentTarget).style('stroke', '#334155').style('stroke-width', '1.5px');
@@ -82,13 +89,50 @@ const SunburstChart: React.FC<SunburstChartProps> = ({ data, config, colorPalett
             select(event.currentTarget).style('stroke', 'none');
         });
         
+      const text = g.selectAll("text")
+        .data(root.descendants().filter(d => d.depth > 0 && (d.y1 - d.y0) > 10 && (d.x1 - d.x0) > 0.03))
+        .join("text")
+        .attr("transform", function(d) {
+            const x = (d.x0 + d.x1) / 2 * 180 / Math.PI;
+            const y = (d.y0 + d.y1) / 2;
+            const rotate = x - 90;
+            const flip = rotate > 90 ? 180 : 0;
+            return `rotate(${rotate}) translate(${y},0) rotate(${flip})`;
+        })
+        .attr("dy", "0.35em")
+        .attr("text-anchor", "middle")
+        .attr("font-size", "10px")
+        .attr("fill", "#1e293b")
+        .text(d => (d.data as any).name);
+
+      const totalValue = root.value || 0;
+      const centerGroup = g.append('g').attr('text-anchor', 'middle');
+
+      centerGroup.append('text')
+          .attr('class', 'text-sm fill-slate-500')
+          .attr('dy', '-0.5em')
+          .text('Total');
+      
+      const totalText = isCurrency
+        ? totalValue.toLocaleString('fr-FR', {style:'currency', currency: 'EUR', notation:'compact'})
+        : isWorkload
+            ? `${Math.round(totalValue).toLocaleString('fr-FR')} j/h`
+            : totalValue.toLocaleString('fr-FR');
+
+      centerGroup.append('text')
+          .attr('class', 'text-2xl font-bold fill-slate-800')
+          .attr('dy', '0.6em')
+          .text(totalText);
+
     };
+
+    drawChart();
 
     const resizeObserver = new ResizeObserver(drawChart);
     resizeObserver.observe(container);
 
     return () => resizeObserver.disconnect();
-  }, [data, config, isCurrency, colorPalette]);
+  }, [data, config, isCurrency, isWorkload, colorPalette]);
 
   return (
     <div className="w-full h-full relative" ref={containerRef}>

@@ -1,13 +1,14 @@
+
 import React, { useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Card, { CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import { useData } from '../contexts/DataContext';
-import { ActivityStatus, Project } from '../types';
-import { ClipboardList, Star, TrendingUp, DollarSign, Info } from 'lucide-react';
+import { ProjectStatus, Project } from '../types';
+import { ClipboardList, Star, TrendingUp, DollarSign, Info, CheckCircle, Clock } from 'lucide-react';
 import ProjectStatusDonutChart from '../components/charts/ProjectStatusDonutChart';
 import ProjectTimeline from '../components/charts/ProjectTimeline';
 import ActiveFiltersDisplay from '../components/ui/ActiveFiltersDisplay';
-import { STATUS_COLORS } from '../constants';
+import { PROJECT_STATUS_COLORS } from '../constants';
 import Tooltip from '../components/ui/Tooltip';
 
 
@@ -34,7 +35,7 @@ const ProjectsDashboardPage: React.FC = () => {
   const navigate = useNavigate();
   const timelineContainerRef = useRef<HTMLDivElement>(null);
   
-  const [filters, setFilters] = useState<Partial<{ status: ActivityStatus }>>({});
+  const [filters, setFilters] = useState<Partial<{ status: ProjectStatus }>>({});
 
   const filteredProjects = useMemo(() => {
     if (Object.keys(filters).length === 0) {
@@ -51,6 +52,9 @@ const ProjectsDashboardPage: React.FC = () => {
     const total = projects.length;
     const top30 = projects.filter(p => p.isTop30).length;
     
+    const completed = projects.filter(p => p.status === ProjectStatus.NF).length;
+    const inProgress = projects.filter(p => p.status === ProjectStatus.NO).length;
+    
     const totalConsumed = projects.reduce((sum, p) => sum + (p.internalWorkloadConsumed || 0) + (p.externalWorkloadConsumed || 0), 0);
     const totalEngaged = projects.reduce((sum, p) => sum + (p.internalWorkloadEngaged || 0) + (p.externalWorkloadEngaged || 0), 0);
     const overallProgress = totalEngaged > 0 ? Math.round((totalConsumed / totalEngaged) * 100) : 0;
@@ -60,12 +64,14 @@ const ProjectsDashboardPage: React.FC = () => {
     return {
       total,
       top30,
+      completionRate: total > 0 ? Math.round((completed / total) * 100) : 0,
+      inProgress,
       overallProgress,
       totalBudgetApproved
     };
   }, [projects]);
   
-  const handleSliceClick = (status: ActivityStatus) => {
+  const handleSliceClick = (status: ProjectStatus) => {
     setFilters({ status });
   };
   
@@ -154,7 +160,7 @@ const ProjectsDashboardPage: React.FC = () => {
                             <tr key={project.id} className="bg-white border-b hover:bg-slate-50 cursor-pointer" onClick={() => navigate('/projets', { state: { openProject: project.id } })}>
                                 <th scope="row" className="px-4 py-3 font-medium text-slate-900 whitespace-nowrap">{project.projectId}</th>
                                 <td className="px-4 py-3">{project.title}</td>
-                                <td className="px-4 py-3"><span className={`px-2 py-1 text-xs font-medium rounded-full ${STATUS_COLORS[project.status]}`}>{project.status}</span></td>
+                                <td className="px-4 py-3"><span className={`px-2 py-1 text-xs font-medium rounded-full ${PROJECT_STATUS_COLORS[project.status]}`}>{project.status}</span></td>
                                 <td className="px-4 py-3">{project.isTop30 ? 'Oui' : 'Non'}</td>
                             </tr>
                         ))}

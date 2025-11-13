@@ -1,3 +1,4 @@
+
 // FIX: The import statement was malformed and was missing the 'useState' hook import.
 import React, { useState } from 'react';
 import Card, { CardContent, CardHeader, CardTitle } from '../components/ui/Card';
@@ -5,7 +6,8 @@ import { Upload, HelpCircle, DatabaseBackup, Info, AlertTriangle, Trash2, Workfl
 import { useData } from '../contexts/DataContext';
 import { useAuth } from '../contexts/AuthContext';
 import Tooltip from '../components/ui/Tooltip';
-import { Activity, Chantier, Objective, StrategicOrientation, Resource, SecurityProcess, Project, ActivityStatus, TShirtSize, Initiative } from '../types';
+// FIX: Imported 'ProjectCategory' to resolve missing property errors when creating new Project instances.
+import { Activity, Chantier, Objective, StrategicOrientation, Resource, SecurityProcess, Project, TShirtSize, Initiative, ProjectCategory, ProjectStatus } from '../types';
 import Modal from '../components/ui/Modal';
 import { loadReferenceData } from '../utils/referenceData';
 
@@ -221,8 +223,10 @@ const DataManagement: React.FC = () => {
                     id: `proj-${Date.now()}-${Math.random()}`,
                     projectId,
                     title,
-                    status: ActivityStatus.NOT_STARTED,
+                    status: ProjectStatus.IDENTIFIED,
                     tShirtSize: TShirtSize.M,
+                    // FIX: Added missing 'category' property to satisfy the Project type definition.
+                    category: ProjectCategory.PROJECT,
                     isTop30: false,
                     initiativeId: initiatives[0]?.id || '',
                     isoMeasures: [],
@@ -325,8 +329,10 @@ const DataManagement: React.FC = () => {
                       id: `proj-${Date.now()}-${Math.random()}`,
                       projectId,
                       title,
-                      status: ActivityStatus.NOT_STARTED,
+                      status: ProjectStatus.IDENTIFIED,
                       tShirtSize: TShirtSize.M,
+                      // FIX: Added missing 'category' property to satisfy the Project type definition.
+                      category: ProjectCategory.PROJECT,
                       isTop30: false,
                       initiativeId: initiatives[0]?.id || '',
                       isoMeasures: [],

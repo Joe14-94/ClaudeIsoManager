@@ -2,7 +2,8 @@ import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CalendarClock, TrendingUp, Hourglass, AlertCircle, TrendingDown } from 'lucide-react';
 import { useData } from '../../../contexts/DataContext';
-import { Project, ActivityStatus, Activity } from '../../../types';
+// FIX: Import `ProjectStatus` to correctly compare project statuses, resolving a type mismatch with `ActivityStatus`.
+import { Project, ActivityStatus, Activity, ProjectStatus } from '../../../types';
 import Tooltip from '../../ui/Tooltip';
 
 type KpiType = 'scheduleSlippage' | 'budgetForecast' | 'avgActivityAge';
@@ -17,12 +18,14 @@ const getScheduleSlippage = (projects: Project[]): { value: number, count: numbe
   let completedOrInProgressProjects = 0;
   
   projects.forEach(p => {
-    if ((p.status === ActivityStatus.COMPLETED || p.status === ActivityStatus.IN_PROGRESS) && p.projectEndDate && p.goLiveDate) {
+    // FIX: Replaced `ActivityStatus` with `ProjectStatus` to match the type of `p.status` and correctly identify completed or in-progress projects.
+    if ((p.status === ProjectStatus.NF || p.status === ProjectStatus.NO) && p.projectEndDate && p.goLiveDate) {
       const endDate = new Date(p.projectEndDate);
       const plannedDate = new Date(p.goLiveDate);
       
       // Si la date de fin est dans le futur mais que la date prévisionnelle est déjà passée, c'est un retard
-      const effectiveEndDate = p.status === ActivityStatus.COMPLETED ? endDate : new Date();
+      // FIX: Replaced `ActivityStatus.COMPLETED` with its `ProjectStatus` equivalent (`NF`) for correct type comparison.
+      const effectiveEndDate = p.status === ProjectStatus.NF ? endDate : new Date();
       
       if (!isNaN(endDate.getTime()) && !isNaN(plannedDate.getTime())) {
         const diffTime = effectiveEndDate.getTime() - plannedDate.getTime();

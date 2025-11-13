@@ -2,8 +2,8 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useData } from '../contexts/DataContext';
-import { Project, ActivityStatus, TShirtSize, Resource, Initiative } from '../types';
-import { STATUS_COLORS, ISO_MEASURES_DATA } from '../constants';
+import { Project, ProjectStatus, TShirtSize, Resource, Initiative, ProjectCategory } from '../types';
+import { PROJECT_STATUS_COLORS, ISO_MEASURES_DATA } from '../constants';
 import Card, { CardContent, CardHeader } from '../components/ui/Card';
 import Modal from '../components/ui/Modal';
 import { Search, PlusCircle, Edit, ArrowUp, ArrowDown, Trash2 } from 'lucide-react';
@@ -90,10 +90,10 @@ const Projects: React.FC = () => {
             setCurrentProject({
                 projectId: `P25-${String(nextIdNumber).padStart(3, '0')}`,
                 title: '',
-                status: ActivityStatus.NOT_STARTED,
+                status: ProjectStatus.IDENTIFIED,
                 tShirtSize: TShirtSize.M,
                 isTop30: false,
-                isEPA: false,
+                category: ProjectCategory.PROJECT,
                 initiativeId: initiatives[0]?.id || '',
                 isoMeasures: [],
                 budgetRequested: undefined,
@@ -269,7 +269,7 @@ const Projects: React.FC = () => {
                                     className="px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
                                 >
                                     <option value="">Tous les statuts</option>
-                                    {Object.values(ActivityStatus).map(s => <option key={s} value={s}>{s}</option>)}
+                                    {Object.values(ProjectStatus).map(s => <option key={s} value={s}>{s}</option>)}
                                 </select>
                                 <select 
                                     value={top30Filter}
@@ -305,7 +305,7 @@ const Projects: React.FC = () => {
                                             <th scope="row" className="px-6 py-4 font-medium text-slate-900 whitespace-nowrap">{project.projectId}</th>
                                             <td className="px-6 py-4">{project.title}</td>
                                             <td className="px-6 py-4">{initiativeMap.get(project.initiativeId || '') || '-'}</td>
-                                            <td className="px-6 py-4"><span className={`px-2 py-1 text-xs font-medium rounded-full ${STATUS_COLORS[project.status]}`}>{project.status}</span></td>
+                                            <td className="px-6 py-4"><span className={`px-2 py-1 text-xs font-medium rounded-full ${PROJECT_STATUS_COLORS[project.status]}`}>{project.status}</span></td>
                                             <td className="px-6 py-4">{resourceMap.get(project.projectManagerMOA || '') || '-'}</td>
                                             <td className="px-6 py-4">{resourceMap.get(project.projectManagerMOE || '') || '-'}</td>
                                             <td className="px-6 py-4">{getProjectProgress(project)}%</td>
@@ -473,17 +473,23 @@ const FormBody: React.FC<{
                 <textarea name="description" value={currentProject.description || ''} onChange={handleChange} rows={3} readOnly={isReadOnly} />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                  <div>
                     <label htmlFor="status">Statut</label>
                     <select name="status" value={currentProject.status} onChange={handleChange} disabled={isReadOnly}>
-                        {Object.values(ActivityStatus).map(s => <option key={s} value={s}>{s}</option>)}
+                        {Object.values(ProjectStatus).map(s => <option key={s} value={s}>{s}</option>)}
                     </select>
                 </div>
                 <div>
-                    <label htmlFor="tShirtSize">Taille de t-shirt</label>
+                    <label htmlFor="tShirtSize">Taille</label>
                     <select name="tShirtSize" value={currentProject.tShirtSize} onChange={handleChange} disabled={isReadOnly}>
                         {Object.values(TShirtSize).map(s => <option key={s} value={s}>{s}</option>)}
+                    </select>
+                </div>
+                 <div>
+                    <label htmlFor="category">Catégorie</label>
+                    <select name="category" value={currentProject.category} onChange={handleChange} disabled={isReadOnly}>
+                        {Object.values(ProjectCategory).map(c => <option key={c} value={c}>{c}</option>)}
                     </select>
                 </div>
             </div>
@@ -540,25 +546,6 @@ const FormBody: React.FC<{
                         </svg>
                     </div>
                     <span className="ml-2 text-sm font-medium text-slate-700">Projet Top30</span>
-                </label>
-                <label htmlFor="isEPA" className="flex items-center cursor-pointer">
-                    <input
-                        id="isEPA"
-                        name="isEPA"
-                        type="checkbox"
-                        checked={currentProject.isEPA || false}
-                        onChange={handleChange}
-                        disabled={isReadOnly}
-                        className="sr-only peer"
-                    />
-                    <div className={`w-4 h-4 border rounded flex-shrink-0 flex items-center justify-center transition-colors ${
-                        isReadOnly ? 'bg-slate-200 border-slate-300' : 'bg-white border-slate-400'
-                    } peer-checked:bg-blue-600 peer-checked:border-blue-600`}>
-                        <svg className="hidden peer-checked:block w-3 h-3 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
-                            <path d="M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z" />
-                        </svg>
-                    </div>
-                    <span className="ml-2 text-sm font-medium text-slate-700">EPA</span>
                 </label>
             </div>
 

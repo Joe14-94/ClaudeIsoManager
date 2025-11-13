@@ -1,6 +1,7 @@
+
 import React, { useMemo, useRef, useEffect, useCallback } from 'react';
 import { Project } from '../../types';
-import { STATUS_HEX_COLORS } from '../../constants';
+import { PROJECT_STATUS_HEX_COLORS } from '../../constants';
 // FIX: Replace monolithic d3 import with specific named imports to resolve type errors.
 import { min, max, timeMonth, scaleTime } from 'd3';
 
@@ -144,7 +145,7 @@ const ProjectTimeline: React.FC<ProjectTimelineProps> = ({ projects, zoomLevel =
                     >
                         <div 
                             className="w-full h-full rounded-md px-2 overflow-hidden whitespace-nowrap text-sm flex items-center transition-all duration-200 group-hover:ring-2 group-hover:ring-blue-500 group-hover:z-10"
-                            style={{ backgroundColor: STATUS_HEX_COLORS[project.status] }}
+                            style={{ backgroundColor: PROJECT_STATUS_HEX_COLORS[project.status] }}
                         >
                             <p className="truncate text-slate-800 font-medium">{project.title}</p>
                         </div>
