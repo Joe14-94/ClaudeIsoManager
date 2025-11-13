@@ -105,6 +105,7 @@ const Activities: React.FC = () => {
   const [resourceFilter, setResourceFilter] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [isoSearchTerm, setIsoSearchTerm] = useState('');
+  const [orientationSearchTerm, setOrientationSearchTerm] = useState('');
   const [isEditMode, setIsEditMode] = useState(false);
   const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: SortDirection } | null>({ key: 'activityId', direction: 'ascending' });
 
@@ -160,6 +161,12 @@ const Activities: React.FC = () => {
       if (!isoSearchTerm) return options;
       return options.filter(opt => opt.label.toLowerCase().includes(isoSearchTerm.toLowerCase()));
   }, [isoSearchTerm]);
+
+  const filteredOrientationOptions = useMemo(() => {
+      const options = orientations.map(o => ({ value: o.id, label: `${o.code} - ${o.label}`}));
+      if (!orientationSearchTerm) return options;
+      return options.filter(opt => opt.label.toLowerCase().includes(orientationSearchTerm.toLowerCase()));
+  }, [orientations, orientationSearchTerm]);
 
 
   useEffect(() => {
@@ -280,6 +287,7 @@ const Activities: React.FC = () => {
       setIsEditMode(false);
     }
     setIsoSearchTerm('');
+    setOrientationSearchTerm('');
     setIsFormModalOpen(true);
   };
 
@@ -289,6 +297,7 @@ const Activities: React.FC = () => {
     setCurrentActivity(null);
     setIsEditMode(false);
     setIsoSearchTerm('');
+    setOrientationSearchTerm('');
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -627,12 +636,11 @@ const Activities: React.FC = () => {
 
              <div>
                 <label className="block text-sm font-medium text-slate-700">Mesures ISO</label>
-                 <div className="relative mt-1">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                 <div className="mt-1">
                     <input
                       type="text"
                       placeholder="Rechercher par code ou titre..."
-                      className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-md bg-white mb-2"
+                      className="w-full px-3 py-2 border border-slate-300 rounded-md bg-white mb-2"
                       value={isoSearchTerm}
                       onChange={(e) => setIsoSearchTerm(e.target.value)}
                       disabled={isReadOnly}
@@ -648,14 +656,27 @@ const Activities: React.FC = () => {
                 />
             </div>
 
-            <CustomMultiSelect
-                label="Orientations stratégiques"
-                name="strategicOrientations"
-                options={orientations.map(o => ({ value: o.id, label: `${o.code} - ${o.label}`}))}
-                selectedValues={currentActivity.strategicOrientations || []}
-                onChange={handleCustomMultiSelectChange}
-                disabled={isReadOnly}
-            />
+            <div>
+                <label className="block text-sm font-medium text-slate-700">Orientations stratégiques</label>
+                <div className="mt-1">
+                    <input
+                      type="text"
+                      placeholder="Rechercher par code ou libellé..."
+                      className="w-full px-3 py-2 border border-slate-300 rounded-md bg-white mb-2"
+                      value={orientationSearchTerm}
+                      onChange={(e) => setOrientationSearchTerm(e.target.value)}
+                      disabled={isReadOnly}
+                    />
+                </div>
+                <CustomMultiSelect
+                    label=""
+                    name="strategicOrientations"
+                    options={filteredOrientationOptions}
+                    selectedValues={currentActivity.strategicOrientations || []}
+                    onChange={handleCustomMultiSelectChange}
+                    disabled={isReadOnly}
+                />
+            </div>
 
             <CustomMultiSelect
                 label="Chantiers"

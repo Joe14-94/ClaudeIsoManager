@@ -6,11 +6,12 @@ import AreaChart from './AreaChart';
 import ScatterPlot from './ScatterPlot';
 import BubbleChart from './BubbleChart';
 import TreemapChart from './TreemapChart';
+import SunburstChart from './SunburstChart';
 
 type ColorPalette = 'vibrant' | 'professional' | 'pastel' | 'monochromatic';
 
 interface DynamicChartRendererProps {
-  chartType: 'bar' | 'pie' | 'line' | 'area' | 'scatter' | 'bubble' | 'treemap';
+  chartType: 'bar' | 'pie' | 'line' | 'area' | 'scatter' | 'bubble' | 'treemap' | 'sunburst';
   data: any;
   config: any;
   colorPalette: ColorPalette;
@@ -43,6 +44,8 @@ const DynamicChartRenderer: React.FC<DynamicChartRendererProps> = ({ chartType, 
         return <BubbleChart data={data} config={config} colorPalette={colorPalette} />;
     case 'treemap':
         return <TreemapChart data={data} config={config} colorPalette={colorPalette} />;
+    case 'sunburst':
+        return <SunburstChart data={data} config={config} colorPalette={colorPalette} />;
     default:
       return (
         <div className="flex items-center justify-center h-full text-slate-500">

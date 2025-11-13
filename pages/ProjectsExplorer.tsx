@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react';
 import { useData } from '../contexts/DataContext';
 import { ISO_MEASURES_DATA } from '../constants';
@@ -18,7 +19,7 @@ const getProjectProgress = (project: Project): number => {
     return engaged > 0 ? Math.round((consumed / engaged) * 100) : 0;
 };
 
-type FieldKey = 'projectId' | 'title' | 'status' | 'tShirtSize' | 'isTop30' | 'initiative' | 'projectManagerMOA' | 'projectManagerMOE' | 'projectStartDate' | 'projectEndDate' | 'goLiveDate' | 'endDate' | 'isoMeasure' | 'internalWorkloadRequested' | 'internalWorkloadEngaged' | 'internalWorkloadConsumed' | 'externalWorkloadRequested' | 'externalWorkloadEngaged' | 'externalWorkloadConsumed' | 'totalProgress' | 'budgetRequested' | 'budgetApproved' | 'budgetCommitted' | 'validatedPurchaseOrders' | 'completedPV' | 'forecastedPurchaseOrders' | 'availableBudget' | 'budgetCommitmentRate' | 'budgetCompletionRate';
+type FieldKey = 'projectId' | 'title' | 'status' | 'tShirtSize' | 'isTop30' | 'isEPA' | 'initiative' | 'projectManagerMOA' | 'projectManagerMOE' | 'projectStartDate' | 'projectEndDate' | 'goLiveDate' | 'endDate' | 'isoMeasure' | 'internalWorkloadRequested' | 'internalWorkloadEngaged' | 'internalWorkloadConsumed' | 'externalWorkloadRequested' | 'externalWorkloadEngaged' | 'externalWorkloadConsumed' | 'totalProgress' | 'budgetRequested' | 'budgetApproved' | 'budgetCommitted' | 'validatedPurchaseOrders' | 'completedPV' | 'forecastedPurchaseOrders' | 'availableBudget' | 'budgetCommitmentRate' | 'budgetCompletionRate';
 
 interface Field {
   key: FieldKey;
@@ -40,6 +41,7 @@ const AVAILABLE_FIELDS: Field[] = [
     { key: 'status', label: 'Statut', getValue: row => row.project.status },
     { key: 'tShirtSize', label: 'Taille', getValue: row => row.project.tShirtSize },
     { key: 'isTop30', label: 'Top 30', getValue: row => row.project.isTop30 ? 'Oui' : 'Non' },
+    { key: 'isEPA', label: 'EPA', getValue: row => row.project.isEPA ? 'Oui' : 'Non' },
     { key: 'initiative', label: 'Initiative', getValue: row => row.initiative ? `${row.initiative.code} - ${row.initiative.label}` : undefined },
     { key: 'projectManagerMOA', label: 'CP MOA', getValue: row => row.managerMOA?.name },
     { key: 'projectManagerMOE', label: 'CP MOE', getValue: row => row.managerMOE?.name },
@@ -313,7 +315,6 @@ const ProjectsExplorer: React.FC = () => {
     const activeFiltersForDisplay = useMemo(() => {
         const displayFilters: { [key: string]: string } = {};
         Object.entries(filters).forEach(([key, values]) => {
-            // FIX: Added Array.isArray check to fix "Property 'length' does not exist on type 'unknown'" error.
             if (Array.isArray(values) && values.length > 0) {
                 const field = AVAILABLE_FIELDS.find(f => f.key === key);
                 if (field) {

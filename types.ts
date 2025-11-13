@@ -211,6 +211,7 @@ export interface Project {
   externalWorkloadEngaged?: number;
   externalWorkloadConsumed?: number;
   isTop30: boolean;
+  isEPA?: boolean;
   createdAt: DateTime;
   updatedAt: DateTime;
   initiativeId: string;

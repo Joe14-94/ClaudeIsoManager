@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useData } from '../contexts/DataContext';
@@ -92,6 +93,7 @@ const Projects: React.FC = () => {
                 status: ActivityStatus.NOT_STARTED,
                 tShirtSize: TShirtSize.M,
                 isTop30: false,
+                isEPA: false,
                 initiativeId: initiatives[0]?.id || '',
                 isoMeasures: [],
                 budgetRequested: undefined,
@@ -519,7 +521,7 @@ const FormBody: React.FC<{
                 />
             </div>
 
-            <div className="pt-4">
+            <div className="pt-4 flex items-center gap-6">
                  <label htmlFor="isTop30" className="flex items-center cursor-pointer">
                     <input
                         id="isTop30"
@@ -538,6 +540,25 @@ const FormBody: React.FC<{
                         </svg>
                     </div>
                     <span className="ml-2 text-sm font-medium text-slate-700">Projet Top30</span>
+                </label>
+                <label htmlFor="isEPA" className="flex items-center cursor-pointer">
+                    <input
+                        id="isEPA"
+                        name="isEPA"
+                        type="checkbox"
+                        checked={currentProject.isEPA || false}
+                        onChange={handleChange}
+                        disabled={isReadOnly}
+                        className="sr-only peer"
+                    />
+                    <div className={`w-4 h-4 border rounded flex-shrink-0 flex items-center justify-center transition-colors ${
+                        isReadOnly ? 'bg-slate-200 border-slate-300' : 'bg-white border-slate-400'
+                    } peer-checked:bg-blue-600 peer-checked:border-blue-600`}>
+                        <svg className="hidden peer-checked:block w-3 h-3 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
+                            <path d="M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z" />
+                        </svg>
+                    </div>
+                    <span className="ml-2 text-sm font-medium text-slate-700">EPA</span>
                 </label>
             </div>
 

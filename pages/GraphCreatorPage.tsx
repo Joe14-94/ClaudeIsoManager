@@ -3,11 +3,11 @@ import { useData } from '../contexts/DataContext';
 import Card, { CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import { Project } from '../types';
 import { saveToLocalStorage, loadFromLocalStorage } from '../utils/storage';
-import { Trash2, BarChart3, Donut, LineChart as LineChartIcon, AreaChart, ScatterChart, Disc as BubbleChartIcon, LayoutPanelTop, Download } from 'lucide-react';
+import { Trash2, BarChart3, Donut, LineChart as LineChartIcon, AreaChart, ScatterChart, Disc as BubbleChartIcon, LayoutPanelTop, Download, Aperture } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import DynamicChartRenderer from '../components/charts/creator/DynamicChartRenderer';
 
-type ChartType = 'bar' | 'pie' | 'line' | 'area' | 'scatter' | 'bubble' | 'treemap';
+type ChartType = 'bar' | 'pie' | 'line' | 'area' | 'scatter' | 'bubble' | 'treemap' | 'sunburst';
 type DimensionField = 'status' | 'tShirtSize' | 'projectManagerMOA' | 'projectManagerMOE' | 'initiativeId' | 'isTop30' | 'projectStartDate' | 'projectEndDate' | 'projectId';
 type DimensionField2 = DimensionField | 'none';
 type MeasureField = 'count' | 'budgetApproved' | 'budgetCommitted' | 'internalWorkloadEngaged' | 'externalWorkloadEngaged' | 'internalWorkloadConsumed' | 'externalWorkloadConsumed';
@@ -179,7 +179,7 @@ const GraphCreatorPage: React.FC = () => {
             }));
         }
         
-        if (chartType === 'treemap') {
+        if (chartType === 'treemap' || chartType === 'sunburst') {
             const root: { name: string, children: any[] } = { name: "root", children: [] };
             const groups: { [key: string]: { name: string, children: any[] } } = {};
 
@@ -284,7 +284,7 @@ const GraphCreatorPage: React.FC = () => {
             const measureXLabel = measureOptions.find(m => m.value === measureX)?.label || '';
             const measureYLabel = measureOptions.find(m => m.value === measureY)?.label || '';
             title = `Corrélation entre ${measureXLabel} et ${measureYLabel} par ${dimensionLabel}`;
-        } else if (chartType === 'treemap') {
+        } else if (chartType === 'treemap' || chartType === 'sunburst') {
             const dimension2Label = dimensionOptions.find(d => d.value === dimension2)?.label || '';
             title = `${measureLabel} par ${dimensionLabel}` + (dimension2 !== 'none' ? ` et ${dimension2Label}` : '');
         } else if (measure === 'count') {
@@ -436,6 +436,7 @@ const GraphCreatorPage: React.FC = () => {
                                     <ChartTypeButton icon={<ScatterChart size={24} />} label="Points" isActive={chartType === 'scatter'} onClick={() => handleChartTypeChange('scatter')} />
                                     <ChartTypeButton icon={<BubbleChartIcon size={24} />} label="Bulles" isActive={chartType === 'bubble'} onClick={() => handleChartTypeChange('bubble')} />
                                     <ChartTypeButton icon={<LayoutPanelTop size={24} />} label="Treemap" isActive={chartType === 'treemap'} onClick={() => handleChartTypeChange('treemap')} />
+                                    <ChartTypeButton icon={<Aperture size={24} />} label="Soleil" isActive={chartType === 'sunburst'} onClick={() => handleChartTypeChange('sunburst')} />
                                 </div>
                             </div>
                             {(chartType === 'bar' || chartType === 'pie' || chartType === 'line' || chartType === 'area') && (
@@ -453,11 +454,11 @@ const GraphCreatorPage: React.FC = () => {
                                     {chartType === 'bubble' && <ConfigSelect label="Mesure (Taille des bulles)" value={sizeMeasure} onChange={e => setSizeMeasure(e.target.value as MeasureField)} options={measureOptions.filter(o => o.value !== 'count')} />}
                                 </>
                             )}
-                            {chartType === 'treemap' && (
+                            {(chartType === 'treemap' || chartType === 'sunburst') && (
                                 <>
                                     <ConfigSelect label="1er niveau de groupement" value={dimension} onChange={e => setDimension(e.target.value as DimensionField)} options={dimensionOptions.filter(o => !o.isDate && o.value !== 'projectId')} />
                                     <ConfigSelect label="2ème niveau de groupement" value={dimension2} onChange={e => setDimension2(e.target.value as DimensionField2)} options={[{ value: 'none', label: 'Aucun' }, ...dimensionOptions.filter(o => !o.isDate && o.value !== 'projectId' && o.value !== dimension)]} />
-                                    <ConfigSelect label="Mesure (Taille des rectangles)" value={measure} onChange={e => setMeasure(e.target.value as MeasureField)} options={measureOptions.filter(o => o.value !== 'count')} />
+                                    <ConfigSelect label="Mesure (Taille)" value={measure} onChange={e => setMeasure(e.target.value as MeasureField)} options={measureOptions.filter(o => o.value !== 'count')} />
                                 </>
                             )}
                             <div className="pt-2 border-t">
@@ -470,28 +471,30 @@ const GraphCreatorPage: React.FC = () => {
                                     </>
                                 )}
                             </div>
-                            <div className="pt-2 border-t">
+                            <div className="pt-4 border-t">
                                 <h4 className="text-sm font-semibold text-slate-800 mb-2">Sauvegarder / Charger</h4>
-                                <div className="flex gap-2">
-                                    <input type="text" value={configName} onChange={e => setConfigName(e.target.value)} placeholder="Nom de la vue" className="flex-grow p-2 border border-slate-300 rounded-md text-sm" />
-                                    <button onClick={handleSaveConfig} className="px-3 py-1 bg-blue-600 text-white rounded-md text-sm">Sauver</button>
-                                </div>
-                                {savedConfigs.length > 0 && (
-                                    <div className="mt-2">
-                                        <select onChange={handleLoadConfig} className="w-full p-2 border border-slate-300 rounded-md bg-white text-sm">
-                                            <option value="">Charger une vue...</option>
-                                            {savedConfigs.map(c => <option key={c.name} value={c.name}>{c.name}</option>)}
-                                        </select>
-                                        <div className="mt-2 max-h-24 overflow-y-auto space-y-1">
-                                            {savedConfigs.map(c => (
-                                                <div key={c.name} className="flex justify-between items-center text-xs p-1 bg-slate-50 rounded">
-                                                    <span>{c.name}</span>
-                                                    <button onClick={() => handleDeleteConfig(c.name)} className="p-1 hover:bg-red-100 rounded-full text-red-500"><Trash2 size={12} /></button>
-                                                </div>
-                                            ))}
-                                        </div>
+                                <div className="space-y-3 p-3 bg-white rounded-md border border-slate-200">
+                                    <div className="flex gap-2">
+                                        <input type="text" value={configName} onChange={e => setConfigName(e.target.value)} placeholder="Nom de la vue" className="flex-grow p-2 border border-slate-300 rounded-md text-sm bg-white" />
+                                        <button onClick={handleSaveConfig} className="px-3 py-1 bg-blue-600 text-white rounded-md text-sm">Sauver</button>
                                     </div>
-                                )}
+                                    {savedConfigs.length > 0 && (
+                                        <div>
+                                            <select onChange={handleLoadConfig} defaultValue="" className="w-full p-2 border border-slate-300 rounded-md bg-white text-sm">
+                                                <option value="" disabled>Charger une vue...</option>
+                                                {savedConfigs.map(c => <option key={c.name} value={c.name}>{c.name}</option>)}
+                                            </select>
+                                            <div className="mt-2 max-h-24 overflow-y-auto space-y-1 pr-1">
+                                                {savedConfigs.map(c => (
+                                                    <div key={c.name} className="flex justify-between items-center text-xs p-2 bg-white border border-slate-200 rounded hover:bg-slate-50">
+                                                        <span className="truncate pr-2">{c.name}</span>
+                                                        <button onClick={() => handleDeleteConfig(c.name)} className="p-1 hover:bg-red-100 rounded-full text-red-500 flex-shrink-0"><Trash2 size={12} /></button>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         </CardContent>
                     </Card>
