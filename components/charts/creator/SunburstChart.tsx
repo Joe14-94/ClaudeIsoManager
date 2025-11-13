@@ -1,3 +1,4 @@
+
 import React, { useRef, useEffect } from 'react';
 import { select, hierarchy, partition, arc, scaleOrdinal, schemeTableau10, schemePastel1, schemeBlues, descending } from 'd3';
 
@@ -42,11 +43,15 @@ const SunburstChart: React.FC<SunburstChartProps> = ({ data, config, colorPalett
       const g = svg.append('g').attr('transform', `translate(${width / 2},${height / 2})`);
 
       const root = hierarchy(data)
-          .sum(d => d.value)
-          .sort((a, b) => descending(a.value, b.value));
+// FIX: Cast `d` to `any` to access `value` property on leaf nodes.
+          .sum(d => (d as any).value)
+// FIX: Cast `a` and `b` to `any` to access the `value` property added by `.sum()`.
+          .sort((a, b) => descending((a as any).value, (b as any).value));
           
       partition().size([2 * Math.PI, radius])(root);
       
+      const totalValue = root.value || 0;
+
       const colorDomain = root.children ? root.children.map(d => (d.data as any).name) : [];
       const colorScale = scaleOrdinal(palettes[colorPalette]).domain(colorDomain);
 
@@ -73,13 +78,14 @@ const SunburstChart: React.FC<SunburstChartProps> = ({ data, config, colorPalett
         .on('mouseover', (event, d) => {
             const path = d.ancestors().map(node => (node.data as any).name).reverse().slice(1).join(" > ");
             const value = d.value || 0;
+            const percentage = totalValue > 0 ? (value / totalValue) * 100 : 0;
             const valueString = isCurrency
                 ? value.toLocaleString('fr-FR', {style: 'currency', currency: 'EUR', maximumFractionDigits: 0})
                 : isWorkload
                     ? `${value.toLocaleString('fr-FR')} j/h`
                     : value.toLocaleString('fr-FR');
             tooltip.style('opacity', .9)
-                   .html(`<strong>${path}</strong><br/>Valeur: ${valueString}`)
+                   .html(`<strong>${path}</strong><br/>Valeur: ${valueString} (${percentage.toFixed(1)}%)`)
                    .style('left', `${event.pageX + 15}px`)
                    .style('top', `${event.pageY - 28}px`);
             select(event.currentTarget).style('stroke', '#334155').style('stroke-width', '1.5px');
@@ -90,11 +96,14 @@ const SunburstChart: React.FC<SunburstChartProps> = ({ data, config, colorPalett
         });
         
       const text = g.selectAll("text")
-        .data(root.descendants().filter(d => d.depth > 0 && (d.y1 - d.y0) > 10 && (d.x1 - d.x0) > 0.03))
+// FIX: Cast `d` to `any` to access layout properties.
+        .data(root.descendants().filter(d => d.depth > 0 && ((d as any).y1 - (d as any).y0) > 10 && ((d as any).x1 - (d as any).x0) > 0.03))
         .join("text")
         .attr("transform", function(d) {
-            const x = (d.x0 + d.x1) / 2 * 180 / Math.PI;
-            const y = (d.y0 + d.y1) / 2;
+// FIX: Cast `d` to `any` to access layout properties.
+            const x = ((d as any).x0 + (d as any).x1) / 2 * 180 / Math.PI;
+// FIX: Cast `d` to `any` to access layout properties.
+            const y = ((d as any).y0 + (d as any).y1) / 2;
             const rotate = x - 90;
             const flip = rotate > 90 ? 180 : 0;
             return `rotate(${rotate}) translate(${y},0) rotate(${flip})`;
@@ -105,7 +114,6 @@ const SunburstChart: React.FC<SunburstChartProps> = ({ data, config, colorPalett
         .attr("fill", "#1e293b")
         .text(d => (d.data as any).name);
 
-      const totalValue = root.value || 0;
       const centerGroup = g.append('g').attr('text-anchor', 'middle');
 
       centerGroup.append('text')

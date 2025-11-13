@@ -1,7 +1,8 @@
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useData } from '../contexts/DataContext';
-import { Notification, ActivityStatus } from '../types';
+// FIX: Import ProjectStatus to fix type comparison error.
+import { Notification, ActivityStatus, ProjectStatus } from '../types';
 import { loadFromLocalStorage, saveToLocalStorage } from '../utils/storage';
 
 const NOTIFICATION_READ_STATUS_KEY = 'notificationReadStatus';
@@ -81,7 +82,8 @@ export const useNotificationGenerator = () => {
       // Deadline
       if (project.projectEndDate) {
         const endDate = new Date(project.projectEndDate);
-        if (endDate <= sevenDaysFromNow && endDate >= now && project.status !== ActivityStatus.COMPLETED && project.status !== ActivityStatus.CANCELLED) {
+        // FIX: Replaced ActivityStatus with ProjectStatus for correct type comparison. ProjectStatus does not have a CANCELLED equivalent.
+        if (endDate <= sevenDaysFromNow && endDate >= now && project.status !== ProjectStatus.NF) {
           const id = `deadline-project-${project.id}`;
           generatedNotifications.push({
             id,

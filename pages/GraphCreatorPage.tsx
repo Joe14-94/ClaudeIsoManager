@@ -614,43 +614,63 @@ const GraphCreatorPage: React.FC = () => {
     );
 };
 
-const DataTable: React.FC<{ data: any[], chartType: ChartType }> = ({ data, chartType }) => {
-    if (!data || data.length === 0) return <p>Aucune donnée à afficher.</p>;
+// FIX: Change `data` prop type to `any` to accept both arrays and objects. Handle data structure internally.
+const DataTable: React.FC<{ data: any, chartType: ChartType }> = ({ data, chartType }) => {
+    
+    const { headers, rows } = useMemo(() => {
+        if (!data) return { headers: [], rows: [] };
 
-    const headers = useMemo(() => {
-        switch (chartType) {
-            case 'bar':
-            case 'pie':
-                return ['Label', 'Valeur'];
-            case 'line':
-            case 'area':
-                return ['Date', 'Valeur'];
-            case 'scatter':
-            case 'bubble':
-                return ['Label', 'Valeur X', 'Valeur Y', 'Taille'];
-            default:
-                if (data.length > 0 && data[0] && typeof data[0] === 'object') {
-                    return Object.keys(data[0]).filter(k => k !== 'rawItems');
+        if (chartType === 'treemap' || chartType === 'sunburst') {
+            const flattenData = (node: any, prefix = ''): { path: string, value: string }[] => {
+                if (!node) return [];
+                const currentLabel = prefix ? `${prefix} > ${node.name}` : node.name;
+                if (node.children && node.children.length > 0) {
+                    return node.children.flatMap((child: any) => flattenData(child, currentLabel));
+                } else if (node.value !== undefined) {
+                    return [{ path: currentLabel, value: node.value.toLocaleString('fr-FR') }];
                 }
                 return [];
-        }
-    }, [chartType, data]);
+            };
 
-    const rows = useMemo(() => {
+            const flatData = data.children ? data.children.flatMap((child: any) => flattenData(child)) : [];
+            return { 
+                headers: ['Chemin', 'Valeur'],
+                rows: flatData.map(d => [d.path, d.value])
+            };
+        }
+
+        if (!Array.isArray(data)) return { headers: [], rows: [] };
+
+        let tableHeaders: string[] = [];
+        let tableRows: (string|number)[][] = [];
+
         switch (chartType) {
             case 'bar':
             case 'pie':
-                return data.map(d => [d.label, d.value.toLocaleString('fr-FR')]);
+                tableHeaders = ['Label', 'Valeur'];
+                tableRows = data.map(d => [d.label, d.value.toLocaleString('fr-FR')]);
+                break;
             case 'line':
             case 'area':
-                return data.map(d => [d.date.toLocaleDateString('fr-CA'), d.value.toLocaleString('fr-FR')]);
+                tableHeaders = ['Date', 'Valeur'];
+                tableRows = data.map(d => [d.date.toLocaleDateString('fr-CA'), d.value.toLocaleString('fr-FR')]);
+                break;
             case 'scatter':
             case 'bubble':
-                return data.map(d => [d.label, d.xValue.toLocaleString('fr-FR'), d.yValue.toLocaleString('fr-FR'), d.sizeValue.toLocaleString('fr-FR')]);
+                tableHeaders = ['Label', 'Valeur X', 'Valeur Y', 'Taille'];
+                tableRows = data.map(d => [d.label, d.xValue.toLocaleString('fr-FR'), d.yValue.toLocaleString('fr-FR'), d.sizeValue.toLocaleString('fr-FR')]);
+                break;
             default:
-                return data.map(row => headers.map(header => row[header.toLowerCase()]));
+                if (data.length > 0 && data[0] && typeof data[0] === 'object') {
+                    tableHeaders = Object.keys(data[0]).filter(k => k !== 'rawItems');
+                    tableRows = data.map(row => tableHeaders.map(header => row[header.toLowerCase()]));
+                }
         }
-    }, [data, chartType, headers]);
+        return { headers: tableHeaders, rows: tableRows };
+
+    }, [data, chartType]);
+
+    if (rows.length === 0) return <p>Aucune donnée à afficher.</p>;
 
     return (
         <div className="w-full h-full overflow-auto">

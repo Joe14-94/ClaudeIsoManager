@@ -1,3 +1,4 @@
+
 import React, { useRef, useEffect } from 'react';
 import { select, treemap, hierarchy, scaleOrdinal, schemeTableau10, schemePastel1, schemeBlues } from 'd3';
 
@@ -38,11 +39,11 @@ const TreemapChart: React.FC<TreemapChartProps> = ({ data, config, colorPalette 
 
       const treemapLayout = treemap()
         .size([width, height])
-        .padding(1)
-        .paddingTop(20);
+        .paddingInner(2) // Utiliser le padding pour créer un espacement blanc
+        .paddingTop(24);
 
       const root = hierarchy(data)
-        .sum(d => d.value)
+        .sum(d => (d as any).value)
         .sort((a, b) => b.value! - a.value!);
       
       treemapLayout(root);
@@ -53,18 +54,19 @@ const TreemapChart: React.FC<TreemapChartProps> = ({ data, config, colorPalette 
       const cell = svg.selectAll("g")
         .data(root.leaves())
         .enter().append("g")
-        .attr("transform", d => `translate(${d.x0},${d.y0})`);
+// FIX: Cast `d` to `any` to access layout properties.
+        .attr("transform", d => `translate(${(d as any).x0},${(d as any).y0})`);
 
       cell.append("rect")
         .attr("id", (d, i) => `rect-${i}`)
-        .attr("width", d => d.x1 - d.x0)
-        .attr("height", d => d.y1 - d.y0)
+// FIX: Cast `d` to `any` to access layout properties.
+        .attr("width", d => (d as any).x1 - (d as any).x0)
+// FIX: Cast `d` to `any` to access layout properties.
+        .attr("height", d => (d as any).y1 - (d as any).y0)
         .attr("fill", d => colorScale((d.parent?.data as any).name))
-        .attr("stroke", "white")
         .on('mouseover', (event, d) => {
             tooltip.style('opacity', .9)
-                   .html(`<strong>${(d.parent?.data as any).name}</strong><br/>
-                          ${(d.data as any).name}: ${isCurrency ? (d.data as any).value.toLocaleString('fr-FR', {style: 'currency', currency: 'EUR', maximumFractionDigits: 0}) : (d.data as any).value.toLocaleString('fr-FR')}`)
+                   .html(`<strong>${(d.parent?.data as any).name} > ${(d.data as any).name}</strong><br/>Valeur: ${isCurrency ? (d.data as any).value.toLocaleString('fr-FR', {style: 'currency', currency: 'EUR', maximumFractionDigits: 0}) : (d.data as any).value.toLocaleString('fr-FR')}`)
                    .style('left', `${event.pageX + 15}px`)
                    .style('top', `${event.pageY - 28}px`);
             select(event.currentTarget).style('opacity', 0.8);
@@ -81,26 +83,31 @@ const TreemapChart: React.FC<TreemapChartProps> = ({ data, config, colorPalette 
 
       cell.append("text")
         .attr('clip-path', (d, i) => `url(#clip-${i})`)
-        .selectAll("tspan")
-        .data(d => (d.data as any).name.split(/(?=[A-Z][^A-Z])/g))
-        .enter().append("tspan")
         .attr("x", 4)
-        .attr("y", (d, i) => 13 + i * 10)
-        .text(d => d)
+        .attr("y", 14)
+        .text(d => (d.data as any).name)
         .attr('font-size', '11px')
-        .attr('fill', 'white');
+        .attr('fill', 'white')
+        .attr('stroke', 'rgba(0,0,0,0.6)')
+        .attr('stroke-width', 2)
+        .attr('paint-order', 'stroke');
         
-      svg.selectAll("g")
+      svg.selectAll("g.group-label")
         .data(root.children!)
         .enter().append("g")
+        .attr('class', 'group-label')
         .append("text")
-        .attr("x", d => d.x0 + 5)
-        .attr("y", d => d.y0 + 15)
+// FIX: Cast `d` to `any` to access layout properties.
+        .attr("x", d => (d as any).x0 + 5)
+// FIX: Cast `d` to `any` to access layout properties.
+        .attr("y", d => (d as any).y0 + 15)
         .text(d => (d.data as any).name)
         .attr("font-size", "14px")
         .attr("font-weight", "bold")
-        .attr("fill", "white");
-
+        .attr("fill", "white")
+        .attr('stroke', 'rgba(0,0,0,0.6)')
+        .attr('stroke-width', 3)
+        .attr('paint-order', 'stroke');
     };
 
     const resizeObserver = new ResizeObserver(drawChart);

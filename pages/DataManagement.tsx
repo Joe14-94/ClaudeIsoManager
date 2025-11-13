@@ -1,15 +1,17 @@
 
+
 // FIX: The import statement was malformed and was missing the 'useState' hook import.
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import Card, { CardContent, CardHeader, CardTitle } from '../components/ui/Card';
-import { Upload, HelpCircle, DatabaseBackup, Info, AlertTriangle, Trash2, Workflow, FileDown } from 'lucide-react';
+import { Upload, HelpCircle, DatabaseBackup, Info, AlertTriangle, Trash2, Workflow, FileDown, Database } from 'lucide-react';
 import { useData } from '../contexts/DataContext';
 import { useAuth } from '../contexts/AuthContext';
 import Tooltip from '../components/ui/Tooltip';
 // FIX: Imported 'ProjectCategory' to resolve missing property errors when creating new Project instances.
-import { Activity, Chantier, Objective, StrategicOrientation, Resource, SecurityProcess, Project, TShirtSize, Initiative, ProjectCategory, ProjectStatus } from '../types';
+import { Activity, Chantier, Objective, StrategicOrientation, Resource, SecurityProcess, Project, TShirtSize, Initiative, ProjectCategory, ProjectStatus, IsoLink } from '../types';
 import Modal from '../components/ui/Modal';
 import { loadReferenceData } from '../utils/referenceData';
+import { ISO_MEASURES_DATA } from '../constants';
 
 const DataManagement: React.FC = () => {
   const { 
@@ -33,6 +35,47 @@ const DataManagement: React.FC = () => {
   const [showAppInitModal, setShowAppInitModal] = useState(false);
   const [showDeleteAllDataModal, setShowDeleteAllDataModal] = useState(false);
 
+  const storageUsage = useMemo(() => {
+    const dataToMeasure = {
+        activities, objectives, orientations, resources, chantiers,
+        securityProcesses, projects, initiatives, dashboardLayouts
+    };
+
+    let totalBytes = 0;
+    try {
+        for (const key in localStorage) {
+            if (Object.prototype.hasOwnProperty.call(localStorage, key)) {
+                const value = localStorage.getItem(key);
+                if (value) {
+                    totalBytes += (key.length + value.length) * 2; // Approximation: 2 bytes per char
+                }
+            }
+        }
+    } catch(e) {
+        console.error("Could not calculate localStorage size.", e);
+        return { usedBytes: 0, percentage: 0, color: 'bg-green-500' };
+    }
+    
+    const MAX_STORAGE = 5 * 1024 * 1024; // 5MB
+    const percentage = Math.min((totalBytes / MAX_STORAGE) * 100, 100);
+
+    let color = 'bg-green-500';
+    if (percentage > 80) {
+      color = 'bg-red-500';
+    } else if (percentage > 50) {
+      color = 'bg-yellow-500';
+    }
+
+    return { usedBytes: totalBytes, percentage, color };
+  }, [activities, objectives, orientations, resources, chantiers, securityProcesses, projects, initiatives, dashboardLayouts]);
+
+  const formatBytes = (bytes: number) => {
+    if (bytes === 0) return '0 Octets';
+    const k = 1024;
+    const sizes = ['Octets', 'Ko', 'Mo', 'Go', 'To'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
 
   const showFeedback = (type: 'success' | 'error', message: string) => {
     setFeedback({ type, message });
@@ -367,6 +410,115 @@ const DataManagement: React.FC = () => {
     }
   };
 
+  const handleStrategyIsoImport = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (isReadOnly) {
+      if (event.target) event.target.value = '';
+      return;
+    }
+    const file = event.target.files?.[0];
+    const inputElement = event.target;
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const content = JSON.parse(e.target?.result as string);
+          if (!content.strategie_cybersecurite || !Array.isArray(content.strategie_cybersecurite)) {
+            showFeedback('error', 'Le fichier JSON est invalide. Il doit contenir une clé "strategie_cybersecurite" avec un tableau.');
+            return;
+          }
+
+          const data = content.strategie_cybersecurite;
+          const isoMeasuresMap = new Map(ISO_MEASURES_DATA.map(m => [m.code, m.title]));
+
+          const newOrientations = new Map<string, StrategicOrientation>();
+          const newChantiers = new Map<string, Chantier>();
+          const newObjectives = new Map<string, Objective>();
+
+          data.forEach((item: any) => {
+            const osCode = item.orientation_strategique?.numero;
+            if (osCode && !newOrientations.has(osCode)) {
+              newOrientations.set(osCode, {
+                id: `so-import-${osCode.replace('.', '-')}`,
+                code: osCode,
+                label: item.orientation_strategique.description,
+                createdAt: new Date().toISOString(),
+              });
+            }
+
+            const chantierCode = item.chantier?.numero;
+            if (chantierCode && !newChantiers.has(chantierCode)) {
+              const orientation = newOrientations.get(osCode);
+              if (orientation) {
+                newChantiers.set(chantierCode, {
+                  id: `ch-import-${chantierCode.replace('.', '-')}`,
+                  code: chantierCode,
+                  label: item.chantier.description,
+                  strategicOrientationId: orientation.id,
+                  createdAt: new Date().toISOString(),
+                });
+              }
+            }
+
+            const objectiveCode = item.objectif?.numero;
+            if (objectiveCode) {
+              const chantier = newChantiers.get(chantierCode);
+              const orientation = newOrientations.get(osCode);
+
+              if (chantier && orientation) {
+                if (!newObjectives.has(objectiveCode)) {
+                  let label = item.objectif.description.replace(/^- /, '').split('\n')[0];
+                  if (label.length > 100) label = label.substring(0, 100) + '...';
+                  newObjectives.set(objectiveCode, {
+                    id: `obj-import-${objectiveCode.replace(/\./g, '-')}`,
+                    code: objectiveCode,
+                    label: label,
+                    description: item.objectif.description,
+                    chantierId: chantier.id,
+                    strategicOrientations: [orientation.id],
+                    createdAt: new Date().toISOString(),
+                    mesures_iso: [],
+                  });
+                }
+                
+                const objective = newObjectives.get(objectiveCode)!;
+                if (item.mapping_iso_27002) {
+                  const isoMapping = item.mapping_iso_27002;
+                  const isoCode = isoMapping.numero_mesure;
+                  if (!objective.mesures_iso?.some(m => m.numero_mesure === isoCode)) {
+                    objective.mesures_iso?.push({
+                      domaine: isoMapping.domaine,
+                      numero_mesure: isoCode,
+                      titre: isoMeasuresMap.get(isoCode) || 'Titre non trouvé',
+                      description: isoMapping.synthese_mesure,
+                      niveau_application: '',
+                    });
+                  }
+                }
+              }
+            }
+          });
+
+          setOrientations(Array.from(newOrientations.values()));
+          setChantiers(Array.from(newChantiers.values()));
+          setObjectives(Array.from(newObjectives.values()));
+
+          showFeedback('success', `Référentiel Stratégie/ISO importé : ${newOrientations.size} orientations, ${newChantiers.size} chantiers, ${newObjectives.size} objectifs créés.`);
+
+        } catch (error) {
+          console.error(error);
+          showFeedback('error', 'Erreur lors du traitement du fichier JSON de stratégie.');
+        } finally {
+          if (inputElement) inputElement.value = '';
+        }
+      };
+      reader.onerror = () => {
+        showFeedback('error', 'Erreur de lecture du fichier.');
+        if (inputElement) inputElement.value = '';
+      };
+      reader.readAsText(file);
+    }
+  };
+
   const confirmResetActivities = () => {
     if (isReadOnly) return;
     setActivities([]);
@@ -426,6 +578,30 @@ const DataManagement: React.FC = () => {
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-bold text-slate-800">Gestion des données</h1>
+      
+      <Card>
+        <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+                <Database size={20} />
+                Utilisation de l'espace de stockage local
+                <Tooltip text="Les données sont stockées dans votre navigateur. Cette jauge est une estimation basée sur une limite commune de 5 Mo.">
+                    <Info size={16} className="text-slate-400 cursor-help" />
+                </Tooltip>
+            </CardTitle>
+        </CardHeader>
+        <CardContent>
+            <div className="space-y-2">
+                <div className="flex justify-between items-baseline">
+                    <span className="text-lg font-bold text-slate-800">{storageUsage.percentage.toFixed(2)}% utilisé</span>
+                    <span className="text-sm text-slate-500">{formatBytes(storageUsage.usedBytes)} / 5 Mo</span>
+                </div>
+                <div className="w-full bg-slate-200 rounded-full h-4">
+                    <div className={`${storageUsage.color} h-4 rounded-full transition-all duration-500`} style={{ width: `${storageUsage.percentage}%` }}></div>
+                </div>
+            </div>
+        </CardContent>
+      </Card>
+
       <p className="text-slate-600">
         Importez, exportez ou sauvegardez/restaurez les données de votre application.
       </p>
@@ -498,6 +674,17 @@ const DataManagement: React.FC = () => {
           
           {userRole === 'admin' && (
             <>
+              <div className="p-4 border rounded-lg md:col-span-2 bg-slate-50">
+                <h3 className="font-semibold text-slate-800">Importer le référentiel Stratégie/ISO (JSON)</h3>
+                <div className="flex items-center text-sm text-slate-600 mt-1 mb-2">
+                    <HelpCircle size={16} className="mr-2"/>
+                    <span>Importe les orientations, chantiers et objectifs depuis le fichier de mapping. <strong>Écrase les données de référence existantes.</strong></span>
+                </div>
+                <label className={`${buttonClasses} text-sm w-fit ${isReadOnly ? disabledClasses : 'bg-orange-600 text-white hover:bg-orange-700 cursor-pointer'}`}>
+                    <Workflow size={16} className="mr-2" /> Importer le référentiel
+                    <input type="file" className="hidden" accept=".json" onChange={handleStrategyIsoImport} disabled={isReadOnly}/>
+                </label>
+              </div>
               <div className="p-4 border rounded-lg">
                 <h3 className="font-semibold">Importer des objectifs (JSON)</h3>
                 <div className="flex items-center text-sm text-slate-500 mt-1 mb-2">
