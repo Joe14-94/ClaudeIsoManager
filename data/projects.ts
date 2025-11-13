@@ -1,3 +1,4 @@
+
 import { Project, ActivityStatus, TShirtSize } from '../types';
 
 export const projects: Project[] = [

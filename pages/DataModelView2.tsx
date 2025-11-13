@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useMemo, useState } from 'react';
-import * as d3 from 'd3';
+// FIX: Replace monolithic d3 import with specific named imports to resolve type errors.
+import { select, zoom, zoomIdentity, forceSimulation, forceLink, forceManyBody, forceCollide, forceCenter, drag, SimulationNodeDatum, ZoomBehavior } from 'd3';
 import { ZoomIn, ZoomOut, RotateCw } from 'lucide-react';
 
 const dataModelEntities = {
@@ -71,7 +72,7 @@ const NODE_ATTR_HEIGHT = 28;
 
 const DataModelView2: React.FC = () => {
     const svgRef = useRef<SVGSVGElement>(null);
-    const zoomRef = useRef<d3.ZoomBehavior<SVGSVGElement, unknown> | null>(null);
+    const zoomRef = useRef<ZoomBehavior<SVGSVGElement, unknown> | null>(null);
 
     const { nodes, links } = useMemo(() => {
         const nodes = Object.entries(dataModelEntities).map(([name, data]) => {
@@ -83,50 +84,50 @@ const DataModelView2: React.FC = () => {
 
     const handleZoomIn = () => {
         if (!svgRef.current || !zoomRef.current) return;
-        d3.select(svgRef.current).transition().call(zoomRef.current.scaleBy, 1.2);
+        select(svgRef.current).transition().call(zoomRef.current.scaleBy, 1.2);
     };
 
     const handleZoomOut = () => {
         if (!svgRef.current || !zoomRef.current) return;
-        d3.select(svgRef.current).transition().call(zoomRef.current.scaleBy, 0.8);
+        select(svgRef.current).transition().call(zoomRef.current.scaleBy, 0.8);
     };
 
     const handleResetZoom = () => {
         if (!svgRef.current || !zoomRef.current) return;
-        const svg = d3.select(svgRef.current);
+        const svg = select(svgRef.current);
         const parent = svg.node()!.parentElement!;
         const { clientWidth: width, clientHeight: height } = parent;
-        const initialTransform = d3.zoomIdentity.translate(width / 2, height / 2).scale(0.8);
+        const initialTransform = zoomIdentity.translate(width / 2, height / 2).scale(0.8);
         svg.transition().call(zoomRef.current.transform, initialTransform);
     };
 
     useEffect(() => {
         if (!svgRef.current) return;
 
-        const svg = d3.select(svgRef.current);
+        const svg = select(svgRef.current);
         const parent = svg.node()!.parentElement!;
         const width = parent.clientWidth;
         const height = parent.clientHeight;
 
         const g = svg.selectAll('g.main-group').data([null]).join('g').attr('class', 'main-group');
         
-        const zoom = d3.zoom<SVGSVGElement, unknown>()
+        const zoomBehavior = zoom<SVGSVGElement, unknown>()
             .scaleExtent([0.2, 3])
             .on('zoom', (event) => {
                 g.attr('transform', event.transform);
             });
 
-        zoomRef.current = zoom;
-        svg.call(zoom);
+        zoomRef.current = zoomBehavior;
+        svg.call(zoomBehavior);
         
-        const initialTransform = d3.zoomIdentity.translate(width / 2, height / 2).scale(0.8);
-        svg.call(zoom.transform, initialTransform);
+        const initialTransform = zoomIdentity.translate(width / 2, height / 2).scale(0.8);
+        svg.call(zoomBehavior.transform, initialTransform);
         
-        const simulation = d3.forceSimulation(nodes as d3.SimulationNodeDatum[])
-            .force('link', d3.forceLink(links).id((d: any) => d.id).distance(400).strength(0.6))
-            .force('charge', d3.forceManyBody().strength(-2500))
-            .force('collide', d3.forceCollide().radius(200))
-            .force('center', d3.forceCenter(0, 0));
+        const simulation = forceSimulation(nodes as SimulationNodeDatum[])
+            .force('link', forceLink(links).id((d: any) => d.id).distance(400).strength(0.6))
+            .force('charge', forceManyBody().strength(-2500))
+            .force('collide', forceCollide().radius(200))
+            .force('center', forceCenter(0, 0));
 
         const linkGroup = g.selectAll('.links').data([null]).join('g').attr('class', 'links');
         const nodeGroup = g.selectAll('.nodes').data([null]).join('g').attr('class', 'nodes');
@@ -139,7 +140,7 @@ const DataModelView2: React.FC = () => {
         linkLabel.attr('xlink:href', (d, i) => `#link-path-${i}`);
 
         const node = nodeGroup.selectAll('g.node-element').data(nodes, (d:any) => d.id).join('g').attr('class', 'node-element')
-            .call(d3.drag<any, any>()
+            .call(drag<any, any>()
                 .on('start', (event) => { if (!event.active) simulation.alphaTarget(0.3).restart(); event.subject.fx = event.subject.x; event.subject.fy = event.subject.y; })
                 .on('drag', (event) => { event.subject.fx = event.x; event.subject.fy = event.y; })
                 .on('end', (event) => { if (!event.active) simulation.alphaTarget(0); event.subject.fx = null; event.subject.fy = null; })
@@ -216,8 +217,10 @@ const DataModelView2: React.FC = () => {
         };
 
         simulation.on('tick', () => {
-            node.attr('transform', d => `translate(${d.x - d.width/2}, ${d.y - d.height/2})`);
-            linkPath.attr('d', d => {
+            // FIX: Cast `d` to any to access properties added by the d3 simulation (`x`, `y`).
+            node.attr('transform', (d: any) => `translate(${d.x - d.width/2}, ${d.y - d.height/2})`);
+            // FIX: Cast `d` to any to access custom properties (`groupIndex`, `groupSize`).
+            linkPath.attr('d', (d: any) => {
                 const { p1, p2 } = getIntersectionPoint(d.source, d.target);
                 const midX = (p1.x + p2.x) / 2, midY = (p1.y + p2.y) / 2;
                 const dx = p2.x - p1.x, dy = p2.y - p1.y;
@@ -229,7 +232,10 @@ const DataModelView2: React.FC = () => {
                 return `M ${p1.x} ${p1.y} Q ${controlX} ${controlY} ${p2.x} ${p2.y}`;
             });
         });
-        return () => simulation.stop();
+        // FIX: The useEffect cleanup function must return void. simulation.stop() returns the simulation instance.
+        return () => {
+            simulation.stop();
+        };
     }, [nodes, links]);
 
     return (

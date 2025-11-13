@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useMemo } from 'react';
-import * as d3 from 'd3';
+// FIX: Replace monolithic d3 import with specific named imports to resolve type errors.
+import { select, max, scaleLinear, scaleBand, axisBottom, axisLeft, easeCubicOut } from 'd3';
 import { useData } from '../../../contexts/DataContext';
 import { CardHeader, CardTitle, CardContent } from '../../ui/Card';
 import { Objective, Chantier } from '../../../types';
@@ -48,14 +49,15 @@ const StrategicAlignmentWidget: React.FC = () => {
   }, [activities, orientations, objectives, chantiers]);
 
   useEffect(() => {
+    // FIX: 'd3' is not defined as a global. Use the imported `select` function instead.
     if (!svgRef.current || !containerRef.current || alignmentData.length === 0) {
-      if (svgRef.current) d3.select(svgRef.current).selectAll('*').remove();
+      if (svgRef.current) select(svgRef.current).selectAll('*').remove();
       return;
     }
 
     const container = containerRef.current;
-    const svg = d3.select(svgRef.current);
-    const tooltip = d3.select('body').selectAll('.d3-tooltip').data([null]).join('div').attr('class', 'd3-tooltip');
+    const svg = select(svgRef.current);
+    const tooltip = select('body').selectAll('.d3-tooltip').data([null]).join('div').attr('class', 'd3-tooltip');
 
     const drawChart = () => {
       svg.selectAll('*').remove();
@@ -63,7 +65,7 @@ const StrategicAlignmentWidget: React.FC = () => {
       svg.attr('width', width).attr('height', height);
       
       let maxLabelWidth = 0;
-      const tempSvg = d3.select(container).append('svg').attr('class', 'temp-svg').style('position', 'absolute').style('visibility', 'hidden').style('pointer-events', 'none');
+      const tempSvg = select(container).append('svg').attr('class', 'temp-svg').style('position', 'absolute').style('visibility', 'hidden').style('pointer-events', 'none');
       alignmentData.forEach(d => {
           const textNode = tempSvg.append('text').attr('class', 'text-sm fill-slate-600').text(d.code).node();
           if (textNode) {
@@ -80,17 +82,17 @@ const StrategicAlignmentWidget: React.FC = () => {
 
       const g = svg.append('g').attr('transform', `translate(${margin.left}, ${margin.top})`);
 
-      const maxWorkload = d3.max(alignmentData, d => d.workload) || 0;
+      const maxWorkload = max(alignmentData, d => d.workload) || 0;
       
-      const xScaleWorkload = d3.scaleLinear().domain([0, maxWorkload]).range([0, innerWidth]).nice();
+      const xScaleWorkload = scaleLinear().domain([0, maxWorkload]).range([0, innerWidth]).nice();
       
-      const yScale = d3.scaleBand()
+      const yScale = scaleBand()
         .domain(alignmentData.map(d => d.code))
         .range([0, innerHeight])
         .padding(0.4);
 
-      const xAxisWorkload = g.append('g').attr('transform', `translate(0, ${innerHeight})`).call(d3.axisBottom(xScaleWorkload).ticks(Math.min(5, innerWidth / 80)));
-      const yAxis = g.append('g').call(d3.axisLeft(yScale).tickSize(0));
+      const xAxisWorkload = g.append('g').attr('transform', `translate(0, ${innerHeight})`).call(axisBottom(xScaleWorkload).ticks(Math.min(5, innerWidth / 80)));
+      const yAxis = g.append('g').call(axisLeft(yScale).tickSize(0));
       
       [xAxisWorkload, yAxis].forEach(axis => axis.select(".domain").remove());
       xAxisWorkload.selectAll("line").remove();
@@ -98,7 +100,7 @@ const StrategicAlignmentWidget: React.FC = () => {
 
       svg.append('text').attr('x', margin.left + innerWidth / 2).attr('y', height - 10).attr('text-anchor', 'middle').attr('class', 'text-xs fill-slate-500 font-medium').text('Charge (J/H)');
 
-      g.append('g').attr('class', 'grid').call(d3.axisBottom(xScaleWorkload).ticks(5).tickSize(innerHeight)).selectAll('.tick line').attr('stroke', '#e2e8f0').attr('stroke-dasharray', '2,2');
+      g.append('g').attr('class', 'grid').call(axisBottom(xScaleWorkload).ticks(5).tickSize(innerHeight)).selectAll('.tick line').attr('stroke', '#e2e8f0').attr('stroke-dasharray', '2,2');
       g.selectAll('.grid .domain, .grid .tick text').remove();
 
       const bars = g.selectAll('.bar')
@@ -112,14 +114,15 @@ const StrategicAlignmentWidget: React.FC = () => {
         .attr('rx', 3)
         .attr('width', 0);
         
-      bars.transition().duration(800).ease(d3.easeCubicOut).attr('width', d => xScaleWorkload((d as any).workload));
+      bars.transition().duration(800).ease(easeCubicOut).attr('width', d => xScaleWorkload((d as any).workload));
 
       bars.on('mouseover', function(event, d) {
-            d3.select(this).style('opacity', 0.85);
+            select(this).style('opacity', 0.85);
             tooltip.style('opacity', 1).html(`<strong>${(d as any).fullLabel}</strong><br/>Charge: ${(d as any).workload.toFixed(1)} J/H`);
         })
         .on('mousemove', (event) => {
-            const tooltipNode = tooltip.node();
+            // FIX: Cast the result of tooltip.node() to HTMLDivElement to access offsetWidth and offsetHeight.
+            const tooltipNode = tooltip.node() as HTMLDivElement;
             if (!tooltipNode) return;
             const { offsetWidth: tooltipWidth, offsetHeight: tooltipHeight } = tooltipNode;
             const { pageX, pageY } = event;
@@ -131,7 +134,7 @@ const StrategicAlignmentWidget: React.FC = () => {
             tooltip.style('left', `${x}px`).style('top', `${y}px`);
         })
         .on('mouseout', function() {
-            d3.select(this).style('opacity', 1);
+            select(this).style('opacity', 1);
             tooltip.style('opacity', 0);
         });
 

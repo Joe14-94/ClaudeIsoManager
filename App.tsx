@@ -1,3 +1,4 @@
+
 import React from 'react';
 // FIX: The project appears to use react-router-dom v5, but the installed version is v6. Updating imports to v6.
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
@@ -34,6 +35,7 @@ import AccessRightsPage from './pages/AccessRightsPage';
 import Header from './components/layout/Header';
 import { NotificationProvider } from './contexts/NotificationContext';
 import HelpPage from './pages/HelpPage';
+import GraphCreatorPage from './pages/GraphCreatorPage';
 
 const AppLayout: React.FC = () => {
   return (
@@ -51,6 +53,7 @@ const AppLayout: React.FC = () => {
             <Route path="/projets" element={<Projects />} />
             <Route path="/projects-dashboard" element={<ProjectsDashboardPage />} />
             <Route path="/projects-explorer" element={<ProjectsExplorer />} />
+            <Route path="/projets/createur-graphiques" element={<GraphCreatorPage />} />
             <Route path="/projects-timeline" element={<ProjectsTimelinePage />} />
             <Route path="/projects-budget" element={<ProjectsBudget />} />
             <Route path="/projects-workload" element={<ProjectsWorkload />} />

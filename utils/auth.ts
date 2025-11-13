@@ -1,4 +1,5 @@
 
+
 /**
  * Hache un mot de passe en utilisant l'algorithme SHA-256.
  * @param password Le mot de passe en clair à hacher.

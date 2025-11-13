@@ -1,0 +1,624 @@
+import React, { useState, useMemo, useEffect, useRef } from 'react';
+import { useData } from '../contexts/DataContext';
+import Card, { CardContent, CardHeader, CardTitle } from '../components/ui/Card';
+import { Project } from '../types';
+import { saveToLocalStorage, loadFromLocalStorage } from '../utils/storage';
+import { Trash2, BarChart3, Donut, LineChart as LineChartIcon, AreaChart, ScatterChart, Disc as BubbleChartIcon, LayoutPanelTop, Download } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import DynamicChartRenderer from '../components/charts/creator/DynamicChartRenderer';
+
+type ChartType = 'bar' | 'pie' | 'line' | 'area' | 'scatter' | 'bubble' | 'treemap';
+type DimensionField = 'status' | 'tShirtSize' | 'projectManagerMOA' | 'projectManagerMOE' | 'initiativeId' | 'isTop30' | 'projectStartDate' | 'projectEndDate' | 'projectId';
+type DimensionField2 = DimensionField | 'none';
+type MeasureField = 'count' | 'budgetApproved' | 'budgetCommitted' | 'internalWorkloadEngaged' | 'externalWorkloadEngaged' | 'internalWorkloadConsumed' | 'externalWorkloadConsumed';
+type AggregationType = 'sum' | 'average';
+type ColorPalette = 'vibrant' | 'professional' | 'pastel' | 'monochromatic';
+type SortOrder = 'value-desc' | 'value-asc' | 'label-asc' | 'label-desc';
+type TopNValue = 5 | 10 | 'all';
+
+interface SavedConfig {
+    name: string;
+    chartType: ChartType;
+    dimension: DimensionField;
+    dimension2: DimensionField2;
+    measure: MeasureField;
+    measureX: MeasureField;
+    measureY: MeasureField;
+    sizeMeasure: MeasureField;
+    aggregation: AggregationType;
+    colorPalette: ColorPalette;
+    sortOrder: SortOrder;
+    topN: TopNValue;
+    chartTitle: string;
+}
+
+const dimensionOptions: { value: DimensionField, label: string, isDate?: boolean }[] = [
+    { value: 'status', label: 'Statut' },
+    { value: 'tShirtSize', label: 'Taille (T-shirt)' },
+    { value: 'projectManagerMOA', label: 'Chef de projet MOA' },
+    { value: 'projectManagerMOE', label: 'Chef de projet MOE' },
+    { value: 'initiativeId', label: 'Initiative' },
+    { value: 'isTop30', label: 'Projet Top 30' },
+    { value: 'projectId', label: 'Projet (pour Scatter/Bubble)' },
+    { value: 'projectStartDate', label: 'Date de début du projet', isDate: true },
+    { value: 'projectEndDate', label: 'Date de fin du projet', isDate: true },
+];
+
+const measureOptions: { value: MeasureField, label: string }[] = [
+    { value: 'count', label: 'Nombre de projets' },
+    { value: 'budgetApproved', label: 'Budget accordé' },
+    { value: 'budgetCommitted', label: 'Budget engagé' },
+    { value: 'internalWorkloadEngaged', label: 'Charge interne engagée' },
+    { value: 'externalWorkloadEngaged', label: 'Charge externe engagée' },
+    { value: 'internalWorkloadConsumed', label: 'Charge interne consommée' },
+    { value: 'externalWorkloadConsumed', label: 'Charge externe consommée' },
+];
+
+const aggregationOptions: { value: AggregationType, label: string }[] = [
+    { value: 'sum', label: 'Somme' },
+    { value: 'average', label: 'Moyenne' },
+];
+
+const colorPaletteOptions: { value: ColorPalette, label: string }[] = [
+    { value: 'vibrant', label: 'Vibrant' },
+    { value: 'professional', label: 'Bleus professionnels' },
+    { value: 'pastel', label: 'Tons pastel' },
+    { value: 'monochromatic', label: 'Monochromatique' },
+];
+
+const GRAPH_CREATOR_CONFIGS_KEY = 'graphCreatorConfigs';
+
+const ChartTypeButton: React.FC<{ icon: React.ReactNode, label: string, isActive: boolean, onClick: () => void, disabled?: boolean }> = ({ icon, label, isActive, onClick, disabled }) => (
+    <button
+        onClick={onClick}
+        disabled={disabled}
+        className={`flex flex-col items-center justify-center p-2 rounded-md transition-colors w-20 h-20 text-center ${isActive ? 'bg-blue-600 text-white' : 'bg-white hover:bg-slate-100 text-slate-700'} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+    >
+        {icon}
+        <span className="text-xs mt-1">{label}</span>
+    </button>
+);
+
+const GraphCreatorPage: React.FC = () => {
+    const { projects, resources, initiatives } = useData();
+    const navigate = useNavigate();
+
+    const [panelSize, setPanelSize] = useState(() => loadFromLocalStorage('graphCreatorPanelSize', 384));
+    const handleRef = useRef<HTMLDivElement>(null);
+    const [activeTab, setActiveTab] = useState<'chart' | 'data'>('chart');
+    const exportDropdownRef = useRef<HTMLDivElement>(null);
+    const [isExportOpen, setIsExportOpen] = useState(false);
+    
+    // Config state
+    const [chartType, setChartType] = useState<ChartType>('bar');
+    const [dimension, setDimension] = useState<DimensionField>('status');
+    const [dimension2, setDimension2] = useState<DimensionField2>('none');
+    const [measure, setMeasure] = useState<MeasureField>('count');
+    const [measureX, setMeasureX] = useState<MeasureField>('internalWorkloadEngaged');
+    const [measureY, setMeasureY] = useState<MeasureField>('budgetCommitted');
+    const [sizeMeasure, setSizeMeasure] = useState<MeasureField>('budgetApproved');
+    const [aggregation, setAggregation] = useState<AggregationType>('sum');
+    const [colorPalette, setColorPalette] = useState<ColorPalette>('vibrant');
+    const [sortOrder, setSortOrder] = useState<SortOrder>('value-desc');
+    const [topN, setTopN] = useState<TopNValue>('all');
+    const [chartTitleInput, setChartTitleInput] = useState('Créateur de graphiques');
+    const [hiddenLabels, setHiddenLabels] = useState<string[]>([]);
+    
+    // Save/Load state
+    const [savedConfigs, setSavedConfigs] = useState<SavedConfig[]>([]);
+    const [configName, setConfigName] = useState('');
+
+    useEffect(() => {
+        const loadedConfigs = loadFromLocalStorage<SavedConfig[]>(GRAPH_CREATOR_CONFIGS_KEY, []);
+        setSavedConfigs(loadedConfigs);
+    }, []);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (exportDropdownRef.current && !exportDropdownRef.current.contains(event.target as Node)) {
+                setIsExportOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
+
+    const isDateDimension = useMemo(() => dimensionOptions.find(d => d.value === dimension)?.isDate, [dimension]);
+
+    const dataMaps = useMemo(() => ({
+        resources: new Map(resources.map(r => [r.id, r.name])),
+        initiatives: new Map(initiatives.map(i => [i.id, i.label])),
+        projects: new Map(projects.map(p => [p.projectId, p.title])),
+    }), [resources, initiatives, projects]);
+
+    const processedData = useMemo(() => {
+        if (!dimension || !measure) return [];
+
+        const getMeasureValue = (project: Project, field: MeasureField) => {
+            switch (field) {
+                case 'count': return 1;
+                case 'budgetApproved': return project.budgetApproved || 0;
+                case 'budgetCommitted': return project.budgetCommitted || 0;
+                case 'internalWorkloadEngaged': return project.internalWorkloadEngaged || 0;
+                case 'externalWorkloadEngaged': return project.externalWorkloadEngaged || 0;
+                case 'internalWorkloadConsumed': return project.internalWorkloadConsumed || 0;
+                case 'externalWorkloadConsumed': return project.externalWorkloadConsumed || 0;
+                default: return 0;
+            }
+        };
+        
+        const getDimensionLabel = (project: Project, field: DimensionField): string => {
+            const value = project[field as keyof Project];
+            switch (field) {
+                case 'projectManagerMOA':
+                case 'projectManagerMOE':
+                    return dataMaps.resources.get(value as string) || 'Non assigné';
+                case 'initiativeId':
+                    return dataMaps.initiatives.get(value as string) || 'Non assigné';
+                case 'isTop30':
+                    return value ? 'Oui' : 'Non';
+                case 'projectStartDate':
+                case 'projectEndDate':
+                     if (!value) return 'Date non définie';
+                     const date = new Date(value as string);
+                     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`; // YYYY-MM for grouping
+                default:
+                    return String(value) || 'Non défini';
+            }
+        };
+
+        if (chartType === 'scatter' || chartType === 'bubble') {
+            return projects.map(p => ({
+                label: p[dimension as keyof Project] as string || p.projectId,
+                xValue: getMeasureValue(p, measureX),
+                yValue: getMeasureValue(p, measureY),
+                sizeValue: chartType === 'bubble' ? getMeasureValue(p, sizeMeasure) : 10,
+                rawItems: [p]
+            }));
+        }
+        
+        if (chartType === 'treemap') {
+            const root: { name: string, children: any[] } = { name: "root", children: [] };
+            const groups: { [key: string]: { name: string, children: any[] } } = {};
+
+            projects.forEach(p => {
+                const dim1Value = getDimensionLabel(p, dimension);
+                if (!groups[dim1Value]) {
+                    groups[dim1Value] = { name: dim1Value, children: [] };
+                    root.children.push(groups[dim1Value]);
+                }
+                if (dimension2 !== 'none') {
+                     const dim2Value = getDimensionLabel(p, dimension2 as DimensionField);
+                     let subGroup = groups[dim1Value].children.find(c => c.name === dim2Value);
+                     if (!subGroup) {
+                         subGroup = { name: dim2Value, children: [] };
+                         groups[dim1Value].children.push(subGroup);
+                     }
+                     subGroup.children.push({ name: p.projectId, value: getMeasureValue(p, measure), rawItems: [p] });
+                } else {
+                     groups[dim1Value].children.push({ name: p.projectId, value: getMeasureValue(p, measure), rawItems: [p] });
+                }
+            });
+            return root;
+        }
+
+        if (isDateDimension) {
+            const timeData: { [key: string]: { values: number[], rawItems: Project[] } } = {};
+            projects.forEach(p => {
+                const label = getDimensionLabel(p, dimension);
+                if (label !== 'Date non définie') {
+                    if (!timeData[label]) {
+                        timeData[label] = { values: [], rawItems: [] };
+                    }
+                    timeData[label].values.push(getMeasureValue(p, measure));
+                    timeData[label].rawItems.push(p);
+                }
+            });
+            return Object.entries(timeData)
+                .map(([dateStr, data]) => {
+                    let value: number;
+                    if (measure === 'count') {
+                        value = data.values.length;
+                    } else if (aggregation === 'sum') {
+                        value = data.values.reduce((sum, val) => sum + val, 0);
+                    } else { // average
+                        value = data.values.length > 0 ? data.values.reduce((sum, val) => sum + val, 0) / data.values.length : 0;
+                    }
+                    return { date: new Date(dateStr), value, rawItems: data.rawItems };
+                })
+                .sort((a, b) => a.date.getTime() - b.date.getTime());
+        }
+
+        const groupedData: { [key: string]: { values: number[], rawItems: Project[] } } = {};
+        projects.forEach(p => {
+            const label = getDimensionLabel(p, dimension);
+            if (!groupedData[label]) {
+                groupedData[label] = { values: [], rawItems: [] };
+            }
+            groupedData[label].values.push(getMeasureValue(p, measure));
+            groupedData[label].rawItems.push(p);
+        });
+
+        let aggregated = Object.entries(groupedData).map(([label, data]) => {
+            let value: number;
+            if (measure === 'count') {
+                value = data.values.length;
+            } else if (aggregation === 'sum') {
+                value = data.values.reduce((sum, val) => sum + val, 0);
+            } else { // average
+                value = data.values.length > 0 ? data.values.reduce((sum, val) => sum + val, 0) / data.values.length : 0;
+            }
+            return { label, value, rawItems: data.rawItems };
+        });
+
+        // Sort
+        switch (sortOrder) {
+            case 'value-desc': aggregated.sort((a, b) => b.value - a.value); break;
+            case 'value-asc': aggregated.sort((a, b) => a.value - b.value); break;
+            case 'label-asc': aggregated.sort((a, b) => a.label.localeCompare(b.label)); break;
+            case 'label-desc': aggregated.sort((a, b) => b.label.localeCompare(a.label)); break;
+        }
+
+        // Top N
+        if (topN !== 'all') {
+            const topData = aggregated.slice(0, topN);
+            if (aggregated.length > topN) {
+                const otherValue = aggregated.slice(topN).reduce((sum, d) => sum + d.value, 0);
+                const otherRawItems = aggregated.slice(topN).flatMap(d => d.rawItems);
+                topData.push({ label: 'Autres', value: otherValue, rawItems: otherRawItems });
+            }
+            aggregated = topData;
+        }
+        
+        return aggregated;
+    }, [projects, chartType, dimension, dimension2, measure, measureX, measureY, sizeMeasure, aggregation, sortOrder, topN, dataMaps, isDateDimension]);
+    
+    useEffect(() => {
+        const measureLabel = measureOptions.find(m => m.value === measure)?.label || '';
+        const dimensionLabel = dimensionOptions.find(d => d.value === dimension)?.label || '';
+        let title = '';
+
+        if (chartType === 'scatter' || chartType === 'bubble') {
+            const measureXLabel = measureOptions.find(m => m.value === measureX)?.label || '';
+            const measureYLabel = measureOptions.find(m => m.value === measureY)?.label || '';
+            title = `Corrélation entre ${measureXLabel} et ${measureYLabel} par ${dimensionLabel}`;
+        } else if (chartType === 'treemap') {
+            const dimension2Label = dimensionOptions.find(d => d.value === dimension2)?.label || '';
+            title = `${measureLabel} par ${dimensionLabel}` + (dimension2 !== 'none' ? ` et ${dimension2Label}` : '');
+        } else if (measure === 'count') {
+            title = `Nombre de projets par ${dimensionLabel}`;
+        } else {
+            const aggregationLabel = aggregationOptions.find(a => a.value === aggregation)?.label || '';
+            title = `${aggregationLabel} de "${measureLabel}" par ${dimensionLabel}`;
+        }
+        setChartTitleInput(title);
+    }, [chartType, dimension, dimension2, measure, measureX, measureY, aggregation]);
+
+    const handleChartTypeChange = (newType: ChartType) => {
+        setChartType(newType);
+        if (newType === 'line' || newType === 'area') {
+            if (!isDateDimension) setDimension('projectStartDate');
+        } else if (isDateDimension) {
+            setDimension('status');
+        }
+    };
+
+    const handleSaveConfig = () => {
+        if (!configName.trim() || savedConfigs.some(c => c.name === configName.trim())) {
+            alert("Veuillez donner un nom unique à votre configuration.");
+            return;
+        }
+        const newConfig: SavedConfig = { name: configName.trim(), chartType, dimension, dimension2, measure, measureX, measureY, sizeMeasure, aggregation, colorPalette, sortOrder, topN, chartTitle: chartTitleInput };
+        const newConfigs = [...savedConfigs, newConfig];
+        setSavedConfigs(newConfigs);
+        saveToLocalStorage(GRAPH_CREATOR_CONFIGS_KEY, newConfigs);
+        setConfigName('');
+    };
+
+    const handleLoadConfig = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const config = savedConfigs.find(c => c.name === e.target.value);
+        if (config) {
+            setChartType(config.chartType); setDimension(config.dimension); setDimension2(config.dimension2 || 'none'); setMeasure(config.measure); setMeasureX(config.measureX || 'internalWorkloadConsumed'); setMeasureY(config.measureY || 'budgetCommitted'); setSizeMeasure(config.sizeMeasure || 'budgetApproved'); setAggregation(config.aggregation); setColorPalette(config.colorPalette); setSortOrder(config.sortOrder || 'value-desc'); setTopN(config.topN || 'all'); setChartTitleInput(config.chartTitle || '');
+        }
+        e.target.value = "";
+    };
+    
+    const handleDeleteConfig = (name: string) => {
+        const newConfigs = savedConfigs.filter(c => c.name !== name);
+        setSavedConfigs(newConfigs);
+        saveToLocalStorage(GRAPH_CREATOR_CONFIGS_KEY, newConfigs);
+    };
+    
+    useEffect(() => {
+        const handle = handleRef.current;
+        if (!handle) return;
+        const handleMouseMove = (e: MouseEvent) => {
+            const newSize = e.clientX;
+            if (newSize > 250 && newSize < window.innerWidth - 400) setPanelSize(newSize);
+        };
+        const handleMouseUp = () => {
+            document.removeEventListener('mousemove', handleMouseMove);
+            document.removeEventListener('mouseup', handleMouseUp);
+        };
+        const handleMouseDown = (e: MouseEvent) => {
+            e.preventDefault();
+            document.addEventListener('mousemove', handleMouseMove);
+            document.addEventListener('mouseup', handleMouseUp);
+        };
+        handle.addEventListener('mousedown', handleMouseDown);
+        return () => {
+            handle.removeEventListener('mousedown', handleMouseDown);
+            document.removeEventListener('mousemove', handleMouseMove);
+            document.removeEventListener('mouseup', handleMouseUp);
+        };
+    }, []);
+
+    useEffect(() => { saveToLocalStorage('graphCreatorPanelSize', panelSize); }, [panelSize]);
+    
+    useEffect(() => { setHiddenLabels([]); }, [chartType, dimension, dimension2, measure, measureX, measureY, sizeMeasure, aggregation]);
+
+    const exportToSvg = () => {
+        const svgElement = document.querySelector('#chart-container svg');
+        if (svgElement) {
+            const serializer = new XMLSerializer();
+            const source = '<?xml version="1.0" standalone="no"?>\r\n' + serializer.serializeToString(svgElement);
+            const url = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(source);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = `${chartTitleInput.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.svg`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        setIsExportOpen(false);
+    };
+
+    const exportToPng = () => {
+        const svgElement = document.querySelector('#chart-container svg');
+        if (!svgElement) return;
+
+        const serializer = new XMLSerializer();
+        const source = '<?xml version="1.0" standalone="no"?>\r\n' + serializer.serializeToString(svgElement);
+        const svgBlob = new Blob([source], { type: 'image/svg+xml;charset=utf-8' });
+        const url = URL.createObjectURL(svgBlob);
+
+        const image = new Image();
+        image.onload = () => {
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            
+            const margin = 20;
+            const scale = 2; // for higher resolution
+            canvas.width = (svgElement.clientWidth + margin * 2) * scale;
+            canvas.height = (svgElement.clientHeight + margin * 2) * scale;
+            
+            if (context) {
+                context.scale(scale, scale);
+                context.fillStyle = 'white';
+                context.fillRect(0, 0, canvas.width / scale, canvas.height / scale);
+                context.drawImage(image, margin, margin, svgElement.clientWidth, svgElement.clientHeight);
+
+                const pngUrl = canvas.toDataURL('image/png');
+                const link = document.createElement('a');
+                link.download = `${chartTitleInput.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.png`;
+                link.href = pngUrl;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+            URL.revokeObjectURL(url);
+        };
+        image.onerror = (e) => {
+            console.error("Error loading SVG image for PNG conversion.", e);
+            URL.revokeObjectURL(url);
+        };
+        image.src = url;
+        setIsExportOpen(false);
+    };
+
+    return (
+        <div className="flex flex-col h-full space-y-4">
+            <h1 className="text-3xl font-bold text-slate-800">Créateur de graphiques</h1>
+            <div className="flex flex-grow min-h-0">
+                <div style={{ width: `${panelSize}px` }} className="flex-shrink-0 h-full overflow-y-auto pr-4">
+                     <Card className="h-full">
+                        <CardHeader><CardTitle>Configuration</CardTitle></CardHeader>
+                        <CardContent className="space-y-4 text-sm">
+                            <div>
+                                <label className="block text-sm text-slate-600 mb-2">Type de graphique</label>
+                                <div className="grid grid-cols-4 gap-2">
+                                    <ChartTypeButton icon={<BarChart3 size={24} />} label="Barres" isActive={chartType === 'bar'} onClick={() => handleChartTypeChange('bar')} />
+                                    <ChartTypeButton icon={<Donut size={24} />} label="Donut" isActive={chartType === 'pie'} onClick={() => handleChartTypeChange('pie')} />
+                                    <ChartTypeButton icon={<LineChartIcon size={24} />} label="Ligne" isActive={chartType === 'line'} onClick={() => handleChartTypeChange('line')} />
+                                    <ChartTypeButton icon={<AreaChart size={24} />} label="Aire" isActive={chartType === 'area'} onClick={() => handleChartTypeChange('area')} />
+                                    <ChartTypeButton icon={<ScatterChart size={24} />} label="Points" isActive={chartType === 'scatter'} onClick={() => handleChartTypeChange('scatter')} />
+                                    <ChartTypeButton icon={<BubbleChartIcon size={24} />} label="Bulles" isActive={chartType === 'bubble'} onClick={() => handleChartTypeChange('bubble')} />
+                                    <ChartTypeButton icon={<LayoutPanelTop size={24} />} label="Treemap" isActive={chartType === 'treemap'} onClick={() => handleChartTypeChange('treemap')} />
+                                </div>
+                            </div>
+                            {(chartType === 'bar' || chartType === 'pie' || chartType === 'line' || chartType === 'area') && (
+                                <>
+                                    <ConfigSelect label="Dimension (Axe X / Groupes)" value={dimension} onChange={e => setDimension(e.target.value as DimensionField)} options={dimensionOptions.filter(o => o.value !== 'projectId' && (chartType === 'line' || chartType === 'area' ? o.isDate : !o.isDate))} />
+                                    <ConfigSelect label="Mesure (Axe Y / Taille)" value={measure} onChange={e => setMeasure(e.target.value as MeasureField)} options={measureOptions} />
+                                    {measure !== 'count' && !isDateDimension && <ConfigSelect label="Agrégation" value={aggregation} onChange={e => setAggregation(e.target.value as AggregationType)} options={aggregationOptions} />}
+                                </>
+                            )}
+                            {(chartType === 'scatter' || chartType === 'bubble') && (
+                                <>
+                                    <ConfigSelect label="Groupement par" value={dimension} onChange={e => setDimension(e.target.value as DimensionField)} options={dimensionOptions.filter(o => !o.isDate)} />
+                                    <ConfigSelect label="Mesure (Axe X)" value={measureX} onChange={e => setMeasureX(e.target.value as MeasureField)} options={measureOptions.filter(o => o.value !== 'count')} />
+                                    <ConfigSelect label="Mesure (Axe Y)" value={measureY} onChange={e => setMeasureY(e.target.value as MeasureField)} options={measureOptions.filter(o => o.value !== 'count')} />
+                                    {chartType === 'bubble' && <ConfigSelect label="Mesure (Taille des bulles)" value={sizeMeasure} onChange={e => setSizeMeasure(e.target.value as MeasureField)} options={measureOptions.filter(o => o.value !== 'count')} />}
+                                </>
+                            )}
+                            {chartType === 'treemap' && (
+                                <>
+                                    <ConfigSelect label="1er niveau de groupement" value={dimension} onChange={e => setDimension(e.target.value as DimensionField)} options={dimensionOptions.filter(o => !o.isDate && o.value !== 'projectId')} />
+                                    <ConfigSelect label="2ème niveau de groupement" value={dimension2} onChange={e => setDimension2(e.target.value as DimensionField2)} options={[{ value: 'none', label: 'Aucun' }, ...dimensionOptions.filter(o => !o.isDate && o.value !== 'projectId' && o.value !== dimension)]} />
+                                    <ConfigSelect label="Mesure (Taille des rectangles)" value={measure} onChange={e => setMeasure(e.target.value as MeasureField)} options={measureOptions.filter(o => o.value !== 'count')} />
+                                </>
+                            )}
+                            <div className="pt-2 border-t">
+                                <h4 className="text-sm font-semibold text-slate-800 mb-2">Options</h4>
+                                <ConfigSelect label="Palette de couleurs" value={colorPalette} onChange={e => setColorPalette(e.target.value as ColorPalette)} options={colorPaletteOptions} />
+                                {(chartType === 'bar' || chartType === 'pie') && (
+                                    <>
+                                        <ConfigSelect label="Tri" value={sortOrder} onChange={e => setSortOrder(e.target.value as SortOrder)} options={[{ value: 'value-desc', label: 'Valeur (décroissant)' }, { value: 'value-asc', label: 'Valeur (croissant)' }, { value: 'label-asc', label: 'Libellé (A-Z)' }, { value: 'label-desc', label: 'Libellé (Z-A)' }]} />
+                                        <ConfigSelect label="Afficher le Top" value={String(topN)} onChange={e => setTopN(e.target.value === 'all' ? 'all' : Number(e.target.value) as TopNValue)} options={[{ value: 'all', label: 'Tout afficher' }, { value: '5', label: 'Top 5' }, { value: '10', label: 'Top 10' }]} />
+                                    </>
+                                )}
+                            </div>
+                            <div className="pt-2 border-t">
+                                <h4 className="text-sm font-semibold text-slate-800 mb-2">Sauvegarder / Charger</h4>
+                                <div className="flex gap-2">
+                                    <input type="text" value={configName} onChange={e => setConfigName(e.target.value)} placeholder="Nom de la vue" className="flex-grow p-2 border border-slate-300 rounded-md text-sm" />
+                                    <button onClick={handleSaveConfig} className="px-3 py-1 bg-blue-600 text-white rounded-md text-sm">Sauver</button>
+                                </div>
+                                {savedConfigs.length > 0 && (
+                                    <div className="mt-2">
+                                        <select onChange={handleLoadConfig} className="w-full p-2 border border-slate-300 rounded-md bg-white text-sm">
+                                            <option value="">Charger une vue...</option>
+                                            {savedConfigs.map(c => <option key={c.name} value={c.name}>{c.name}</option>)}
+                                        </select>
+                                        <div className="mt-2 max-h-24 overflow-y-auto space-y-1">
+                                            {savedConfigs.map(c => (
+                                                <div key={c.name} className="flex justify-between items-center text-xs p-1 bg-slate-50 rounded">
+                                                    <span>{c.name}</span>
+                                                    <button onClick={() => handleDeleteConfig(c.name)} className="p-1 hover:bg-red-100 rounded-full text-red-500"><Trash2 size={12} /></button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+                <div ref={handleRef} className="w-2 h-full cursor-col-resize flex-shrink-0 bg-slate-200 hover:bg-blue-500 transition-colors"></div>
+                <div className="flex-grow h-full flex flex-col pl-4 min-w-0">
+                    <Card className="h-full flex flex-col">
+                        <CardHeader className="flex justify-between items-start">
+                            <CardTitle className="flex-grow pr-4">{chartTitleInput}</CardTitle>
+                            <div className="flex-shrink-0 flex items-center gap-2">
+                                <div className="flex items-center bg-slate-100 rounded-md p-0.5">
+                                    <TabButton label="Graphique" isActive={activeTab === 'chart'} onClick={() => setActiveTab('chart')} />
+                                    <TabButton label="Données" isActive={activeTab === 'data'} onClick={() => setActiveTab('data')} />
+                                </div>
+                                <div className="relative" ref={exportDropdownRef}>
+                                    <button onClick={() => setIsExportOpen(prev => !prev)} className="flex items-center gap-2 px-3 py-1.5 bg-slate-600 text-white rounded-md hover:bg-slate-700 text-sm">
+                                        <Download size={16} />
+                                        Exporter
+                                    </button>
+                                    {isExportOpen && (
+                                        <div className="absolute right-0 mt-2 w-32 bg-white rounded-md shadow-lg border border-slate-200 z-10">
+                                            <ul className="py-1">
+                                                <li>
+                                                    <button onClick={exportToSvg} className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-100">En SVG</button>
+                                                </li>
+                                                <li>
+                                                    <button onClick={exportToPng} className="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-100">En PNG</button>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </CardHeader>
+                        <CardContent className="flex-grow min-h-0 flex items-center justify-center bg-slate-50" id="chart-container">
+                             {activeTab === 'chart' && (
+                                <DynamicChartRenderer
+                                    chartType={chartType}
+                                    data={processedData}
+                                    config={{
+                                        measure,
+                                        measureXLabel: measureOptions.find(m => m.value === measureX)?.label,
+                                        measureYLabel: measureOptions.find(m => m.value === measureY)?.label,
+                                        sizeMeasureLabel: measureOptions.find(m => m.value === sizeMeasure)?.label,
+                                    }}
+                                    colorPalette={colorPalette}
+                                    onChartElementClick={(data) => console.log('Chart element clicked:', data)}
+                                    hiddenLabels={hiddenLabels}
+                                    setHiddenLabels={setHiddenLabels}
+                                />
+                            )}
+                            {activeTab === 'data' && (
+                                <DataTable data={processedData} chartType={chartType} />
+                            )}
+                        </CardContent>
+                    </Card>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+const DataTable: React.FC<{ data: any[], chartType: ChartType }> = ({ data, chartType }) => {
+    if (!data || data.length === 0) return <p>Aucune donnée à afficher.</p>;
+
+    const headers = useMemo(() => {
+        switch (chartType) {
+            case 'bar':
+            case 'pie':
+                return ['Label', 'Valeur'];
+            case 'line':
+            case 'area':
+                return ['Date', 'Valeur'];
+            case 'scatter':
+            case 'bubble':
+                return ['Label', 'Valeur X', 'Valeur Y', 'Taille'];
+            default:
+                if (data.length > 0 && data[0] && typeof data[0] === 'object') {
+                    return Object.keys(data[0]).filter(k => k !== 'rawItems');
+                }
+                return [];
+        }
+    }, [chartType, data]);
+
+    const rows = useMemo(() => {
+        switch (chartType) {
+            case 'bar':
+            case 'pie':
+                return data.map(d => [d.label, d.value.toLocaleString('fr-FR')]);
+            case 'line':
+            case 'area':
+                return data.map(d => [d.date.toLocaleDateString('fr-CA'), d.value.toLocaleString('fr-FR')]);
+            case 'scatter':
+            case 'bubble':
+                return data.map(d => [d.label, d.xValue.toLocaleString('fr-FR'), d.yValue.toLocaleString('fr-FR'), d.sizeValue.toLocaleString('fr-FR')]);
+            default:
+                return data.map(row => headers.map(header => row[header.toLowerCase()]));
+        }
+    }, [data, chartType, headers]);
+
+    return (
+        <div className="w-full h-full overflow-auto">
+            <table className="w-full text-sm text-left">
+                <thead className="text-xs text-slate-700 uppercase bg-slate-200 sticky top-0">
+                    <tr>
+                        {headers.map(header => <th key={header} scope="col" className="px-4 py-2">{header}</th>)}
+                    </tr>
+                </thead>
+                <tbody className="bg-white">
+                    {rows.map((row, i) => (
+                        <tr key={i} className="border-b hover:bg-slate-50">
+                            {row.map((cell, j) => <td key={j} className="px-4 py-2">{cell}</td>)}
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
+    );
+};
+
+
+const ConfigSelect: React.FC<{ label: string, value: string, onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void, options: {value: string, label: string}[], disabled?: boolean }> = ({label, value, onChange, options, disabled}) => (
+    <div><label className="block text-sm text-slate-600 mb-1">{label}</label><select value={value} onChange={onChange} disabled={disabled} className="w-full p-2 border border-slate-300 rounded-md bg-white text-sm disabled:bg-slate-100 disabled:cursor-not-allowed">{options.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}</select></div>
+);
+
+const TabButton: React.FC<{ label: string, isActive: boolean, onClick: () => void }> = ({ label, isActive, onClick }) => (
+    <button onClick={onClick} className={`px-3 py-1 text-sm font-medium rounded ${isActive ? 'bg-white shadow-sm text-blue-600' : 'text-slate-600 hover:bg-slate-200'}`}>{label}</button>
+);
+
+export default GraphCreatorPage;

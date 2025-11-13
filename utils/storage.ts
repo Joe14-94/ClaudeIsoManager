@@ -1,3 +1,4 @@
+
 export function loadFromLocalStorage<T>(key: string, initialData: T): T {
   try {
     const stored = localStorage.getItem(key);

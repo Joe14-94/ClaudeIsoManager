@@ -693,7 +693,7 @@ const DataManagement: React.FC = () => {
       {showDeleteAllDataModal && (
         <Modal isOpen={true} onClose={() => setShowDeleteAllDataModal(false)} title="Confirmer la suppression TOTALE des données">
             <div className="space-y-4">
-                <p className="text-lg font-medium text-slate-800">Êtes-vous absolument certain de vouloir supprimer <strong class="text-red-600">TOUTES</strong> les données de l'application ?</p>
+                <p className="text-lg font-medium text-slate-800">Êtes-vous absolument certain de vouloir supprimer <strong className="text-red-600">TOUTES</strong> les données de l'application ?</p>
                 <p className="text-sm text-slate-600">Cette action est irréversible et videra complètement les données suivantes :</p>
                 <ul className="list-disc list-inside text-sm text-slate-600 space-y-1">
                     <li>Tous les Projets</li>

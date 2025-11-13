@@ -1,7 +1,8 @@
 import React, { useMemo, useRef, useEffect, useCallback } from 'react';
 import { Project } from '../../types';
 import { STATUS_HEX_COLORS } from '../../constants';
-import * as d3 from 'd3';
+// FIX: Replace monolithic d3 import with specific named imports to resolve type errors.
+import { min, max, timeMonth, scaleTime } from 'd3';
 
 interface ProjectTimelineProps {
   projects: Project[];
@@ -31,20 +32,20 @@ const ProjectTimeline: React.FC<ProjectTimelineProps> = ({ projects, zoomLevel =
       return { timedProjects: [], months: [], minDate: new Date() };
     }
 
-    let minDateCalc = d3.min(filtered, d => d.projectStartDate) as Date;
-    let maxDate = d3.max(filtered, d => d.projectEndDate) as Date;
+    let minDateCalc = min(filtered, d => d.projectStartDate) as Date;
+    let maxDate = max(filtered, d => d.projectEndDate) as Date;
 
     if (!minDateCalc || !maxDate) return { timedProjects: [], months: [], minDate: new Date() };
     
-    minDateCalc = d3.timeMonth.offset(d3.timeMonth.floor(minDateCalc), -1);
-    maxDate = d3.timeMonth.offset(d3.timeMonth.ceil(maxDate), 1);
+    minDateCalc = timeMonth.offset(timeMonth.floor(minDateCalc), -1);
+    maxDate = timeMonth.offset(timeMonth.ceil(maxDate), 1);
     
-    if (d3.timeMonth.count(minDateCalc, maxDate) < 12) {
-      maxDate = d3.timeMonth.offset(minDateCalc, 12);
+    if (timeMonth.count(minDateCalc, maxDate) < 12) {
+      maxDate = timeMonth.offset(minDateCalc, 12);
     }
 
-    const timeScale = d3.scaleTime().domain([minDateCalc, maxDate]);
-    const months = timeScale.ticks(d3.timeMonth.every(1));
+    const timeScale = scaleTime().domain([minDateCalc, maxDate]);
+    const months = timeScale.ticks(timeMonth.every(1));
     
     return { timedProjects: filtered, months, minDate: months[0] };
   }, [projects]);
@@ -56,7 +57,7 @@ const ProjectTimeline: React.FC<ProjectTimelineProps> = ({ projects, zoomLevel =
       const month = date.getMonth();
       const day = date.getDate();
 
-      const monthIndex = d3.timeMonth.count(minDate, d3.timeMonth.floor(date));
+      const monthIndex = timeMonth.count(minDate, timeMonth.floor(date));
       
       if (monthIndex < 0) return 0;
 

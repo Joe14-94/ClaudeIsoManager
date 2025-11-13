@@ -1,6 +1,7 @@
+
 import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, ListChecks, Network, ShieldCheck, Target, TrendingUp, Users, Database, FileUp, FileDown, Workflow, GitMerge, ClipboardCheck, LogOut, KeyRound, DatabaseZap, GanttChart, LayoutGrid, Flag, ClipboardList, ChevronUp, ChevronDown, Coins, Timer, GitBranch, ChevronsLeft, ChevronsRight, UserCog, HelpCircle } from 'lucide-react';
+import { LayoutDashboard, ListChecks, Network, ShieldCheck, Target, TrendingUp, Users, Database, FileUp, FileDown, Workflow, GitMerge, ClipboardCheck, LogOut, KeyRound, DatabaseZap, GanttChart, LayoutGrid, Flag, ClipboardList, ChevronUp, ChevronDown, Coins, Timer, GitBranch, ChevronsLeft, ChevronsRight, UserCog, HelpCircle, BarChart3 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import ChangePasswordModal from '../auth/ChangePasswordModal';
 import { APP_VERSION } from '../../config';
@@ -127,6 +128,7 @@ const Sidebar: React.FC = () => {
                     <NavItem to="/projects-dashboard" icon={<LayoutDashboard/>} label="Tableau de bord" isCollapsed={isCollapsed} />
                     <NavItem to="/projets" icon={<ClipboardList/>} label="Projets" isCollapsed={isCollapsed} />
                     <NavItem to="/projects-explorer" icon={<LayoutGrid/>} label="Explorateur" isCollapsed={isCollapsed} />
+                    <NavItem to="/projets/createur-graphiques" icon={<BarChart3 />} label="Créateur de graphiques" isCollapsed={isCollapsed} />
                     <NavItem to="/projects-timeline" icon={<GanttChart/>} label="Timeline" isCollapsed={isCollapsed} />
                     <NavItem to="/projects-budget" icon={<Coins/>} label="Budget" isCollapsed={isCollapsed} />
                     <NavItem to="/projects-workload" icon={<Timer/>} label="Charges J/H" isCollapsed={isCollapsed} />

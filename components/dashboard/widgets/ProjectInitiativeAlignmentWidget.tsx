@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useMemo } from 'react';
-import * as d3 from 'd3';
+// FIX: Replace monolithic d3 import with specific named imports to resolve type errors.
+import { select, scaleBand, max, scaleLinear, axisLeft, axisBottom, axisTop, format, easeCubicOut } from 'd3';
 import { useData } from '../../../contexts/DataContext';
 import { CardHeader, CardTitle, CardContent } from '../../ui/Card';
 
@@ -44,14 +45,14 @@ const ProjectInitiativeAlignmentWidget: React.FC = () => {
   useEffect(() => {
     if (!svgRef.current || !containerRef.current || alignmentData.length === 0) {
       if (svgRef.current) {
-        d3.select(svgRef.current).selectAll('*').remove();
+        select(svgRef.current).selectAll('*').remove();
       }
       return;
     }
 
     const container = containerRef.current;
-    const svg = d3.select(svgRef.current);
-    const tooltip = d3.select('body').selectAll('.d3-tooltip').data([null]).join('div').attr('class', 'd3-tooltip');
+    const svg = select(svgRef.current);
+    const tooltip = select('body').selectAll('.d3-tooltip').data([null]).join('div').attr('class', 'd3-tooltip');
     
     const workloadColor = '#7dd3fc'; // sky-300
     const budgetColor = '#c4b5fd'; // violet-300
@@ -62,7 +63,7 @@ const ProjectInitiativeAlignmentWidget: React.FC = () => {
       svg.attr('width', width).attr('height', height);
 
       let maxLabelWidth = 0;
-      const tempSvg = d3.select(container).append('svg').attr('class', 'temp-svg').style('position', 'absolute').style('visibility', 'hidden').style('pointer-events', 'none');
+      const tempSvg = select(container).append('svg').attr('class', 'temp-svg').style('position', 'absolute').style('visibility', 'hidden').style('pointer-events', 'none');
       alignmentData.forEach(d => {
           const textNode = tempSvg.append('text').attr('class', 'text-sm fill-slate-600').text(d.code).node();
           if (textNode) {
@@ -79,22 +80,22 @@ const ProjectInitiativeAlignmentWidget: React.FC = () => {
 
       const g = svg.append('g').attr('transform', `translate(${margin.left}, ${margin.top})`);
 
-      const yScale = d3.scaleBand()
+      const yScale = scaleBand()
         .domain(alignmentData.map(d => d.code))
         .range([0, innerHeight])
         .padding(0.4);
       
-      const maxWorkload = d3.max(alignmentData, d => d.workload) || 0;
-      const xScaleWorkload = d3.scaleLinear().domain([0, maxWorkload]).range([0, innerWidth]).nice();
+      const maxWorkload = max(alignmentData, d => d.workload) || 0;
+      const xScaleWorkload = scaleLinear().domain([0, maxWorkload]).range([0, innerWidth]).nice();
 
-      const maxBudget = d3.max(alignmentData, d => d.budget) || 0;
-      const xScaleBudget = d3.scaleLinear().domain([0, maxBudget]).range([0, innerWidth]).nice();
+      const maxBudget = max(alignmentData, d => d.budget) || 0;
+      const xScaleBudget = scaleLinear().domain([0, maxBudget]).range([0, innerWidth]).nice();
 
-      const yAxis = g.append('g').call(d3.axisLeft(yScale).tickSize(0));
+      const yAxis = g.append('g').call(axisLeft(yScale).tickSize(0));
       yAxis.select(".domain").remove();
       yAxis.selectAll("text").attr('class', 'text-sm fill-slate-600');
 
-      g.append('g').attr('class', 'grid').call(d3.axisBottom(xScaleWorkload).ticks(Math.min(5, innerWidth / 80)).tickSize(innerHeight)).selectAll('.tick line').attr('stroke', '#e2e8f0').attr('stroke-dasharray', '2,2');
+      g.append('g').attr('class', 'grid').call(axisBottom(xScaleWorkload).ticks(Math.min(5, innerWidth / 80)).tickSize(innerHeight)).selectAll('.tick line').attr('stroke', '#e2e8f0').attr('stroke-dasharray', '2,2');
       g.selectAll('.grid .domain, .grid .tick text').remove();
 
       // Workload bars
@@ -109,12 +110,13 @@ const ProjectInitiativeAlignmentWidget: React.FC = () => {
         .attr('x', 0)
         .attr('width', 0)
         .on('mouseover', function(event, d) {
-            d3.select(this).style('opacity', 0.85);
+            select(this).style('opacity', 0.85);
             tooltip.style('opacity', 1)
                    .html(`<strong>${(d as any).fullLabel}</strong><br/>Charge: ${(d as any).workload.toFixed(1)} J/H`);
         })
         .on('mousemove', (event) => {
-            const tooltipNode = tooltip.node();
+            // FIX: Cast the result of tooltip.node() to HTMLDivElement to access offsetWidth and offsetHeight.
+            const tooltipNode = tooltip.node() as HTMLDivElement;
             if (!tooltipNode) return;
             const { offsetWidth: tooltipWidth, offsetHeight: tooltipHeight } = tooltipNode;
             const { pageX, pageY } = event;
@@ -125,12 +127,12 @@ const ProjectInitiativeAlignmentWidget: React.FC = () => {
             tooltip.style('left', `${x}px`).style('top', `${y}px`);
         })
         .on('mouseout', function() {
-            d3.select(this).style('opacity', 1);
+            select(this).style('opacity', 1);
             tooltip.style('opacity', 0);
         })
         .transition()
         .duration(700)
-        .ease(d3.easeCubicOut)
+        .ease(easeCubicOut)
         .attr('width', d => Math.max(0, xScaleWorkload((d as any).workload)))
         .delay((d, i) => i * 40);
 
@@ -146,12 +148,13 @@ const ProjectInitiativeAlignmentWidget: React.FC = () => {
         .attr('x', 0)
         .attr('width', 0)
         .on('mouseover', function(event, d) {
-            d3.select(this).style('opacity', 0.85);
+            select(this).style('opacity', 0.85);
             tooltip.style('opacity', 1)
                    .html(`<strong>${(d as any).fullLabel}</strong><br/>Budget consommé: ${formatCurrency((d as any).budget)}`);
         })
         .on('mousemove', (event) => {
-            const tooltipNode = tooltip.node();
+            // FIX: Cast the result of tooltip.node() to HTMLDivElement to access offsetWidth and offsetHeight.
+            const tooltipNode = tooltip.node() as HTMLDivElement;
             if (!tooltipNode) return;
             const { offsetWidth: tooltipWidth, offsetHeight: tooltipHeight } = tooltipNode;
             const { pageX, pageY } = event;
@@ -162,21 +165,21 @@ const ProjectInitiativeAlignmentWidget: React.FC = () => {
             tooltip.style('left', `${x}px`).style('top', `${y}px`);
         })
         .on('mouseout', function() {
-            d3.select(this).style('opacity', 1);
+            select(this).style('opacity', 1);
             tooltip.style('opacity', 0);
         })
         .transition()
         .duration(700)
-        .ease(d3.easeCubicOut)
+        .ease(easeCubicOut)
         .attr('width', d => Math.max(0, xScaleBudget((d as any).budget)))
         .delay((d, i) => i * 40);
           
-      const xAxisWorkload = g.append('g').attr('transform', `translate(0, ${innerHeight})`).call(d3.axisBottom(xScaleWorkload).ticks(Math.min(5, innerWidth/80)));
+      const xAxisWorkload = g.append('g').attr('transform', `translate(0, ${innerHeight})`).call(axisBottom(xScaleWorkload).ticks(Math.min(5, innerWidth/80)));
       xAxisWorkload.select(".domain").remove();
       xAxisWorkload.selectAll("line").remove();
       xAxisWorkload.selectAll('.tick text').attr('class', 'text-xs fill-slate-500');
       
-      const xAxisBudget = g.append('g').call(d3.axisTop(xScaleBudget).ticks(Math.min(5, innerWidth/80)).tickFormat(d => d3.format("~s")(d)!.replace('G', 'B')));
+      const xAxisBudget = g.append('g').call(axisTop(xScaleBudget).ticks(Math.min(5, innerWidth/80)).tickFormat(d => format("~s")(d as number)!.replace('G', 'B')));
       xAxisBudget.select(".domain").remove();
       xAxisBudget.selectAll("line").remove();
       xAxisBudget.selectAll('.tick text').attr('class', 'text-xs fill-slate-500');

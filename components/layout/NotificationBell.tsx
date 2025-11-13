@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Bell, AlertCircle, CircleDollarSign, Check } from 'lucide-react';
+import { Bell, AlertCircle, CircleDollarSign, Check, DatabaseZap } from 'lucide-react';
 import { useNotificationsContext } from '../../contexts/NotificationContext';
 import { useNavigate } from 'react-router-dom';
 
@@ -25,9 +25,12 @@ const NotificationBell: React.FC = () => {
     setIsOpen(false);
   };
 
-  const NotificationIcon = ({ type }: { type: 'deadline' | 'budget' }) => {
+  const NotificationIcon = ({ type }: { type: 'deadline' | 'budget' | 'warning' }) => {
     if (type === 'deadline') {
       return <AlertCircle className="w-5 h-5 text-yellow-500 flex-shrink-0" />;
+    }
+    if (type === 'warning') {
+        return <DatabaseZap className="w-5 h-5 text-orange-500 flex-shrink-0" />;
     }
     return <CircleDollarSign className="w-5 h-5 text-red-500 flex-shrink-0" />;
   };

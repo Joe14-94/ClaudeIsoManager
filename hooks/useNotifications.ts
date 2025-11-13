@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useData } from '../contexts/DataContext';
 import { Notification, ActivityStatus } from '../types';
@@ -6,7 +7,7 @@ import { loadFromLocalStorage, saveToLocalStorage } from '../utils/storage';
 const NOTIFICATION_READ_STATUS_KEY = 'notificationReadStatus';
 
 export const useNotificationGenerator = () => {
-  const { activities, projects } = useData();
+  const { activities, projects, lastCsvImportDate } = useData();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [readIds, setReadIds] = useState<Set<string>>(() => new Set(loadFromLocalStorage<string[]>(NOTIFICATION_READ_STATUS_KEY, [])));
 
@@ -15,6 +16,43 @@ export const useNotificationGenerator = () => {
     const now = new Date();
     const sevenDaysFromNow = new Date();
     sevenDaysFromNow.setDate(now.getDate() + 7);
+
+    // Data freshness notification
+    const fifteenDaysAgo = new Date();
+    fifteenDaysAgo.setDate(now.getDate() - 15);
+
+    if (lastCsvImportDate) {
+      const importDate = new Date(lastCsvImportDate);
+      if (importDate < fifteenDaysAgo) {
+        const id = 'data-freshness-warning';
+        generatedNotifications.push({
+          id,
+          entityId: 'data-management',
+          message: `Les données de charges et budgets projets n'ont pas été mises à jour depuis plus de 15 jours. Pensez à importer les derniers fichiers CSV.`,
+          type: 'warning',
+          read: readIds.has(id),
+          linkTo: {
+            path: '/data-management',
+            state: {},
+          },
+          createdAt: new Date().toISOString(),
+        });
+      }
+    } else {
+      const id = 'data-freshness-warning-initial';
+      generatedNotifications.push({
+        id,
+        entityId: 'data-management',
+        message: `Aucun import de données de charges/budgets (CSV) n'a été détecté. Pensez à importer les fichiers pour avoir des données à jour.`,
+        type: 'warning',
+        read: readIds.has(id),
+        linkTo: {
+          path: '/data-management',
+          state: {},
+        },
+        createdAt: new Date().toISOString(),
+      });
+    }
 
     // Deadline notifications for activities
     activities.forEach(activity => {
@@ -83,7 +121,7 @@ export const useNotificationGenerator = () => {
     updatedNotifications.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
     setNotifications(updatedNotifications);
-  }, [activities, projects, readIds]);
+  }, [activities, projects, lastCsvImportDate, readIds]);
 
   const unreadCount = useMemo(() => notifications.filter(n => !n.read).length, [notifications]);
 

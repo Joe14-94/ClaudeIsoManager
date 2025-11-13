@@ -1,7 +1,8 @@
 import React, { useMemo } from 'react';
 import { Activity } from '../../types';
 import { STATUS_HEX_COLORS } from '../../constants';
-import * as d3 from 'd3';
+// FIX: Replace monolithic d3 import with specific named imports to resolve type errors.
+import { min, max, timeMonth, scaleTime } from 'd3';
 
 interface ActivityTimelineProps {
   activities: Activity[];
@@ -29,22 +30,22 @@ const ActivityTimeline: React.FC<ActivityTimelineProps> = ({ activities, zoomLev
       return { timedActivities: [], months: [] };
     }
 
-    let minDate = d3.min(filtered, d => d.startDate) as Date;
-    let maxDate = d3.max(filtered, d => d.endDatePlanned) as Date;
+    let minDate = min(filtered, d => d.startDate) as Date;
+    let maxDate = max(filtered, d => d.endDatePlanned) as Date;
 
     if (!minDate || !maxDate) return { timedActivities: [], months: [] };
     
     // Extend range by a bit of padding on each side
-    minDate = d3.timeMonth.offset(d3.timeMonth.floor(minDate), -1);
-    maxDate = d3.timeMonth.offset(d3.timeMonth.ceil(maxDate), 1);
+    minDate = timeMonth.offset(timeMonth.floor(minDate), -1);
+    maxDate = timeMonth.offset(timeMonth.ceil(maxDate), 1);
     
     // If the range is very short, extend it to at least a year for better visualization
-    if (d3.timeMonth.count(minDate, maxDate) < 12) {
-      maxDate = d3.timeMonth.offset(minDate, 12);
+    if (timeMonth.count(minDate, maxDate) < 12) {
+      maxDate = timeMonth.offset(minDate, 12);
     }
 
-    const timeScale = d3.scaleTime().domain([minDate, maxDate]);
-    const months = timeScale.ticks(d3.timeMonth.every(1));
+    const timeScale = scaleTime().domain([minDate, maxDate]);
+    const months = timeScale.ticks(timeMonth.every(1));
     
     return { timedActivities: filtered, months };
   }, [activities]);
@@ -58,7 +59,7 @@ const ActivityTimeline: React.FC<ActivityTimelineProps> = ({ activities, zoomLev
       
       if (monthIndex === -1) {
           if (date < months[0]) return 0;
-          if (date > d3.timeMonth.offset(months[months.length-1], 1)) return months.length * monthWidth;
+          if (date > timeMonth.offset(months[months.length-1], 1)) return months.length * monthWidth;
           // Fallback for edge cases, though it should ideally not be reached with the current date range logic
           return 0;
       }

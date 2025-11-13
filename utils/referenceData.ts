@@ -1,3 +1,4 @@
+
 import { StrategicOrientation, Chantier, Objective } from '../types';
 
 export const loadReferenceData = async (): Promise<{

@@ -25,7 +25,8 @@ const StatCard: React.FC<{ title: string; value: string | number; icon: React.Re
 );
 
 const ActivitiesDashboard: React.FC = () => {
-  const { activities, projects, processMap } = useData();
+  // FIX: Removed unused 'processMap' which is not provided by the DataContext.
+  const { activities, projects } = useData();
   const navigate = useNavigate();
 
   const [filters, setFilters] = useState<Partial<{ status: ActivityStatus, domain: SecurityDomain }>>({});

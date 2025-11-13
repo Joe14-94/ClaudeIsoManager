@@ -1,3 +1,4 @@
+
 export type DateTime = string;
 
 export enum IsoChapter {
@@ -244,7 +245,7 @@ export type UserRole = 'admin' | 'readonly' | 'pmo';
 export interface Notification {
   id: string;
   message: string;
-  type: 'deadline' | 'budget';
+  type: 'deadline' | 'budget' | 'warning';
   read: boolean;
   linkTo: {
     path: string;

@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useMemo } from 'react';
-import * as d3 from 'd3';
+// FIX: Replace monolithic d3 import with specific named imports to resolve type errors.
+import { select, arc, pie, sum } from 'd3';
 import { Activity, SecurityDomain } from '../../types';
 import { DOMAIN_BG_COLORS } from '../../constants';
 
@@ -29,7 +30,7 @@ const DomainDonutChart: React.FC<DomainDonutChartProps> = ({ data, onSliceClick 
     if (!svgRef.current || !containerRef.current || domainData.length === 0) return;
 
     const container = containerRef.current;
-    const svg = d3.select(svgRef.current);
+    const svg = select(svgRef.current);
     svg.selectAll('*').remove();
 
     const resizeObserver = new ResizeObserver(entries => {
@@ -43,29 +44,29 @@ const DomainDonutChart: React.FC<DomainDonutChartProps> = ({ data, onSliceClick 
     const drawChart = (width: number, height: number) => {
         svg.selectAll('*').remove();
         const radius = Math.min(width, height) / 2.2;
-        const arc = d3.arc<any>().innerRadius(radius * 0.65).outerRadius(radius);
-        const arcHover = d3.arc<any>().innerRadius(radius * 0.65).outerRadius(radius * 1.05);
-        const pie = d3.pie<any>().value(d => d.count).sort(null);
+        const arcGenerator = arc<any>().innerRadius(radius * 0.65).outerRadius(radius);
+        const arcHover = arc<any>().innerRadius(radius * 0.65).outerRadius(radius * 1.05);
+        const pieGenerator = pie<any>().value(d => d.count).sort(null);
 
         const g = svg.append('g').attr('transform', `translate(${width / 2}, ${height / 2})`);
 
         const path = g.selectAll('path')
-            .data(pie(domainData))
+            .data(pieGenerator(domainData))
             .enter()
             .append('path')
-            .attr('d', arc)
+            .attr('d', arcGenerator)
             .attr('fill', d => DOMAIN_BG_COLORS[d.data.domain])
             .attr('stroke', '#fff')
             .style('stroke-width', '2px')
             .style('cursor', 'pointer')
             .on('mouseover', function (event, d) {
                 path.transition('fade').duration(200).style('opacity', p => (p === d ? 1 : 0.5));
-                d3.select(this).transition('zoom').duration(200).attr('d', arcHover);
+                select(this).transition('zoom').duration(200).attr('d', arcHover);
                 updateCenterText(d.data.domain, d.data.count);
             })
             .on('mouseout', function () {
                 path.transition('fade').duration(200).style('opacity', 1);
-                d3.select(this).transition('zoom').duration(200).attr('d', arc);
+                select(this).transition('zoom').duration(200).attr('d', arcGenerator);
                 resetCenterText();
             })
             .on('click', (event, d) => {
@@ -89,7 +90,7 @@ const DomainDonutChart: React.FC<DomainDonutChartProps> = ({ data, onSliceClick 
             .attr('x', 0)
             .attr('dy', '1.2em');
 
-        const total = d3.sum(domainData, d => d.count);
+        const total = sum(domainData, d => d.count);
 
         const updateCenterText = (domain: string, count: number) => {
             centerCount.text(count);

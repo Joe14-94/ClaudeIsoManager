@@ -19,7 +19,7 @@ export const peopleControls: Omit<IsoMeasure, 'id'>[] = [
         extraInfo: ``
     }
 },
-  {
+{
     code: '6.2',
     title: 'Termes et conditions du contrat de travail',
     chapter: IsoChapter.PEOPLE,
@@ -37,7 +37,7 @@ export const peopleControls: Omit<IsoMeasure, 'id'>[] = [
         extraInfo: `<p>Un code de conduite peut être utilisé pour indiquer les responsabilités de sécurité de l'information du personnel concernant la confidentialité, la protection des DCP, l'éthique, l'utilisation appropriée des informations et autres actifs associés de l'organisation, ainsi que les bonnes pratiques attendues par l'organisation.</p><p>Une partie externe, à laquelle le personnel du fournisseur est associé, peut nécessiter d'être intégrée aux accords contractuels au nom de la personne engagée sous contrat.</p><p>Si l'organisation n'est pas une entité juridique et qu'elle n'emploie aucun salarié, l'équivalent de l'accord contractuel et des termes et conditions peut être envisagé selon les recommandations de la présente mesure de sécurité.</p>`
     }
 },
-  {
+{
     code: '6.3',
     title: 'Sensibilisation, enseignement et formation en sécurité de l\'information',
     chapter: IsoChapter.PEOPLE,
@@ -52,18 +52,18 @@ export const peopleControls: Omit<IsoMeasure, 'id'>[] = [
         measure: 'Il convient que le personnel de l\'organisation et les parties intéressées pertinentes reçoivent une sensibilisation, un enseignement et des formations en sécurité de l\'information appropriés, ainsi que des mises à jour régulières de la politique de sécurité de l\'information, des politiques spécifiques à une thématique et des procédures de l\'organisation qui soient pertinentes pour leur fonction.',
         objective: 'S\'assurer que le personnel et les parties intéressées pertinentes connaissent et remplissent leurs responsabilités en matière de sécurité de l\'information.',
         recommendations: `<strong>Généralités</strong><p>Il convient qu'un programme de sensibilisation, d'enseignement et de formation en sécurité de l'information soit établi en cohérence avec la politique de sécurité de l'information, les politiques spécifiques à une thématique et les procédures de l'organisation en matière de sécurité de l'information, et qui tienne compte des informations de l'organisation à protéger et des mesures de sécurité de l'information qui ont été mises en œuvre pour protéger des informations.</p><p>Il convient que la sensibilisation, l'enseignement et la formation en sécurité de l'information aient lieu périodiquement.</p><p>Les premières sessions de sensibilisation, d'enseignement et de formation peuvent s'appliquer au nouveau personnel ou aux personnes affectées à de nouveaux postes ou à de nouvelles fonctions avec des exigences de sécurité de l'information très différentes.</p><p>Il convient d'évaluer la compréhension du personnel à l'issue d'une activité de sensibilisation, d'enseignement ou de formation afin de tester le transfert des connaissances et l'efficacité du programme de sensibilisation, d'enseignement et de formation.</p><strong>Sensibilisation</strong><p>Il convient qu'un programme de sensibilisation à la sécurité de l'information vise à faire connaître au personnel ses responsabilités en matière de sécurité de l'information et les moyens dont il dispose pour s'acquitter de ces responsabilités.</p><p>Il convient de planifier le programme de sensibilisation en tenant compte des fonctions du personnel au sein de l'organisation, qu'il s'agisse du personnel interne ou externe (par exemple, les consultants externes ou le personnel des fournisseurs).</p><p>Il convient que les activités du programme de sensibilisation soient programmées dans le temps, de préférence à échéances régulières, de manière à ce qu'elles se répètent et incluent le nouveau personnel.</p><p>Il convient également que le programme de sensibilisation s'appuie sur les enseignements tirés des incidents de sécurité de l'information.</p><p>Il convient que le programme de sensibilisation comporte un certain nombre d'activités de sensibilisation via des canaux physiques ou virtuels appropriés, tels que des campagnes, livrets, posters, bulletins d'information, sites web, sessions d'information, séances de briefing, modules d'apprentissage en ligne et e-mails.</p><p>Il convient que la sensibilisation à la sécurité de l'information couvre des aspects généraux tels que:</p><ol type="a"><li>l'engagement de la direction pour la sécurité de l'information dans l'ensemble de l'organisation;</li><li>la connaissance des règles et des obligations en matière de sécurité de l'information, et des besoins de s'y conformer, en tenant compte de la politique de sécurité de l'information et des politiques spécifiques à une thématique, des normes, des lois, des statuts, des réglementations, des contrats et des accords;</li><li>les responsabilités de chacun pour ses actions et ses inactions, et les responsabilités générales par rapport à la sécurisation ou à la protection des informations appartenant à l'organisation et aux parties intéressées;</li><li>les procédures de sécurité de l'information de base [par exemple, la déclaration des événements de sécurité de l'information (6.8)] et les mesures de sécurité de base [par exemple, la sécurité des mots de passe (5.17)];</li><li>les points de contact et les ressources pour obtenir des informations supplémentaires et des conseils sur des sujets de sécurité de l'information, y compris des supports de sensibilisation en sécurité de l'information supplémentaire.</li></ol><strong>Apprentissage et formation</strong><p>Il convient que l'organisation identifie, prépare et mette en œuvre un plan de formation pour les équipes techniques dont les fonctions nécessitent un ensemble de compétences et une expertise spécifiques.</p><p>Il convient que les équipes techniques disposent des compétences permettant de configurer et de maintenir le niveau de sécurité requis pour les terminaux, systèmes, applications et services.</p><p>S'il manque des compétences, il convient que l'organisation prenne des mesures et les acquière.</p><p>Il convient que le programme d'enseignement et de formation envisage plusieurs formes [par exemple, des conférences ou des séances d'autoformation, qui soient encadrées par des experts ou des consultants (formation en milieu de travail), une rotation des membres du personnel pour suivre différentes activités, le recrutement de personnes déjà qualifiées et l'embauche de consultants].</p><p>Ce programme peut utiliser différents moyens de transmission, par exemple les salles de cours, l'enseignement à distance, l'apprentissage en ligne, l'auto-formation, entre autres.</p><p>Il convient que le personnel technique maintienne ses connaissances à jour en s'abonnant à des bulletins d'information et des magazines ou en assistant à des conférences et à des événements destinés au perfectionnement technique et professionnel.</p>`,
-        extraInfo: `<p>Lors de l'élaboration d'un programme de sensibilisation, il est important de ne pas se concentrer seulement sur les questions "quoi?" et "comment?", mais également sur la question "pourquoi?", dans la mesure du possible. Il est important que le personnel comprenne les objectifs de la sécurité de l'information et les effets éventuels, positifs et négatifs, de leur comportement sur l'organisation.</p><p>La sensibilisation, l'enseignement et la formation en sécurité de l'information peuvent faire partie ou être réalisés avec d'autres activités, par exemple une formation sur le management de l'information en général, les TIC, la sécurité, la protection de la vie privée ou la sûreté.</p>`
+        extraInfo: `<p>Lors de l'élaboration d'un programme de sensibilisation, il est important de ne pas se concentrer seulement sur les questions "quoi?" et "comment?", mais également sur la question "pourquoi?", dans la mesure du possible.</p><p>Il est important que le personnel comprenne les objectifs de la sécurité de l'information et les effets éventuels, positifs et négatifs, de leur comportement sur l'organisation.</p><p>La sensibilisation, l'enseignement et la formation en sécurité de l'information peuvent faire partie ou être réalisés avec d'autres activités, par exemple une formation sur le management de l'information en général, les TIC, la sécurité, la protection de la vie privée ou la sûreté.</p>`
     }
 },
-  {
+{
     code: '6.4',
     title: 'Processus disciplinaire',
     chapter: IsoChapter.PEOPLE,
     description: 'Il convient de formaliser et de communiquer un processus disciplinaire permettant de prendre des mesures à l\'encontre du personnel et d\'autres parties intéressées qui ont commis une violation de la politique de sécurité de l\'information.',
     details: {
-        type: ["Préventive","Corrective"],
+        type: ["Préventive", "Corrective"],
         properties: ["Confidentialité","Intégrité","Disponibilité"],
-        concepts: ["Protéger","Répondre"],
+        concepts: ["Protéger", "Répondre"],
         processes: ["Sécurité_des_ressources_humaines"],
         functionalProcess: "4. Gestion des ressources humaines",
         domains: ["Gouvernance_et_Écosystème"],
@@ -73,7 +73,7 @@ export const peopleControls: Omit<IsoMeasure, 'id'>[] = [
         extraInfo: `<p>Il convient, dans la mesure du possible, de protéger l'identité des personnes faisant l'objet d'une mesure disciplinaire conformément aux exigences applicables.</p><p>Lorsque des personnes font preuve d'un excellent comportement à l'égard de la sécurité de l'information, elles peuvent être récompensées afin de promouvoir la sécurité de l'information et encourager les bons comportements.</p>`
     }
 },
-  {
+{
     code: '6.5',
     title: 'Responsabilités après la fin ou le changement d\'un emploi',
     chapter: IsoChapter.PEOPLE,
@@ -82,7 +82,7 @@ export const peopleControls: Omit<IsoMeasure, 'id'>[] = [
         type: ["Préventive"],
         properties: ["Confidentialité","Intégrité","Disponibilité"],
         concepts: ["Protéger"],
-        processes: ["Sécurité_des_ressources_humaines","Gestion_des_actifs"],
+        processes: ["Sécurité_des_ressources_humaines", "Gestion_des_actifs"],
         functionalProcess: "4. Gestion des ressources humaines",
         domains: ["Gouvernance_et_Écosystème"],
         measure: 'Il convient que les responsabilités et les obligations relatives à la sécurité de l\'information qui restent valables après la fin ou le changement d\'un emploi, soient définies, appliquées et communiquées au personnel et autres parties intéressées pertinents.',
@@ -91,34 +91,34 @@ export const peopleControls: Omit<IsoMeasure, 'id'>[] = [
         extraInfo: `<p>Dans plusieurs organisations, la fonction de ressources humaines est généralement responsable de l'ensemble du processus de fin de l'emploi et collabore avec le supérieur hiérarchique de la personne en transition pour gérer les aspects de sécurité de l'information des procédures concernées. Dans le cas du personnel mis à disposition par une partie externe (par exemple, par un fournisseur), ce processus de fin d'emploi est réalisé par la partie externe conformément au contrat entre l'organisation et la partie externe.</p>`
     }
 },
-  {
+{
     code: '6.6',
     title: 'Accords de confidentialité ou de non-divulgation',
     chapter: IsoChapter.PEOPLE,
-    description: 'Il convient que les accords de confidentialité ou de non-divulgation représentant les besoins de l\'organisation relatives à la protection des informations soient identifiés, documentés, régulièrement révisés et signés par le personnel et les autres parties intéressées pertinentes.',
+    description: 'Il convient que les accords de confidentialité ou de non-divulgation représentant les besoins de l\'organisation relatives à la protection des informations soient identifiés, documents, régulièrement révisés et signés par le personnel et les autres parties intéressées pertinentes.',
     details: {
         type: ["Préventive"],
         properties: ["Confidentialité"],
         concepts: ["Protéger"],
-        processes: ["Sécurité_des_ressources_humaines","Protection_des_informations","Sécurité_des_relations_fournisseurs"],
+        processes: ["Sécurité_des_ressources_humaines", "Protection_des_informations", "Sécurité_des_relations_fournisseurs"],
         functionalProcess: "4. Gestion des ressources humaines",
         domains: ["Gouvernance_et_Écosystème"],
-        measure: 'Il convient que les accords de confidentialité ou de non-divulgation représentant les besoins de l\'organisation relatives à la protection des informations soient identifiés, documentés, régulièrement révisés et signés par le personnel et les autres parties intéressées pertinentes.',
+        measure: 'Il convient que les accords de confidentialité ou de non-divulgation représentant les besoins de l\'organisation relatives à la protection des informations soient identifiés, documents, régulièrement révisés et signés par le personnel et les autres parties intéressées pertinentes.',
         objective: 'Assurer la confidentialité des informations accessibles par le personnel ou des parties externes.',
         recommendations: `<p>Il convient que les accords de confidentialité ou de non-divulgation traitent de l'exigence de protection des informations confidentielles en utilisant des termes juridiquement exécutoires. Les accords de confidentialité ou de non-divulgation sont applicables aux parties intéressées et au personnel de l'organisation. Selon les exigences de sécurité de l'information de l'organisation, il convient que les termes des accords soient déterminés en tenant compte du type d'informations qui seront traitées, de leur niveau de classification, de leur utilisation et de l'accès autorisé par l'autre partie. Pour identifier les exigences de confidentialité et de non-divulgation, il convient de prendre en considération les éléments suivants:</p><ol type="a"><li>une définition des informations à protéger (par exemple, les informations confidentielles);</li><li>la durée d'un accord, y compris les cas où il peut être nécessaire de maintenir la confidentialité indéfiniment ou jusqu'à ce que les informations deviennent publiques;</li><li>les actions requises lorsqu'un accord arrive à expiration;</li><li>les responsabilités et les actions des signataires pour éviter la divulgation non autorisée des informations;</li><li>la propriété des informations, des secrets commerciaux et de la propriété intellectuelle, ainsi que son lien avec la protection des informations confidentielles;</li><li>l'utilisation autorisée des informations confidentielles et les droits du signataire d'utiliser les informations;</li><li>le droit d'auditer et de surveiller les activités impliquant des informations confidentielles dans le cas de circonstances hautement sensibles;</li><li>le processus de notification et de déclaration de divulgation non autorisée ou de fuite d'informations confidentielles;</li><li>les modalités de restitution ou de destruction des informations à l'expiration de l'accord;</li><li>les mesures à prendre prévues en cas de non-conformité avec l'accord.</li></ol><p>Il convient que l'organisation prenne en compte la conformité avec les accords de confidentialité et de non-divulgation selon la juridiction dans laquelle ils s'appliquent (voir 5.31, 5.32, 5.33, 5.34).</p><p>Il convient que les accords de confidentialité et de non-divulgation soient révisés de manière périodique et lorsque des changements ayant une incidence sur ces exigences se produisent.</p>`,
         extraInfo: `<p>Les accords de confidentialité et de non-divulgation protègent les informations de l'organisation et informent les signataires de leur responsabilité de protéger, d'utiliser et de diffuser les informations de manière responsable et autorisée.</p>`
     }
 },
-  {
+{
     code: '6.7',
     title: 'Travail à distance',
     chapter: IsoChapter.PEOPLE,
     description: 'Il convient de mettre en œuvre des mesures de sécurité lorsque le personnel travaille à distance, pour protéger les informations accessibles, traitées ou stockées en dehors des locaux de l\'organisation.',
     details: {
         type: ["Préventive"],
-        properties: ["Confidentialité","Intégrité","Disponibilité"],
+        properties: ["Confidentialité", "Intégrité", "Disponibilité"],
         concepts: ["Protéger"],
-        processes: ["Gestion_des_actifs","Protection_des_informations","Sécurité_physique","Sécurité_système_et_réseau"],
+        processes: ["Gestion_des_actifs", "Protection_des_informations", "Sécurité_physique", "Sécurité_système_et_réseau"],
         functionalProcess: "4. Gestion des ressources humaines",
         domains: ["Protection"],
         measure: 'Il convient de mettre en œuvre des mesures de sécurité lorsque le personnel travaille à distance, pour protéger les informations accessibles, traitées ou stockées en dehors des locaux de l\'organisation.',
@@ -127,14 +127,14 @@ export const peopleControls: Omit<IsoMeasure, 'id'>[] = [
         extraInfo: ``
     }
 },
-  {
+{
     code: '6.8',
     title: 'Déclaration des événements de sécurité de l\'information',
     chapter: IsoChapter.PEOPLE,
     description: 'Il convient que l\'organisation fournisse un mécanisme au personnel pour déclarer rapidement les événements de sécurité de l\'information observés ou suspectés, à travers des canaux appropriés.',
     details: {
         type: ["Détective"],
-        properties: ["Confidentialité","Intégrité","Disponibilité"],
+        properties: ["Confidentialité", "Intégrité", "Disponibilité"],
         concepts: ["Détecter"],
         processes: ["Gestion_des_événements_de_sécurité_de_l'information"],
         functionalProcess: "4. Gestion des ressources humaines",
@@ -144,5 +144,5 @@ export const peopleControls: Omit<IsoMeasure, 'id'>[] = [
         recommendations: `<p>Il convient que l'ensemble du personnel et des utilisateurs soient informés de leur responsabilité de déclarer le plus rapidement possible les événements de sécurité de l'information afin de prévenir ou de minimiser les conséquences des incidents de sécurité de l'information.</p><p>Il convient également de les informer de la procédure pour la déclaration des événements de sécurité de l'information et du point de contact auprès duquel il convient de déclarer les événements.</p><p>Il convient que le mécanisme de déclaration soit aussi simple, accessible et disponible que possible.</p><p>Les événements de sécurité de l'information incluent les incidents, les violations et les vulnérabilités.</p><p>Des situations à considérer pour la déclaration d'événements de sécurité de l'information incluent:</p><ol type="a"><li>des mesures de sécurité de l'information inefficaces;</li><li>une violation du niveau prévu de confidentialité, d'intégrité ou de disponibilité des informations;</li><li>des erreurs humaines;</li><li>une non-conformité à la politique de sécurité de l'information, aux politiques spécifiques à une thématique ou aux normes applicables;</li><li>une violation des mesures de sécurité physique;</li><li>des changements du système qui n'ont pas été soumis au processus de gestion des changements;</li><li>des dysfonctionnements ou autre comportement anormal du système d'origine logicielle ou matérielle;</li><li>des violations d'accès;</li><li>des vulnérabilités;</li><li>la suspicion d'une infection par un logiciel malveillant.</li></ol><p>Il convient que le personnel et les utilisateurs soient prévenus de ne pas tenter de prouver l'existence des vulnérabilité de sécurité de l'information suspectées.</p><p>Tester les vulnérabilités peut être interprété comme un mauvais usage potentiel du système, peut aussi endommager le système d'information ou le service et peut altérer ou masquer une preuve numérique.</p><p>Enfin, cela peut engager la responsabilité juridique de la personne qui réalise les tests.</p>`,
         extraInfo: `<p>Voir la série ISO/IEC 27035 pour des informations supplémentaires.</p>`
     }
-  }
+}
 ];

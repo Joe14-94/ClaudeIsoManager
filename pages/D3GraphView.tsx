@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useMemo, useState } from 'react';
-import * as d3 from 'd3';
+// FIX: Replace monolithic d3 import with specific named imports to resolve type errors.
+import { select, zoom, hierarchy, tree, linkHorizontal, zoomIdentity, HierarchyPointNode } from 'd3';
 import { useData } from '../contexts/DataContext';
 import { ISO_MEASURES_DATA } from '../constants';
 import { Activity, Chantier, IsoMeasure, Objective, StrategicOrientation } from '../types';
@@ -341,8 +342,8 @@ const D3GraphView: React.FC = () => {
         if (!treeData || !svgRef.current || !containerRef.current || !tooltipRef.current) return;
 
         const container = containerRef.current;
-        const svg = d3.select(svgRef.current);
-        const tooltip = d3.select(tooltipRef.current);
+        const svg = select(svgRef.current);
+        const tooltip = select(tooltipRef.current);
 
         svg.selectAll('*').remove();
 
@@ -351,15 +352,15 @@ const D3GraphView: React.FC = () => {
 
         const g = svg.append("g");
 
-        const zoom = d3.zoom<SVGSVGElement, unknown>()
+        const zoomBehavior = zoom<SVGSVGElement, unknown>()
             .scaleExtent([0.1, 3])
             .on("zoom", (event) => {
                 g.attr("transform", event.transform);
             });
         
-        svg.call(zoom);
+        svg.call(zoomBehavior);
 
-        const root = d3.hierarchy<D3Node>(treeData, d => d.children);
+        const root = hierarchy<D3Node>(treeData, d => d.children);
         (root as any).x0 = 0;
         (root as any).y0 = 0;
 
@@ -373,9 +374,9 @@ const D3GraphView: React.FC = () => {
             }
         });
 
-        const update = (source: d3.HierarchyPointNode<D3Node> | any) => {
+        const update = (source: HierarchyPointNode<D3Node> | any) => {
             const duration = 250;
-            const treeLayout = d3.tree<D3Node>().nodeSize([30, 150]);
+            const treeLayout = tree<D3Node>().nodeSize([30, 150]);
             treeLayout(root);
 
             const nodes = root.descendants();
@@ -461,20 +462,20 @@ const D3GraphView: React.FC = () => {
                 .attr('class', 'link')
                 .attr('d', () => {
                     const o: [number, number] = [(source as any).y0, (source as any).x0];
-                    return d3.linkHorizontal()({ source: o, target: o }) as any;
+                    return linkHorizontal()({ source: o, target: o }) as any;
                 });
 
             const linkUpdate = linkEnter.merge(link as any);
 
             linkUpdate.transition()
                 .duration(duration)
-                .attr('d', d => d3.linkHorizontal()({ source: [d.source.y, d.source.x], target: [d.target.y, d.target.x] }) as any);
+                .attr('d', d => linkHorizontal()({ source: [d.source.y, d.source.x], target: [d.target.y, d.target.x] }) as any);
 
             link.exit().transition()
                 .duration(duration)
                 .attr('d', () => {
                     const o: [number, number] = [source.y, source.x];
-                    return d3.linkHorizontal()({ source: o, target: o }) as any;
+                    return linkHorizontal()({ source: o, target: o }) as any;
                 })
                 .remove();
 
@@ -499,8 +500,8 @@ const D3GraphView: React.FC = () => {
         
         update(root as any);
         
-        const initialTransform = d3.zoomIdentity.translate(margin.left, containerHeight / 2).scale(0.8);
-        svg.call(zoom.transform, initialTransform);
+        const initialTransform = zoomIdentity.translate(margin.left, containerHeight / 2).scale(0.8);
+        svg.call(zoomBehavior.transform, initialTransform);
 
     }, [treeData]);
 

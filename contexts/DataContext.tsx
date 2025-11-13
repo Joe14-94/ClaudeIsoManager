@@ -1,3 +1,4 @@
+
 import React, { createContext, useState, useContext, useEffect, ReactNode, PropsWithChildren } from 'react';
 import { loadFromLocalStorage, saveToLocalStorage } from '../utils/storage';
 import { activities as initialActivities } from '../data/activities';

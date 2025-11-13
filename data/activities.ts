@@ -1,3 +1,4 @@
+
 import { Activity, ActivityStatus, Priority, ActivityType, SecurityDomain } from '../types';
 
 export const activities: Activity[] = [
