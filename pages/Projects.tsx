@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useData } from '../contexts/DataContext';
@@ -7,7 +6,6 @@ import { PROJECT_STATUS_COLORS, ISO_MEASURES_DATA } from '../constants';
 import Card, { CardContent, CardHeader } from '../components/ui/Card';
 import Modal from '../components/ui/Modal';
 import { Search, PlusCircle, Edit, ArrowUp, ArrowDown, Trash2 } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
 import CalendarDatePicker from '../components/ui/CalendarDatePicker';
 import CustomMultiSelect from '../components/ui/CustomMultiSelect';
 import ActiveFiltersDisplay from '../components/ui/ActiveFiltersDisplay';
@@ -17,8 +15,7 @@ type SortDirection = 'ascending' | 'descending';
 
 const Projects: React.FC = () => {
     const { projects, setProjects, resources, initiatives } = useData();
-    const { userRole } = useAuth();
-    const isReadOnly = userRole === 'readonly';
+    const isReadOnly = false;
 
     const location = useLocation();
     const navigate = useNavigate();

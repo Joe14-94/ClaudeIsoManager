@@ -4,14 +4,12 @@ import { StrategicOrientation, Chantier, Objective } from '../types';
 import Card, { CardContent } from '../components/ui/Card';
 import Modal from '../components/ui/Modal';
 import { PlusCircle, Trash2, Edit, TrendingUp, Workflow, Target, Search } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
 import Tooltip from '../components/ui/Tooltip';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 const Orientations: React.FC = () => {
   const { orientations, setOrientations, chantiers, objectives } = useData();
-  const { userRole } = useAuth();
-  const isReadOnly = userRole === 'readonly';
+  const isReadOnly = false;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentItem, setCurrentItem] = useState<Partial<StrategicOrientation> | null>(null);
   const [isEditing, setIsEditing] = useState(false);

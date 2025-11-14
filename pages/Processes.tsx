@@ -1,11 +1,9 @@
-
 import React, { useState, useMemo } from 'react';
 import { useData } from '../contexts/DataContext';
 import Card, { CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import Modal from '../components/ui/Modal';
 import { SecurityProcess } from '../types';
 import { Scale, Archive, Users, Shield, HardHat, Handshake, Network, AppWindow, Siren, Gavel, ListChecks, Workflow, PlusCircle, Trash2, Edit, Search, ShieldCheck } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
 import CustomMultiSelect from '../components/ui/CustomMultiSelect';
 import { ISO_MEASURES_DATA } from '../constants';
 import Tooltip from '../components/ui/Tooltip';
@@ -28,8 +26,7 @@ const processIcons: { [key: string]: React.ReactNode } = {
 
 const Processes: React.FC = () => {
   const { securityProcesses, setSecurityProcesses } = useData();
-  const { userRole } = useAuth();
-  const isReadOnly = userRole === 'readonly';
+  const isReadOnly = false;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentItem, setCurrentItem] = useState<Partial<SecurityProcess> | null>(null);
   const [isEditing, setIsEditing] = useState(false);

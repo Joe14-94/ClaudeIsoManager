@@ -27,7 +27,7 @@ const DataManagement: React.FC = () => {
     setLastCsvImportDate
   } = useData();
   const { userRole } = useAuth();
-  const isReadOnly = userRole === 'readonly';
+  const isReadOnly = false;
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error', message: string } | null>(null);
   
   const [showResetActivitiesModal, setShowResetActivitiesModal] = useState(false);

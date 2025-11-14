@@ -88,13 +88,6 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen, onClo
               </span>
               <span className="ml-2 text-sm text-slate-900">PMO</span>
             </label>
-            <label htmlFor="role-readonly" className="flex items-center cursor-pointer">
-              <input id="role-readonly" name="role" type="radio" value="readonly" checked={roleToChange === 'readonly'} onChange={() => setRoleToChange('readonly')} className="sr-only peer"/>
-               <span className="w-4 h-4 rounded-full border-2 bg-white border-slate-400 grid place-items-center transition-colors peer-checked:border-blue-600 peer-focus:ring-2 peer-focus:ring-blue-500">
-                <span className="w-2 h-2 rounded-full bg-blue-600 transform scale-0 peer-checked:scale-100 transition-transform"></span>
-              </span>
-              <span className="ml-2 text-sm text-slate-900">Lecture seule</span>
-            </label>
           </div>
         </div>
         

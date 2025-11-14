@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useEffect } from 'react';
 // FIX: The project appears to use react-router-dom v5. The `useLocation` hook is available in v5.1+, and the error likely stems from a project-wide version mismatch with v6. Updated to v6.
 import { useLocation } from 'react-router-dom';
@@ -8,6 +9,8 @@ import Modal from '../components/ui/Modal';
 import { SlidersHorizontal, Search } from 'lucide-react';
 import { useData } from '../contexts/DataContext';
 import ActiveFiltersDisplay from '../components/ui/ActiveFiltersDisplay';
+
+declare const DOMPurify: any;
 
 const MeasureDetails: React.FC<{ measure: IsoMeasure }> = ({ measure }) => {
     if (!measure.details) {
@@ -51,12 +54,12 @@ const MeasureDetails: React.FC<{ measure: IsoMeasure }> = ({ measure }) => {
             </div>
             <div>
                 <h3 className="text-lg font-bold text-slate-800 mb-2">Recommandations</h3>
-                <div className="iso-details-content" dangerouslySetInnerHTML={{ __html: details.recommendations }} />
+                <div className="iso-details-content" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(details.recommendations) }} />
             </div>
             {details.extraInfo && (
                  <div>
                     <h3 className="text-lg font-bold text-slate-800 mb-2">Informations supplémentaires</h3>
-                    <div className="iso-details-content" dangerouslySetInnerHTML={{ __html: details.extraInfo }} />
+                    <div className="iso-details-content" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(details.extraInfo) }} />
                 </div>
             )}
         </div>

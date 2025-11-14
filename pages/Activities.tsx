@@ -7,7 +7,6 @@ import { DOMAIN_COLORS, STATUS_COLORS, PRIORITY_COLORS, ISO_MEASURES_DATA } from
 import Card, { CardContent, CardHeader } from '../components/ui/Card';
 import Modal from '../components/ui/Modal';
 import { Search, PlusCircle, Edit, Sparkles, ArrowUp, ArrowDown, Trash2 } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
 import GuidedActivityWizard from '../components/wizards/GuidedActivityWizard';
 import CustomMultiSelect from '../components/ui/CustomMultiSelect';
 import CalendarDatePicker from '../components/ui/CalendarDatePicker';
@@ -92,8 +91,7 @@ type SortDirection = 'ascending' | 'descending';
 
 const Activities: React.FC = () => {
   const { activities, setActivities, objectives, orientations, chantiers, resources, securityProcesses } = useData();
-  const { userRole } = useAuth();
-  const isReadOnly = userRole === 'readonly';
+  const isReadOnly = false;
   // FIX: The useLocation hook in react-router-dom v6 does not accept a generic type argument.
   const location = useLocation();
   const locationState = location.state as any;

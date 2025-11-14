@@ -5,13 +5,11 @@ import { Chantier, StrategicOrientation, Objective } from '../types';
 import Card, { CardContent } from '../components/ui/Card';
 import Modal from '../components/ui/Modal';
 import { PlusCircle, Trash2, Workflow, Edit, FilterX, Target, TrendingUp, Search } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
 import Tooltip from '../components/ui/Tooltip';
 
 const Chantiers: React.FC = () => {
   const { chantiers, setChantiers, orientations, objectives } = useData();
-  const { userRole } = useAuth();
-  const isReadOnly = userRole === 'readonly';
+  const isReadOnly = false;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentItem, setCurrentItem] = useState<Partial<Chantier> | null>(null);
   const [isEditing, setIsEditing] = useState(false);

@@ -1,52 +1,57 @@
-
-
-import React, { createContext, useState, useContext, useEffect, PropsWithChildren } from 'react';
-import { loadFromLocalStorage, saveToLocalStorage } from '../utils/storage';
+import React, {
+  createContext,
+  useState,
+  useContext,
+  useEffect,
+  PropsWithChildren,
+} from 'react';
 import { UserRole } from '../types';
+import { hashPassword } from '../utils/auth';
 
 interface AuthContextType {
   userRole: UserRole | null;
   login: (password: string) => Promise<boolean>;
   logout: () => void;
   isLoading: boolean;
-  changePassword: (roleToChange: UserRole, adminConfirmation: string, newPassword: string) => Promise<{ success: boolean; message: string }>;
+  changePassword: (
+    roleToChange: UserRole,
+    adminConfirmation: string,
+    newPassword: string
+  ) => Promise<{ success: boolean; message: string }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const ADMIN_PASSWORD_KEY = 'admin_password';
-const READONLY_PASSWORD_KEY = 'readonly_password';
-const PMO_PASSWORD_KEY = 'pmo_password';
+// ---------------------------------------------------------------------
+// ⚠️ ATTENTION :
+// Tout ce qui est ici est visible et modifiable par un utilisateur
+// (DevTools, code source). C'est une sécurité "maquette / UX" seulement.
+// ---------------------------------------------------------------------
+
+// Sels par rôle (peuvent rester en clair, ils servent à éviter les rainbow tables)
+const ADMIN_SALT = 'iso-manager-admin-salt';
+const PMO_SALT = 'iso-manager-pmo-salt';
+
+// Hashes des mots de passe par rôle.
+// Mots de passe originaux :
+// admin:    'adminISO27002!'
+// pmo:      'pmoISO27002$'
+const ADMIN_PASSWORD_HASH = '033cef560eb8f419eaf9f64a975bdc0ab033a7a7118fb2332ed65de51e970c72';
+const PMO_PASSWORD_HASH = 'a5a8a8e6bfa3b297795095b8d98fc0a57bd567a600f9405596504168a812ead2';
+
+// ---------------------------------------------------------------------
+// NOTE : pour générer ces valeurs, un utilitaire interne peut être utilisé :
+/*
+  const h = await hashPassword('nouveau_mot_de_passe', SEL_CORRESPONDANT);
+  console.log(h); // → à coller dans la constante appropriée
+*/
+// ---------------------------------------------------------------------
 
 export const AuthProvider = ({ children }: PropsWithChildren) => {
   const [userRole, setUserRole] = useState<UserRole | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  // Stocker les mots de passe en state pour permettre leur modification.
-  const [adminPassword, setAdminPassword] = useState<string>(() => 
-    loadFromLocalStorage(ADMIN_PASSWORD_KEY, 'adminISO27002!')
-  );
-  const [readonlyPassword, setReadonlyPassword] = useState<string>(() => 
-    loadFromLocalStorage(READONLY_PASSWORD_KEY, 'lectureISO27002!')
-  );
-  const [pmoPassword, setPmoPassword] = useState<string>(() =>
-    loadFromLocalStorage(PMO_PASSWORD_KEY, 'pmoISO27002$')
-  );
-  
-  // Persister les changements de mot de passe
-  useEffect(() => {
-    saveToLocalStorage(ADMIN_PASSWORD_KEY, adminPassword);
-  }, [adminPassword]);
-
-  useEffect(() => {
-    saveToLocalStorage(READONLY_PASSWORD_KEY, readonlyPassword);
-  }, [readonlyPassword]);
-  
-  useEffect(() => {
-    saveToLocalStorage(PMO_PASSWORD_KEY, pmoPassword);
-  }, [pmoPassword]);
-
-
+  // Restauration du rôle depuis la session
   useEffect(() => {
     try {
       const sessionRole = sessionStorage.getItem('user_role') as UserRole | null;
@@ -62,21 +67,28 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
 
   const login = async (password: string): Promise<boolean> => {
     const trimmedPassword = password.trim();
-    if (trimmedPassword === adminPassword) {
+    if (!trimmedPassword) return false;
+
+    // On dérive le mot de passe avec le sel du rôle et on compare au hash stocké.
+    const [adminHash, pmoHash] = await Promise.all([
+      hashPassword(trimmedPassword, ADMIN_SALT),
+      hashPassword(trimmedPassword, PMO_SALT),
+    ]);
+    
+    const isAdmin = adminHash === ADMIN_PASSWORD_HASH;
+    if (isAdmin) {
       setUserRole('admin');
       sessionStorage.setItem('user_role', 'admin');
       return true;
     }
-    if (trimmedPassword === readonlyPassword) {
-      setUserRole('readonly');
-      sessionStorage.setItem('user_role', 'readonly');
-      return true;
-    }
-    if (trimmedPassword === pmoPassword) {
+
+    const isPmo = pmoHash === PMO_PASSWORD_HASH;
+    if (isPmo) {
       setUserRole('pmo');
       sessionStorage.setItem('user_role', 'pmo');
       return true;
     }
+    
     return false;
   };
 
@@ -85,29 +97,63 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
     sessionStorage.removeItem('user_role');
   };
 
-  const changePassword = async (roleToChange: UserRole, adminConfirmation: string, newPassword: string): Promise<{ success: boolean; message: string }> => {
+  const changePassword = async (
+    roleToChange: UserRole,
+    adminConfirmation: string,
+    newPassword: string
+  ): Promise<{ success: boolean; message: string }> => {
+    // Garde-fou fonctionnel
     if (userRole !== 'admin') {
-      return { success: false, message: "Seul un administrateur peut changer les mots de passe." };
+      return {
+        success: false,
+        message: 'Seul un administrateur peut changer les mots de passe.',
+      };
     }
 
-    if (adminConfirmation.trim() !== adminPassword) {
-      return { success: false, message: "Votre mot de passe administrateur est incorrect." };
+    const adminHash = await hashPassword(adminConfirmation.trim(), ADMIN_SALT);
+    if (adminHash !== ADMIN_PASSWORD_HASH) {
+      return {
+        success: false,
+        message: 'Votre mot de passe administrateur est incorrect.',
+      };
     }
 
-    if (roleToChange === 'admin') {
-      setAdminPassword(newPassword);
-    } else if (roleToChange === 'readonly') {
-      setReadonlyPassword(newPassword);
-    } else if (roleToChange === 'pmo') {
-      setPmoPassword(newPassword);
-    } else {
-        return { success: false, message: "Rôle invalide." };
+    // Simulation de changement : on calcule le nouveau hash et on l'affiche.
+    // Il faut ensuite remplacer manuellement la constante correspondante
+    // (ADMIN_PASSWORD_HASH / PMO_PASSWORD_HASH)
+    // dans ce fichier.
+    let salt: string;
+    let roleLabel: string;
+    switch (roleToChange) {
+      case 'admin':
+        salt = ADMIN_SALT;
+        roleLabel = 'admin';
+        break;
+      case 'pmo':
+        salt = PMO_SALT;
+        roleLabel = 'pmo';
+        break;
     }
-    
-    return { success: true, message: "Mot de passe changé avec succès." };
+
+    const newHash = await hashPassword(newPassword.trim(), salt);
+
+    console.log(
+      `SIMULATION DE CHANGEMENT DE MOT DE PASSE POUR LE RÔLE '${roleLabel}'`
+    );
+    console.log(
+      'Copiez le hash suivant et remplacez la constante correspondante dans `AuthContext.tsx` :'
+    );
+    console.log(`Nouveau hash pour ${roleLabel}: ${newHash}`);
+
+    return {
+      success: true,
+      message:
+        `Le nouveau hash pour le rôle '${roleLabel}' a été généré et affiché dans la console. ` +
+        "Le changement n'est pas persistant tant que vous ne mettez pas à jour le code.",
+    };
   };
 
-  const value = {
+  const value: AuthContextType = {
     userRole,
     login,
     logout,

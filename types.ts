@@ -255,7 +255,8 @@ export interface CoverageMatrix {
   }
 }
 
-export type UserRole = 'admin' | 'readonly' | 'pmo';
+// FIX: Add 'readonly' to UserRole to support its usage in permission display components, fixing a type error in AccessRightsPage.tsx.
+export type UserRole = 'admin' | 'pmo' | 'readonly';
 
 export interface Notification {
   id: string;

@@ -4,12 +4,10 @@ import { Resource } from '../types';
 import Card, { CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import Modal from '../components/ui/Modal';
 import { User, Users, PlusCircle, Edit, Trash2 } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
 
 const Resources: React.FC = () => {
   const { resources, setResources } = useData();
-  const { userRole } = useAuth();
-  const isReadOnly = userRole === 'readonly';
+  const isReadOnly = false;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentItem, setCurrentItem] = useState<Partial<Resource> | null>(null);
   const [isEditing, setIsEditing] = useState(false);

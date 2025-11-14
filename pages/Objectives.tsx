@@ -59,7 +59,7 @@ const ObjectiveDetails: React.FC<{
 const Objectives: React.FC = () => {
   const { objectives, setObjectives, orientations, chantiers } = useData();
     const { userRole } = useAuth();
-  const isReadOnly = userRole === 'readonly';
+  const isReadOnly = false;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentItem, setCurrentItem] = useState<Partial<Objective> | null>(null);
   const [selectedIsoMeasure, setSelectedIsoMeasure] = useState<Omit<IsoMeasure, 'id'> | null>(null);
@@ -126,6 +126,39 @@ const Objectives: React.FC = () => {
     if (currentItem) {
       const { name, value } = e.target;
       const updatedItem = { ...currentItem, [name]: value };
+
+      if (name === 'code' && !currentItem.id) { // Only for new items
+        const objectiveCode = value;
+
+        // Try new logic first for format "A.BB.CC.DD" -> chantier "A.B.C"
+        const newLogicParts = objectiveCode.match(/^(\d+)\.(\d+)\.(\d+)/);
+        if (newLogicParts) {
+            const chantierCodeToFind = `${parseInt(newLogicParts[1], 10)}.${parseInt(newLogicParts[2], 10)}.${parseInt(newLogicParts[3], 10)}`;
+            const foundChantier = chantiers.find(c => c.code === chantierCodeToFind);
+            if (foundChantier) {
+                updatedItem.chantierId = foundChantier.id;
+                updatedItem.strategicOrientations = [foundChantier.strategicOrientationId];
+            }
+        } else {
+            // Fallback to old logic for format "OBJ-X.Y.Z" -> chantier "C-DEMO-X.Y"
+            const upperCaseCode = objectiveCode.toUpperCase();
+            if (upperCaseCode.startsWith('OBJ-')) {
+                const numericPart = upperCaseCode.substring(4); // Remove "OBJ-"
+                if (numericPart) {
+                    const chantierCodePart = numericPart.split('.').slice(0, 2).join('.');
+                    if (chantierCodePart) {
+                        const targetChantierCode = `C-DEMO-${chantierCodePart}`;
+                        const foundChantier = chantiers.find(c => c.code === targetChantierCode);
+                        if (foundChantier) {
+                            updatedItem.chantierId = foundChantier.id;
+                            updatedItem.strategicOrientations = [foundChantier.strategicOrientationId];
+                        }
+                    }
+                }
+            }
+        }
+      }
+
 
       if (name === 'chantierId') {
         const selectedChantier = chantiers.find(c => c.id === value);
