@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useData } from '../contexts/DataContext';
-import { Objective, StrategicOrientation, Chantier, IsoMeasure } from '../types';
+import { Objective, StrategicOrientation, Chantier, IsoMeasure, IsoLink } from '../types';
 import Card, { CardContent } from '../components/ui/Card';
 import Modal from '../components/ui/Modal';
 import { PlusCircle, Trash2, Edit, Target, Workflow, FilterX, ShieldCheck, Search } from 'lucide-react';
@@ -39,7 +39,7 @@ const ObjectiveDetails: React.FC<{
 
       {objective.mesures_iso && objective.mesures_iso.length > 0 && (
           <div>
-              <h4 className="font-semibold text-sm text-slate-600 mt-4 mb-2">Mesures ISO 27002 liées (lecture seule)</h4>
+              <h4 className="font-semibold text-sm text-slate-600 mt-4 mb-2">Mesures ISO 27002 liées</h4>
               <div className="max-h-48 overflow-y-auto space-y-2 pr-2">
                   {objective.mesures_iso.map((mesure, index) => (
                       <div key={`${mesure.numero_mesure}-${index}`} className="p-2 bg-slate-50 border rounded-md">
@@ -65,6 +65,7 @@ const Objectives: React.FC = () => {
   const [selectedIsoMeasure, setSelectedIsoMeasure] = useState<Omit<IsoMeasure, 'id'> | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isoSearchTerm, setIsoSearchTerm] = useState('');
   
   const location = useLocation();
   const navigate = useNavigate();
@@ -94,13 +95,28 @@ const Objectives: React.FC = () => {
     );
   }, [objectives, orientationFilter, chantierFilter, searchTerm]);
 
+  const allMeasuresMap = useMemo(() => new Map(ISO_MEASURES_DATA.map(m => [m.code, m])), []);
+
+  const allIsoMeasuresOptions = useMemo(() => 
+      ISO_MEASURES_DATA.map(m => ({
+          value: m.code,
+          label: `${m.code} - ${m.title}`,
+          tooltip: m.details?.measure
+      })), []);
+
+  const filteredIsoOptions = useMemo(() => {
+      if (!isoSearchTerm) return allIsoMeasuresOptions;
+      return allIsoMeasuresOptions.filter(opt => opt.label.toLowerCase().includes(isoSearchTerm.toLowerCase()));
+  }, [isoSearchTerm, allIsoMeasuresOptions]);
+
+
   const handleOpenModal = (item?: Objective) => {
     if (item) { // View/edit existing
       setCurrentItem(item);
       setIsEditing(false);
     } else { // New item
       if (isReadOnly) return;
-      setCurrentItem({ code: '', label: '', description: '', strategicOrientations: [], chantierId: chantiers[0]?.id || '' });
+      setCurrentItem({ code: '', label: '', description: '', strategicOrientations: [], chantierId: chantiers[0]?.id || '', mesures_iso: [] });
       setIsEditing(true);
     }
     setIsModalOpen(true);
@@ -173,9 +189,24 @@ const Objectives: React.FC = () => {
     }
   };
 
-  const handleCustomMultiSelectChange = (name: string, value: string[]) => {
+  const handleCustomMultiSelectChange = (name: string, selectedValues: string[]) => {
     if (currentItem) {
-      setCurrentItem(prev => ({ ...prev, [name]: value }));
+      if (name === 'mesures_iso') {
+        const selectedMeasures: IsoLink[] = selectedValues.map(code => {
+          const measureData = allMeasuresMap.get(code);
+          const existingLink = currentItem.mesures_iso?.find(link => link.numero_mesure === code);
+          return {
+            domaine: measureData?.chapter || 'N/A',
+            numero_mesure: code,
+            titre: measureData?.title || 'Titre non trouvé',
+            description: measureData?.description || 'Description non trouvée',
+            niveau_application: existingLink?.niveau_application || '',
+          };
+        });
+        setCurrentItem(prev => ({ ...prev!, mesures_iso: selectedMeasures }));
+      } else {
+        setCurrentItem(prev => ({ ...prev!, [name]: selectedValues }));
+      }
     }
   };
 
@@ -192,7 +223,6 @@ const Objectives: React.FC = () => {
       const newObjective: Objective = {
         id: `obj-${Date.now()}`,
         createdAt: new Date().toISOString(),
-        mesures_iso: [],
         ...currentItem
       } as Objective;
       setObjectives(prev => [newObjective, ...prev]);
@@ -208,10 +238,6 @@ const Objectives: React.FC = () => {
     }
   };
   
-   const allMeasuresMap = useMemo(() => {
-        return new Map(ISO_MEASURES_DATA.map(m => [m.code, m]));
-    }, []);
-
     const handleMeasureClick = (e: React.MouseEvent, measureCode: string) => {
         e.stopPropagation();
         if (userRole === 'admin') {
@@ -219,7 +245,7 @@ const Objectives: React.FC = () => {
         } else {
             const measure = allMeasuresMap.get(measureCode);
             if (measure) {
-                setSelectedIsoMeasure(measure);
+                setSelectedIsoMeasure(measure as Omit<IsoMeasure, 'id'>);
             }
         }
     };
@@ -394,7 +420,7 @@ const Objectives: React.FC = () => {
             </div>
             
             <CustomMultiSelect
-                label="Orientations stratégiques (lecture seule, défini par le chantier)"
+                label="Orientations stratégiques (défini par le chantier)"
                 name="strategicOrientations"
                 options={orientations.map(o => ({ value: o.id, label: `${o.code} - ${o.label}`}))}
                 selectedValues={currentItem.strategicOrientations || []}
@@ -403,7 +429,32 @@ const Objectives: React.FC = () => {
                 heightClass="h-24"
             />
             
-            {currentItem.id && (
+             {isEditing && (
+                <div>
+                    <label className="block text-sm font-medium text-slate-700">Mesures ISO 27002 liées</label>
+                    <div className="mt-1">
+                        <input
+                        type="text"
+                        placeholder="Rechercher une mesure par code ou titre..."
+                        className="w-full px-3 py-2 border border-slate-300 rounded-md bg-white mb-2"
+                        value={isoSearchTerm}
+                        onChange={(e) => setIsoSearchTerm(e.target.value)}
+                        disabled={isReadOnly || !isEditing}
+                        />
+                    </div>
+                    <CustomMultiSelect
+                        label=""
+                        name="mesures_iso"
+                        options={filteredIsoOptions}
+                        selectedValues={currentItem.mesures_iso?.map(m => m.numero_mesure) || []}
+                        onChange={handleCustomMultiSelectChange}
+                        disabled={isReadOnly || !isEditing}
+                        heightClass="h-48"
+                    />
+                </div>
+            )}
+            
+            {currentItem.id && !isEditing && (
                 <ObjectiveDetails objective={currentItem as Objective} orientations={orientations} />
             )}
 
