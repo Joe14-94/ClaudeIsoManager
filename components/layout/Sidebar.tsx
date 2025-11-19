@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, ListChecks, Network, ShieldCheck, Target, TrendingUp, Users, Database, FileUp, FileDown, Workflow, GitMerge, ClipboardCheck, LogOut, KeyRound, DatabaseZap, GanttChart, LayoutGrid, Flag, ClipboardList, ChevronUp, ChevronDown, Coins, Timer, GitBranch, ChevronsLeft, ChevronsRight, UserCog, HelpCircle, BarChart3 } from 'lucide-react';
+import { LayoutDashboard, ListChecks, Network, ShieldCheck, Target, TrendingUp, Users, Database, FileUp, FileDown, Workflow, GitMerge, ClipboardCheck, LogOut, KeyRound, DatabaseZap, GanttChart, LayoutGrid, Flag, ClipboardList, ChevronUp, ChevronDown, Coins, Timer, GitBranch, ChevronsLeft, ChevronsRight, UserCog, HelpCircle, BarChart3, Table } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import ChangePasswordModal from '../auth/ChangePasswordModal';
 import { APP_VERSION } from '../../config';
@@ -10,14 +10,15 @@ import Tooltip from '../ui/Tooltip';
 import { useData } from '../../contexts/DataContext';
 
 interface NavItemProps {
-  to: string;
+  to: string | { pathname: string; state?: any };
   // FIX: To resolve the TypeScript error with React.cloneElement, the `icon` prop's type is updated to explicitly include `size` and `className` properties. This ensures that TypeScript recognizes these as valid props when cloning the element.
   icon: React.ReactElement<{ size?: number | string; className?: string }>;
   label: string;
   isCollapsed: boolean;
+  end?: boolean;
 }
 
-const NavItem: React.FC<NavItemProps> = ({ to, icon, label, isCollapsed }) => {
+const NavItem: React.FC<NavItemProps> = ({ to, icon, label, isCollapsed, end }) => {
     const { closeMobileSidebar } = useSidebar();
     const navItemClasses = "flex items-center px-4 py-2.5 text-sm font-medium rounded-lg transition-colors";
     const activeClasses = "bg-slate-200 text-slate-900";
@@ -26,7 +27,7 @@ const NavItem: React.FC<NavItemProps> = ({ to, icon, label, isCollapsed }) => {
         `${navItemClasses} ${isActive ? activeClasses : inactiveClasses} ${isCollapsed ? 'justify-center' : ''}`;
 
     const navLinkContent = (
-        <NavLink to={to} className={getNavLinkClass} onClick={closeMobileSidebar}>
+        <NavLink to={to as any} className={getNavLinkClass} onClick={closeMobileSidebar} end={end}>
             {React.cloneElement(icon, { size: 18, className: isCollapsed ? '' : 'mr-3' })}
             {!isCollapsed && <span className="flex-1 truncate">{label}</span>}
         </NavLink>
@@ -196,7 +197,21 @@ const Sidebar: React.FC = () => {
               <div className={`${isCollapsed ? 'md:hidden' : ''} ${isDonneesOpen ? 'block' : 'hidden'}`}>
                 <div className='space-y-1'>
                     {(userRole === 'admin' || userRole === 'pmo') && (
-                      <NavItem to="/data-management" icon={<Database />} label="Gestion des données" isCollapsed={isCollapsed} />
+                      <>
+                        <NavItem 
+                            to="/data-management" 
+                            icon={<Database />} 
+                            label="Gestion des données" 
+                            isCollapsed={isCollapsed} 
+                            end={true} 
+                        />
+                        <NavItem 
+                          to={{ pathname: "/data-management/fdr", state: { openFdrChoice: true } }}
+                          icon={<Table />} 
+                          label="Mise à jour FDR" 
+                          isCollapsed={isCollapsed} 
+                        />
+                      </>
                     )}
                     {userRole === 'admin' && (
                       <>

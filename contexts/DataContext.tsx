@@ -31,6 +31,10 @@ interface DataContextType {
     setDashboardLayouts: React.Dispatch<React.SetStateAction<{ [breakpoint: string]: Layout[] }>>;
     lastCsvImportDate: string | null;
     setLastCsvImportDate: React.Dispatch<React.SetStateAction<string | null>>;
+    lastImportWeek: string | null;
+    setLastImportWeek: React.Dispatch<React.SetStateAction<string | null>>;
+    lastImportYear: string | null;
+    setLastImportYear: React.Dispatch<React.SetStateAction<string | null>>;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -41,8 +45,9 @@ const VERSION_KEY = 'reference_data_version';
 
 const initialLayouts = {
     lg: [
-        { i: 'strategicAlignment', x: 0, y: 0, w: 6, h: 5, minW: 5, minH: 4 },
-        { i: 'projectInitiativeAlignment', x: 6, y: 0, w: 6, h: 5, minW: 5, minH: 4 },
+        { i: 'consolidatedWorkload', x: 0, y: 0, w: 12, h: 4, minW: 6, minH: 4 },
+        { i: 'strategicAlignment', x: 0, y: 4, w: 6, h: 5, minW: 5, minH: 4 },
+        { i: 'projectInitiativeAlignment', x: 6, y: 4, w: 6, h: 5, minW: 5, minH: 4 },
     ]
 };
 
@@ -58,6 +63,8 @@ export const DataProvider = ({ children }: PropsWithChildren) => {
     const [projects, setProjects] = useState<Project[]>([]);
     const [dashboardLayouts, setDashboardLayouts] = useState<{ [breakpoint: string]: Layout[] }>(() => loadFromLocalStorage('dashboardLayouts', initialLayouts));
     const [lastCsvImportDate, setLastCsvImportDate] = useState<string | null>(() => loadFromLocalStorage('lastCsvImportDate', null));
+    const [lastImportWeek, setLastImportWeek] = useState<string | null>(() => loadFromLocalStorage('lastImportWeek', null));
+    const [lastImportYear, setLastImportYear] = useState<string | null>(() => loadFromLocalStorage('lastImportYear', null));
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
@@ -70,6 +77,8 @@ export const DataProvider = ({ children }: PropsWithChildren) => {
             setProjects(loadFromLocalStorage('projects', initialProjects));
             setDashboardLayouts(loadFromLocalStorage('dashboardLayouts', initialLayouts));
             setLastCsvImportDate(loadFromLocalStorage('lastCsvImportDate', null));
+            setLastImportWeek(loadFromLocalStorage('lastImportWeek', null));
+            setLastImportYear(loadFromLocalStorage('lastImportYear', null));
 
             // Gérer les données de référence avec versionnement
             const storedVersion = loadFromLocalStorage<string>(VERSION_KEY, '1.0');
@@ -115,6 +124,8 @@ export const DataProvider = ({ children }: PropsWithChildren) => {
     useEffect(() => { if (!isLoading) saveToLocalStorage('projects', projects); }, [projects, isLoading]);
     useEffect(() => { if (!isLoading) saveToLocalStorage('dashboardLayouts', dashboardLayouts); }, [dashboardLayouts, isLoading]);
     useEffect(() => { if (!isLoading) saveToLocalStorage('lastCsvImportDate', lastCsvImportDate); }, [lastCsvImportDate, isLoading]);
+    useEffect(() => { if (!isLoading) saveToLocalStorage('lastImportWeek', lastImportWeek); }, [lastImportWeek, isLoading]);
+    useEffect(() => { if (!isLoading) saveToLocalStorage('lastImportYear', lastImportYear); }, [lastImportYear, isLoading]);
     
     // Les données de référence sont chargées depuis un fichier, mais peuvent être modifiées
     // par import, donc nous devons les persister.
@@ -133,6 +144,8 @@ export const DataProvider = ({ children }: PropsWithChildren) => {
         securityProcesses, setSecurityProcesses,
         dashboardLayouts, setDashboardLayouts,
         lastCsvImportDate, setLastCsvImportDate,
+        lastImportWeek, setLastImportWeek,
+        lastImportYear, setLastImportYear,
     };
 
     if (isLoading) {

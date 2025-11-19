@@ -1,4 +1,5 @@
-import React, { useState, useMemo, useEffect } from 'react';
+
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useData } from '../contexts/DataContext';
 import { Project, ProjectStatus, TShirtSize, Resource, Initiative, ProjectCategory } from '../types';
@@ -34,21 +35,57 @@ const Projects: React.FC = () => {
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
 
+    const handleOpenFormModal = useCallback((projectData?: Partial<Project>) => {
+        if (projectData && projectData.id) { // Editing existing
+            setCurrentProject(projectData as Project);
+            setIsEditMode(true);
+        } else { // Creating new (potentially with pre-filled data)
+            if(isReadOnly) return;
+            const nextIdNumber = projects.length > 0
+                ? Math.max(...projects.map(p => {
+                    const match = p.projectId.match(/P\d{2}-(\d{3})/);
+                    return match ? parseInt(match[1], 10) : 0;
+                })) + 1
+                : 1;
+            
+            const defaultNewProject: Partial<Project> = {
+                projectId: `P25-${String(nextIdNumber).padStart(3, '0')}`,
+                title: '',
+                status: ProjectStatus.IDENTIFIED,
+                tShirtSize: TShirtSize.M,
+                isTop30: false,
+                category: ProjectCategory.PROJECT,
+                initiativeId: initiatives[0]?.id || '',
+                isoMeasures: [],
+            };
+
+            setCurrentProject({ ...defaultNewProject, ...(projectData || {}) });
+            setIsEditMode(false);
+        }
+        setIsoSearchTerm('');
+        setIsFormModalOpen(true);
+    }, [isReadOnly, projects, initiatives]);
+
+
     useEffect(() => {
         const projectToOpenId = location.state?.openProject;
         if (projectToOpenId && !isFormModalOpen) {
             const projectToOpen = projects.find(p => p.id === projectToOpenId);
             if (projectToOpen) {
                 setIsModalOnly(true);
-                // Directly open modal instead of calling handler to avoid dependency issues
-                setCurrentProject(projectToOpen);
-                setIsEditMode(true);
-                setIsoSearchTerm('');
-                setIsFormModalOpen(true);
+                handleOpenFormModal(projectToOpen);
                 navigate(location.pathname, { replace: true, state: {} });
             }
         }
-    }, [location.state, projects, navigate, isFormModalOpen]);
+    }, [location.state, projects, navigate, isFormModalOpen, handleOpenFormModal]);
+
+    useEffect(() => {
+        const { projectDataToEdit } = location.state || {};
+        if (projectDataToEdit) {
+            handleOpenFormModal(projectDataToEdit);
+            navigate(location.pathname, { replace: true, state: {} });
+        }
+    }, [location.state, navigate, handleOpenFormModal]);
 
     const resourceMap = useMemo(() => new Map(resources.map(r => [r.id, r.name])), [resources]);
     const initiativeMap = useMemo(() => new Map(initiatives.map(i => [i.id, i.label])), [initiatives]);
@@ -70,41 +107,6 @@ const Projects: React.FC = () => {
         handleCloseDeleteModal();
     };
 
-
-    const handleOpenFormModal = (projectToEdit?: Project) => {
-        if (projectToEdit) {
-            setCurrentProject(projectToEdit);
-            setIsEditMode(true);
-        } else {
-            if(isReadOnly) return;
-            const nextIdNumber = projects.length > 0
-                ? Math.max(...projects.map(p => {
-                    const match = p.projectId.match(/P\d{2}-(\d{3})/);
-                    return match ? parseInt(match[1], 10) : 0;
-                })) + 1
-                : 1;
-
-            setCurrentProject({
-                projectId: `P25-${String(nextIdNumber).padStart(3, '0')}`,
-                title: '',
-                status: ProjectStatus.IDENTIFIED,
-                tShirtSize: TShirtSize.M,
-                isTop30: false,
-                category: ProjectCategory.PROJECT,
-                initiativeId: initiatives[0]?.id || '',
-                isoMeasures: [],
-                budgetRequested: undefined,
-                budgetApproved: undefined,
-                budgetCommitted: undefined,
-                validatedPurchaseOrders: undefined,
-                completedPV: undefined,
-                forecastedPurchaseOrders: undefined,
-            });
-            setIsEditMode(false);
-        }
-        setIsoSearchTerm('');
-        setIsFormModalOpen(true);
-    };
 
     const handleCloseModal = () => {
         if (isModalOnly) {
@@ -149,13 +151,17 @@ const Projects: React.FC = () => {
     };
 
     const getProjectProgress = (project: Project): number => {
-        const consumed = (project.internalWorkloadConsumed || 0) + (project.externalWorkloadConsumed || 0);
-        const engaged = (project.internalWorkloadEngaged || 0) + (project.externalWorkloadEngaged || 0);
+        const consumed = (project.moaInternalWorkloadConsumed || 0) + (project.moaExternalWorkloadConsumed || 0) + (project.moeInternalWorkloadConsumed || 0) + (project.moeExternalWorkloadConsumed || 0);
+        const engaged = (project.moaInternalWorkloadEngaged || 0) + (project.moaExternalWorkloadEngaged || 0) + (project.moeInternalWorkloadEngaged || 0) + (project.moeExternalWorkloadEngaged || 0);
         return engaged > 0 ? Math.round((consumed / engaged) * 100) : 0;
     };
 
     const sortedProjects = useMemo(() => {
+        const uoPattern = /^([a-zA-Z]+|\d+)\.\d+\.\d+\.\d+$/;
         let sortableItems = [...projects].filter(project => {
+            if (uoPattern.test(project.projectId) || project.projectId === 'TOTAL_GENERAL') {
+                return false;
+            }
             return (
                 (statusFilter === '' || project.status === statusFilter) &&
                 (top30Filter === '' || String(project.isTop30) === top30Filter) &&
@@ -407,48 +413,47 @@ const FormBody: React.FC<{
         });
     };
     
-    const { totalWorkload, progress, totalProgress, budgetCalculations } = useMemo(() => {
-        const internalConsumed = Number(currentProject.internalWorkloadConsumed) || 0;
-        const internalEngaged = Number(currentProject.internalWorkloadEngaged) || 0;
-        const externalConsumed = Number(currentProject.externalWorkloadConsumed) || 0;
-        const externalEngaged = Number(currentProject.externalWorkloadEngaged) || 0;
+    const { workloadTotals, budgetCalculations } = useMemo(() => {
+        const p = currentProject;
+        const moaIntC = p.moaInternalWorkloadConsumed || 0;
+        const moaIntE = p.moaInternalWorkloadEngaged || 0;
+        const moaExtC = p.moaExternalWorkloadConsumed || 0;
+        const moaExtE = p.moaExternalWorkloadEngaged || 0;
+        const moeIntC = p.moeInternalWorkloadConsumed || 0;
+        const moeIntE = p.moeInternalWorkloadEngaged || 0;
+        const moeExtC = p.moeExternalWorkloadConsumed || 0;
+        const moeExtE = p.moeExternalWorkloadEngaged || 0;
+        
+        const totalMoaEngaged = moaIntE + moaExtE;
+        const totalMoaConsumed = moaIntC + moaExtC;
+        const totalMoeEngaged = moeIntE + moeExtE;
+        const totalMoeConsumed = moeIntC + moeExtC;
 
-        const totalConsumed = internalConsumed + externalConsumed;
-        const totalEngaged = internalEngaged + externalEngaged;
-        const totalRequested = (Number(currentProject.internalWorkloadRequested) || 0) + (Number(currentProject.externalWorkloadRequested) || 0);
-
-        const internalProgress = internalEngaged > 0 ? Math.round((internalConsumed / internalEngaged) * 100) : 0;
-        const externalProgress = externalEngaged > 0 ? Math.round((externalConsumed / externalEngaged) * 100) : 0;
-        const totalProgress = totalEngaged > 0 ? Math.round((totalConsumed / totalEngaged) * 100) : 0;
+        const totalEngaged = totalMoaEngaged + totalMoeEngaged;
+        const totalConsumed = totalMoaConsumed + totalMoeConsumed;
+        
+        const workloadTotals = {
+            moaProgress: totalMoaEngaged > 0 ? Math.round((totalMoaConsumed / totalMoaEngaged) * 100) : 0,
+            moeProgress: totalMoeEngaged > 0 ? Math.round((totalMoeConsumed / totalMoeEngaged) * 100) : 0,
+            totalRequested: (p.moaInternalWorkloadRequested||0) + (p.moaExternalWorkloadRequested||0) + (p.moeInternalWorkloadRequested||0) + (p.moeExternalWorkloadRequested||0),
+            totalEngaged: totalEngaged,
+            totalConsumed: totalConsumed,
+            totalProgress: totalEngaged > 0 ? Math.round((totalConsumed / totalEngaged) * 100) : 0,
+        };
         
         const budgetApproved = Number(currentProject.budgetApproved) || 0;
         const budgetCommitted = Number(currentProject.budgetCommitted) || 0;
         const completedPV = Number(currentProject.completedPV) || 0;
         const forecastedPurchaseOrders = Number(currentProject.forecastedPurchaseOrders) || 0;
 
-        const availableBudget = budgetApproved - budgetCommitted;
-        const budgetCommitmentRate = budgetApproved > 0 ? Math.round((budgetCommitted / budgetApproved) * 100) : 0;
-        const budgetCompletionRate = budgetCommitted > 0 ? Math.round((completedPV / budgetCommitted) * 100) : 0;
-        const forecastedAvailableBudget = budgetApproved - (budgetCommitted + forecastedPurchaseOrders);
-
-        return {
-            totalWorkload: {
-                requested: totalRequested,
-                engaged: totalEngaged,
-                consumed: totalConsumed,
-            },
-            progress: {
-                internal: internalProgress,
-                external: externalProgress,
-            },
-            totalProgress,
-            budgetCalculations: {
-                availableBudget,
-                budgetCommitmentRate,
-                budgetCompletionRate,
-                forecastedAvailableBudget
-            }
+        const budgetCalculations = {
+            availableBudget: budgetApproved - budgetCommitted,
+            budgetCommitmentRate: budgetApproved > 0 ? Math.round((budgetCommitted / budgetApproved) * 100) : 0,
+            budgetCompletionRate: budgetCommitted > 0 ? Math.round((completedPV / budgetCommitted) * 100) : 0,
+            forecastedAvailableBudget: budgetApproved - (budgetCommitted + forecastedPurchaseOrders),
         };
+
+        return { workloadTotals, budgetCalculations };
     }, [currentProject]);
 
 
@@ -584,55 +589,82 @@ const FormBody: React.FC<{
                     <CalendarDatePicker id="endDate" name="endDate" value={currentProject.endDate?.split('T')[0] || ''} onChange={handleChange} readOnly={isReadOnly} />
                 </div>
             </div>
-
+            
             {/* Charges */}
             <div className="space-y-4 pt-4 border-t">
-                <h3 className="text-md font-semibold text-slate-800">Charges (en J/H)</h3>
-                {/* Interne */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 items-end p-2 border rounded-md bg-slate-50">
-                    <div className="col-span-4 font-medium text-slate-600">Interne</div>
-                    <div><label htmlFor="internalWorkloadRequested">Demandée</label><input type="number" name="internalWorkloadRequested" value={currentProject.internalWorkloadRequested || ''} onChange={handleChange} readOnly={isReadOnly} min="0"/></div>
-                    <div><label htmlFor="internalWorkloadEngaged">Engagée</label><input type="number" name="internalWorkloadEngaged" value={currentProject.internalWorkloadEngaged || ''} onChange={handleChange} readOnly={isReadOnly} min="0"/></div>
-                    <div><label htmlFor="internalWorkloadConsumed">Consommée</label><input type="number" name="internalWorkloadConsumed" value={currentProject.internalWorkloadConsumed || ''} onChange={handleChange} readOnly={isReadOnly} min="0"/></div>
-                    <div><label>Avancement</label><input type="text" value={`${progress.internal}%`} readOnly className="bg-slate-200" /></div>
+                <h3 className="text-xl font-semibold text-slate-800">Charges (en J/H)</h3>
+                <div className="space-y-4 p-4 border rounded-lg bg-slate-50">
+                    <h4 className="text-lg font-semibold text-slate-700">Charges MOA</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                        <div>
+                            <p className="font-medium text-slate-600 mb-2">Interne</p>
+                            <div className="grid grid-cols-3 gap-2 items-end">
+                                <div><label htmlFor="moaInternalWorkloadRequested">Demandée</label><input type="number" name="moaInternalWorkloadRequested" value={currentProject.moaInternalWorkloadRequested || ''} onChange={handleChange} readOnly={isReadOnly} min="0"/></div>
+                                <div><label htmlFor="moaInternalWorkloadEngaged">Engagée</label><input type="number" name="moaInternalWorkloadEngaged" value={currentProject.moaInternalWorkloadEngaged || ''} onChange={handleChange} readOnly={isReadOnly} min="0"/></div>
+                                <div><label htmlFor="moaInternalWorkloadConsumed">Consommée</label><input type="number" name="moaInternalWorkloadConsumed" value={currentProject.moaInternalWorkloadConsumed || ''} onChange={handleChange} readOnly={isReadOnly} min="0"/></div>
+                            </div>
+                        </div>
+                         <div>
+                            <p className="font-medium text-slate-600 mb-2">Externe</p>
+                            <div className="grid grid-cols-3 gap-2 items-end">
+                                <div><label htmlFor="moaExternalWorkloadRequested">Demandée</label><input type="number" name="moaExternalWorkloadRequested" value={currentProject.moaExternalWorkloadRequested || ''} onChange={handleChange} readOnly={isReadOnly} min="0"/></div>
+                                <div><label htmlFor="moaExternalWorkloadEngaged">Engagée</label><input type="number" name="moaExternalWorkloadEngaged" value={currentProject.moaExternalWorkloadEngaged || ''} onChange={handleChange} readOnly={isReadOnly} min="0"/></div>
+                                <div><label htmlFor="moaExternalWorkloadConsumed">Consommée</label><input type="number" name="moaExternalWorkloadConsumed" value={currentProject.moaExternalWorkloadConsumed || ''} onChange={handleChange} readOnly={isReadOnly} min="0"/></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                 {/* Externe */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 items-end p-2 border rounded-md bg-slate-50">
-                    <div className="col-span-4 font-medium text-slate-600">Externe</div>
-                    <div><label htmlFor="externalWorkloadRequested">Demandée</label><input type="number" name="externalWorkloadRequested" value={currentProject.externalWorkloadRequested || ''} onChange={handleChange} readOnly={isReadOnly} min="0"/></div>
-                    <div><label htmlFor="externalWorkloadEngaged">Engagée</label><input type="number" name="externalWorkloadEngaged" value={currentProject.externalWorkloadEngaged || ''} onChange={handleChange} readOnly={isReadOnly} min="0"/></div>
-                    <div><label htmlFor="externalWorkloadConsumed">Consommée</label><input type="number" name="externalWorkloadConsumed" value={currentProject.externalWorkloadConsumed || ''} onChange={handleChange} readOnly={isReadOnly} min="0"/></div>
-                    <div><label>Avancement</label><input type="text" value={`${progress.external}%`} readOnly className="bg-slate-200" /></div>
+
+                <div className="space-y-4 p-4 border rounded-lg bg-slate-50">
+                    <h4 className="text-lg font-semibold text-slate-700">Charges MOE</h4>
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                        <div>
+                            <p className="font-medium text-slate-600 mb-2">Interne</p>
+                            <div className="grid grid-cols-3 gap-2 items-end">
+                                <div><label htmlFor="moeInternalWorkloadRequested">Demandée</label><input type="number" name="moeInternalWorkloadRequested" value={currentProject.moeInternalWorkloadRequested || ''} onChange={handleChange} readOnly={isReadOnly} min="0"/></div>
+                                <div><label htmlFor="moeInternalWorkloadEngaged">Engagée</label><input type="number" name="moeInternalWorkloadEngaged" value={currentProject.moeInternalWorkloadEngaged || ''} onChange={handleChange} readOnly={isReadOnly} min="0"/></div>
+                                <div><label htmlFor="moeInternalWorkloadConsumed">Consommée</label><input type="number" name="moeInternalWorkloadConsumed" value={currentProject.moeInternalWorkloadConsumed || ''} onChange={handleChange} readOnly={isReadOnly} min="0"/></div>
+                            </div>
+                        </div>
+                         <div>
+                            <p className="font-medium text-slate-600 mb-2">Externe</p>
+                            <div className="grid grid-cols-3 gap-2 items-end">
+                                <div><label htmlFor="moeExternalWorkloadRequested">Demandée</label><input type="number" name="moeExternalWorkloadRequested" value={currentProject.moeExternalWorkloadRequested || ''} onChange={handleChange} readOnly={isReadOnly} min="0"/></div>
+                                <div><label htmlFor="moeExternalWorkloadEngaged">Engagée</label><input type="number" name="moeExternalWorkloadEngaged" value={currentProject.moeExternalWorkloadEngaged || ''} onChange={handleChange} readOnly={isReadOnly} min="0"/></div>
+                                <div><label htmlFor="moeExternalWorkloadConsumed">Consommée</label><input type="number" name="moeExternalWorkloadConsumed" value={currentProject.moeExternalWorkloadConsumed || ''} onChange={handleChange} readOnly={isReadOnly} min="0"/></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                 {/* Total */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 items-end p-2 border rounded-md bg-blue-50">
-                    <div className="col-span-4 font-semibold text-blue-800">Total</div>
-                    <div><label>Demandée</label><input type="text" value={totalWorkload.requested} readOnly className="bg-slate-200" /></div>
-                    <div><label>Engagée</label><input type="text" value={totalWorkload.engaged} readOnly className="bg-slate-200" /></div>
-                    <div><label>Consommée</label><input type="text" value={totalWorkload.consumed} readOnly className="bg-slate-200" /></div>
-                    <div><label>Avancement total</label><input type="text" value={`${totalProgress}%`} readOnly className="bg-slate-200" /></div>
+                 
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 items-end p-4 border rounded-md bg-blue-50">
+                    <div className="col-span-full font-semibold text-blue-800">Total Charges Projet</div>
+                    <div><label>Total Demandé</label><input type="text" value={workloadTotals.totalRequested} readOnly className="bg-slate-200" /></div>
+                    <div><label>Total Engagé</label><input type="text" value={workloadTotals.totalEngaged} readOnly className="bg-slate-200" /></div>
+                    <div><label>Total Consommé</label><input type="text" value={workloadTotals.totalConsumed} readOnly className="bg-slate-200" /></div>
+                    <div><label>Avancement Global</label><input type="text" value={`${workloadTotals.totalProgress}%`} readOnly className="bg-slate-200" /></div>
                 </div>
             </div>
             
             {/* Budget */}
             <div className="space-y-4 pt-4 border-t">
-                <h3 className="text-md font-semibold text-slate-800">Budget (€)</h3>
+                <h3 className="text-xl font-semibold text-slate-800">Budget (€)</h3>
                 <div className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-2 border rounded-md bg-slate-50">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 border rounded-md bg-slate-50">
                         <div><label htmlFor="budgetRequested">Demandé</label><input type="number" name="budgetRequested" value={currentProject.budgetRequested || ''} onChange={handleChange} readOnly={isReadOnly} min="0" step="any"/></div>
                         <div><label htmlFor="budgetApproved">Accordé</label><input type="number" name="budgetApproved" value={currentProject.budgetApproved || ''} onChange={handleChange} readOnly={isReadOnly} min="0" step="any"/></div>
                         <div><label htmlFor="budgetCommitted">Engagé</label><input type="number" name="budgetCommitted" value={currentProject.budgetCommitted || ''} onChange={handleChange} readOnly={isReadOnly} min="0" step="any"/></div>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-2 border rounded-md bg-slate-50">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 border rounded-md bg-slate-50">
                         <div><label htmlFor="validatedPurchaseOrders">Demandes d’achat validées</label><input type="number" name="validatedPurchaseOrders" value={currentProject.validatedPurchaseOrders || ''} onChange={handleChange} readOnly={isReadOnly} min="0" step="any"/></div>
                         <div><label htmlFor="completedPV">Réalisé (PV)</label><input type="number" name="completedPV" value={currentProject.completedPV || ''} onChange={handleChange} readOnly={isReadOnly} min="0" step="any"/></div>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-2 border rounded-md bg-blue-50">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 border rounded-md bg-blue-50">
                         <div><label>Disponible</label><input type="text" value={new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(budgetCalculations.availableBudget)} readOnly className="bg-slate-200" /></div>
                         <div><label>Taux d'engagement</label><input type="text" value={`${budgetCalculations.budgetCommitmentRate}%`} readOnly className="bg-slate-200" /></div>
                         <div><label>Taux de réalisé</label><input type="text" value={`${budgetCalculations.budgetCompletionRate}%`} readOnly className="bg-slate-200" /></div>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-2 border rounded-md bg-slate-50">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 border rounded-md bg-slate-50">
                         <div><label htmlFor="forecastedPurchaseOrders">Demandes d’achat prévues</label><input type="number" name="forecastedPurchaseOrders" value={currentProject.forecastedPurchaseOrders || ''} onChange={handleChange} readOnly={isReadOnly} min="0" step="any"/></div>
                         <div><label>Disponible prévu</label><input type="text" value={new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(budgetCalculations.forecastedAvailableBudget)} readOnly className="bg-slate-200" /></div>
                     </div>

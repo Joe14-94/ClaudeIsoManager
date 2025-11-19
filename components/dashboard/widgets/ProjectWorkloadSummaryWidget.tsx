@@ -12,13 +12,14 @@ const ProjectWorkloadSummaryWidget: React.FC = () => {
     const { projects, lastCsvImportDate } = useData();
 
     const totalStats = useMemo(() => {
+        // FIX: Correctly sum both MOA and MOE workloads for internal and external types to match the `Project` type definition.
         return projects.reduce((acc, p) => {
-            acc.intReq += p.internalWorkloadRequested || 0;
-            acc.intEng += p.internalWorkloadEngaged || 0;
-            acc.intCon += p.internalWorkloadConsumed || 0;
-            acc.extReq += p.externalWorkloadRequested || 0;
-            acc.extEng += p.externalWorkloadEngaged || 0;
-            acc.extCon += p.externalWorkloadConsumed || 0;
+            acc.intReq += (p.moaInternalWorkloadRequested || 0) + (p.moeInternalWorkloadRequested || 0);
+            acc.intEng += (p.moaInternalWorkloadEngaged || 0) + (p.moeInternalWorkloadEngaged || 0);
+            acc.intCon += (p.moaInternalWorkloadConsumed || 0) + (p.moeInternalWorkloadConsumed || 0);
+            acc.extReq += (p.moaExternalWorkloadRequested || 0) + (p.moeExternalWorkloadRequested || 0);
+            acc.extEng += (p.moaExternalWorkloadEngaged || 0) + (p.moeExternalWorkloadEngaged || 0);
+            acc.extCon += (p.moaExternalWorkloadConsumed || 0) + (p.moeExternalWorkloadConsumed || 0);
             return acc;
         }, { intReq: 0, intEng: 0, intCon: 0, extReq: 0, extEng: 0, extCon: 0 });
     }, [projects]);

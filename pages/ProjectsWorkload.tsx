@@ -1,20 +1,21 @@
+
 import React, { useState, useMemo } from 'react';
 import { useData } from '../contexts/DataContext';
 import { Project } from '../types';
 import Card, { CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import { Search, ArrowUp, ArrowDown, Info } from 'lucide-react';
 
-type SortKey = 'projectId' | 'title' | 'internalWorkloadRequested' | 'internalWorkloadEngaged' | 'internalWorkloadConsumed' | 'externalWorkloadRequested' | 'externalWorkloadEngaged' | 'externalWorkloadConsumed' | 'totalProgress';
+type SortKey = 'projectId' | 'title' | 'totalWorkloadEngaged' | 'totalWorkloadConsumed' | 'totalProgress';
 type SortDirection = 'ascending' | 'descending';
 
 const formatJH = (value?: number) => {
     if (value === undefined || value === null || isNaN(value)) return 'N/A';
-    return `${value} J/H`;
+    return `${Math.round(value)} J/H`;
 };
 
 const getProjectProgress = (project: Project): number => {
-    const consumed = (project.internalWorkloadConsumed || 0) + (project.externalWorkloadConsumed || 0);
-    const engaged = (project.internalWorkloadEngaged || 0) + (project.externalWorkloadEngaged || 0);
+    const consumed = (project.moaInternalWorkloadConsumed || 0) + (project.moaExternalWorkloadConsumed || 0) + (project.moeInternalWorkloadConsumed || 0) + (project.moeExternalWorkloadConsumed || 0);
+    const engaged = (project.moaInternalWorkloadEngaged || 0) + (project.moaExternalWorkloadEngaged || 0) + (project.moeInternalWorkloadEngaged || 0) + (project.moeExternalWorkloadEngaged || 0);
     return engaged > 0 ? Math.round((consumed / engaged) * 100) : 0;
 };
 
@@ -25,22 +26,31 @@ const ProjectsWorkload: React.FC = () => {
     const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: SortDirection } | null>({ key: 'projectId', direction: 'ascending' });
 
     const totalStats = useMemo(() => {
-        return projects.reduce((acc, p) => {
-            acc.intReq += p.internalWorkloadRequested || 0;
-            acc.intEng += p.internalWorkloadEngaged || 0;
-            acc.intCon += p.internalWorkloadConsumed || 0;
-            acc.extReq += p.externalWorkloadRequested || 0;
-            acc.extEng += p.externalWorkloadEngaged || 0;
-            acc.extCon += p.externalWorkloadConsumed || 0;
+        const uoPattern = /^([a-zA-Z]+|\d+)\.\d+\.\d+\.\d+$/;
+        // Exclure TOTAL_GENERAL
+        const validProjects = projects.filter(p => !uoPattern.test(p.projectId) && p.projectId !== 'TOTAL_GENERAL');
+        return validProjects.reduce((acc, p) => {
+            acc.moaIntEng += p.moaInternalWorkloadEngaged || 0;
+            acc.moaIntCon += p.moaInternalWorkloadConsumed || 0;
+            acc.moaExtEng += p.moaExternalWorkloadEngaged || 0;
+            acc.moaExtCon += p.moaExternalWorkloadConsumed || 0;
+            acc.moeIntEng += p.moeInternalWorkloadEngaged || 0;
+            acc.moeIntCon += p.moeInternalWorkloadConsumed || 0;
+            acc.moeExtEng += p.moeExternalWorkloadEngaged || 0;
+            acc.moeExtCon += p.moeExternalWorkloadConsumed || 0;
             return acc;
-        }, { intReq: 0, intEng: 0, intCon: 0, extReq: 0, extEng: 0, extCon: 0 });
+        }, { moaIntEng: 0, moaIntCon: 0, moaExtEng: 0, moaExtCon: 0, moeIntEng: 0, moeIntCon: 0, moeExtEng: 0, moeExtCon: 0 });
     }, [projects]);
     
     const sortedProjects = useMemo(() => {
+        const uoPattern = /^([a-zA-Z]+|\d+)\.\d+\.\d+\.\d+$/;
+        // Exclure TOTAL_GENERAL de la liste
         let sortableItems = [...projects].filter(project =>
-            searchTerm === '' ||
+            !uoPattern.test(project.projectId) &&
+            project.projectId !== 'TOTAL_GENERAL' &&
+            (searchTerm === '' ||
             project.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            project.projectId.toLowerCase().includes(searchTerm.toLowerCase())
+            project.projectId.toLowerCase().includes(searchTerm.toLowerCase()))
         );
 
         if (sortConfig !== null) {
@@ -51,7 +61,14 @@ const ProjectsWorkload: React.FC = () => {
                 if (sortConfig.key === 'totalProgress') {
                     aValue = getProjectProgress(a);
                     bValue = getProjectProgress(b);
-                } else {
+                } else if (sortConfig.key === 'totalWorkloadEngaged') {
+                    aValue = (a.moaInternalWorkloadEngaged || 0) + (a.moaExternalWorkloadEngaged || 0) + (a.moeInternalWorkloadEngaged || 0) + (a.moeExternalWorkloadEngaged || 0);
+                    bValue = (b.moaInternalWorkloadEngaged || 0) + (b.moaExternalWorkloadEngaged || 0) + (b.moeInternalWorkloadEngaged || 0) + (b.moeExternalWorkloadEngaged || 0);
+                } else if (sortConfig.key === 'totalWorkloadConsumed') {
+                    aValue = (a.moaInternalWorkloadConsumed || 0) + (a.moaExternalWorkloadConsumed || 0) + (a.moeInternalWorkloadConsumed || 0) + (a.moeExternalWorkloadConsumed || 0);
+                    bValue = (b.moaInternalWorkloadConsumed || 0) + (b.moaExternalWorkloadConsumed || 0) + (b.moeInternalWorkloadConsumed || 0) + (b.moeExternalWorkloadConsumed || 0);
+                }
+                 else {
                     aValue = a[sortConfig.key as keyof Project] as (string | number | undefined);
                     bValue = b[sortConfig.key as keyof Project] as (string | number | undefined);
                 }
@@ -90,17 +107,13 @@ const ProjectsWorkload: React.FC = () => {
     const headers: { key: SortKey, label: string }[] = [
         { key: 'projectId', label: 'ID Projet' },
         { key: 'title', label: 'Titre' },
-        { key: 'internalWorkloadRequested', label: 'Int. Demandée' },
-        { key: 'internalWorkloadEngaged', label: 'Int. Engagée' },
-        { key: 'internalWorkloadConsumed', label: 'Int. Consommée' },
-        { key: 'externalWorkloadRequested', label: 'Ext. Demandée' },
-        { key: 'externalWorkloadEngaged', label: 'Ext. Engagée' },
-        { key: 'externalWorkloadConsumed', label: 'Ext. Consommée' },
+        { key: 'totalWorkloadEngaged', label: 'Total Engagé' },
+        { key: 'totalWorkloadConsumed', label: 'Total Consommé' },
         { key: 'totalProgress', label: 'Avancement Total' },
     ];
     
-    const totalEngaged = totalStats.intEng + totalStats.extEng;
-    const totalConsumed = totalStats.intCon + totalStats.extCon;
+    const totalEngaged = totalStats.moaIntEng + totalStats.moaExtEng + totalStats.moeIntEng + totalStats.moeExtEng;
+    const totalConsumed = totalStats.moaIntCon + totalStats.moaExtCon + totalStats.moeIntCon + totalStats.moeExtCon;
     const totalProgress = totalEngaged > 0 ? Math.round((totalConsumed / totalEngaged) * 100) : 0;
 
     return (
@@ -118,13 +131,12 @@ const ProjectsWorkload: React.FC = () => {
             <Card>
                 <CardHeader><CardTitle>Totaux des Charges</CardTitle></CardHeader>
                 <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                    <div><p className="text-sm text-slate-500">Int. Demandée</p><p className="text-lg font-bold">{formatJH(totalStats.intReq)}</p></div>
-                    <div><p className="text-sm text-slate-500">Int. Engagée</p><p className="text-lg font-bold">{formatJH(totalStats.intEng)}</p></div>
-                    <div><p className="text-sm text-slate-500">Int. Consommée</p><p className="text-lg font-bold">{formatJH(totalStats.intCon)}</p></div>
-                    <div><p className="text-sm text-slate-500">Avancement Total</p><p className="text-lg font-bold text-blue-600">{totalProgress}%</p></div>
-                    <div><p className="text-sm text-slate-500">Ext. Demandée</p><p className="text-lg font-bold">{formatJH(totalStats.extReq)}</p></div>
-                    <div><p className="text-sm text-slate-500">Ext. Engagée</p><p className="text-lg font-bold">{formatJH(totalStats.extEng)}</p></div>
-                    <div><p className="text-sm text-slate-500">Ext. Consommée</p><p className="text-lg font-bold">{formatJH(totalStats.extCon)}</p></div>
+                    <div><p className="text-sm text-slate-500">Total MOA Engagé</p><p className="text-lg font-bold">{formatJH(totalStats.moaIntEng + totalStats.moaExtEng)}</p></div>
+                    <div><p className="text-sm text-slate-500">Total MOA Consommé</p><p className="text-lg font-bold">{formatJH(totalStats.moaIntCon + totalStats.moaExtCon)}</p></div>
+                    <div><p className="text-sm text-slate-500">Total MOE Engagé</p><p className="text-lg font-bold">{formatJH(totalStats.moeIntEng + totalStats.moeExtEng)}</p></div>
+                    <div><p className="text-sm text-slate-500">Total MOE Consommé</p><p className="text-lg font-bold">{formatJH(totalStats.moeIntCon + totalStats.moeExtCon)}</p></div>
+                    <div className="md:col-span-2"><p className="text-sm text-slate-500">Total Engagé (Global)</p><p className="text-xl font-bold">{formatJH(totalEngaged)}</p></div>
+                    <div className="md:col-span-2"><p className="text-sm text-slate-500">Total Consommé (Global)</p><p className="text-xl font-bold">{formatJH(totalConsumed)}</p></div>
                 </CardContent>
             </Card>
 
@@ -151,21 +163,29 @@ const ProjectsWorkload: React.FC = () => {
                                             {header.label} {renderSortArrow(header.key)}
                                         </th>
                                     ))}
+                                    <th className="px-6 py-3 text-center" colSpan={2}>Détail MOA</th>
+                                    <th className="px-6 py-3 text-center" colSpan={2}>Détail MOE</th>
+                                </tr>
+                                <tr className="text-xs bg-slate-100">
+                                    <th colSpan={5}></th>
+                                    <th className="px-2 py-2 font-medium">Int.</th>
+                                    <th className="px-2 py-2 font-medium">Ext.</th>
+                                    <th className="px-2 py-2 font-medium">Int.</th>
+                                    <th className="px-2 py-2 font-medium">Ext.</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {sortedProjects.map(project => {
                                     const progress = getProjectProgress(project);
+                                    const totalEngaged = (project.moaInternalWorkloadEngaged || 0) + (project.moaExternalWorkloadEngaged || 0) + (project.moeInternalWorkloadEngaged || 0) + (project.moeExternalWorkloadEngaged || 0);
+                                    const totalConsumed = (project.moaInternalWorkloadConsumed || 0) + (project.moaExternalWorkloadConsumed || 0) + (project.moeInternalWorkloadConsumed || 0) + (project.moeExternalWorkloadConsumed || 0);
+                                    
                                     return (
                                     <tr key={project.id} className="bg-white border-b hover:bg-slate-50">
                                         <td className="px-6 py-4 font-medium text-slate-900">{project.projectId}</td>
                                         <td className="px-6 py-4">{project.title}</td>
-                                        <td className="px-6 py-4">{formatJH(project.internalWorkloadRequested)}</td>
-                                        <td className="px-6 py-4">{formatJH(project.internalWorkloadEngaged)}</td>
-                                        <td className="px-6 py-4">{formatJH(project.internalWorkloadConsumed)}</td>
-                                        <td className="px-6 py-4">{formatJH(project.externalWorkloadRequested)}</td>
-                                        <td className="px-6 py-4">{formatJH(project.externalWorkloadEngaged)}</td>
-                                        <td className="px-6 py-4">{formatJH(project.externalWorkloadConsumed)}</td>
+                                        <td className="px-6 py-4">{formatJH(totalEngaged)}</td>
+                                        <td className="px-6 py-4">{formatJH(totalConsumed)}</td>
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-2">
                                                 <div className="w-full bg-slate-200 rounded-full h-2.5 min-w-[50px]">
@@ -174,6 +194,10 @@ const ProjectsWorkload: React.FC = () => {
                                                 <span className="font-semibold">{progress}%</span>
                                             </div>
                                         </td>
+                                        <td className="px-2 py-4">{formatJH(project.moaInternalWorkloadConsumed)}</td>
+                                        <td className="px-2 py-4">{formatJH(project.moaExternalWorkloadConsumed)}</td>
+                                        <td className="px-2 py-4">{formatJH(project.moeInternalWorkloadConsumed)}</td>
+                                        <td className="px-2 py-4">{formatJH(project.moeExternalWorkloadConsumed)}</td>
                                     </tr>
                                 )})}
                             </tbody>

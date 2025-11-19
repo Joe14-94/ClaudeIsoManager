@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { useData } from '../contexts/DataContext';
 import { Project } from '../types';
@@ -18,7 +19,10 @@ const ProjectsBudget: React.FC = () => {
     const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: SortDirection } | null>({ key: 'projectId', direction: 'ascending' });
 
     const totalStats = useMemo(() => {
-        return projects.reduce((acc, p) => {
+        const uoPattern = /^([a-zA-Z]+|\d+)\.\d+\.\d+\.\d+$/;
+        // Exclure TOTAL_GENERAL
+        const validProjects = projects.filter(p => !uoPattern.test(p.projectId) && p.projectId !== 'TOTAL_GENERAL');
+        return validProjects.reduce((acc, p) => {
             acc.requested += p.budgetRequested || 0;
             acc.approved += p.budgetApproved || 0;
             acc.committed += p.budgetCommitted || 0;
@@ -30,10 +34,14 @@ const ProjectsBudget: React.FC = () => {
     }, [projects]);
     
     const sortedProjects = useMemo(() => {
+        const uoPattern = /^([a-zA-Z]+|\d+)\.\d+\.\d+\.\d+$/;
+        // Exclure TOTAL_GENERAL de la liste
         let sortableItems = [...projects].filter(project =>
-            searchTerm === '' ||
+            !uoPattern.test(project.projectId) &&
+            project.projectId !== 'TOTAL_GENERAL' &&
+            (searchTerm === '' ||
             project.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            project.projectId.toLowerCase().includes(searchTerm.toLowerCase())
+            project.projectId.toLowerCase().includes(searchTerm.toLowerCase()))
         );
 
         if (sortConfig !== null) {

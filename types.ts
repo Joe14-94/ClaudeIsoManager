@@ -192,9 +192,11 @@ export enum TShirtSize {
 }
 
 export enum ProjectCategory {
-  OPPORTUNITY = "Opportunité",
+  ACTIVITY = "Activité",
   EPA = "EPA",
   MCO = "MCO",
+  OPERATION = "Opération",
+  OPPORTUNITY = "Opportunité",
   PROJECT = "Projet",
 }
 
@@ -203,6 +205,14 @@ export enum ProjectStatus {
   NO = "NO",
   NF = "NF",
   NT = "NT",
+}
+
+export interface FdrHistoryEntry {
+  week: string;
+  year: string;
+  type: 'workload' | 'budget';
+  importDate: DateTime;
+  data: Partial<Project>;
 }
 
 export interface Project {
@@ -219,19 +229,32 @@ export interface Project {
   projectEndDate?: DateTime;
   goLiveDate?: DateTime; // Date de passage en NO
   endDate?: DateTime; // Date de passage en NF
-  internalWorkloadRequested?: number;
-  internalWorkloadEngaged?: number;
-  internalWorkloadConsumed?: number;
-  externalWorkloadRequested?: number;
-  externalWorkloadEngaged?: number;
-  externalWorkloadConsumed?: number;
   isTop30: boolean;
   createdAt: DateTime;
   updatedAt: DateTime;
   initiativeId: string;
   isoMeasures: string[];
 
-  // Budget fields
+  // History of FDR imports
+  fdrHistory?: FdrHistoryEntry[];
+
+  // Workload fields MOA (Derived from latest history)
+  moaInternalWorkloadRequested?: number;
+  moaInternalWorkloadEngaged?: number;
+  moaInternalWorkloadConsumed?: number;
+  moaExternalWorkloadRequested?: number;
+  moaExternalWorkloadEngaged?: number;
+  moaExternalWorkloadConsumed?: number;
+
+  // Workload fields MOE (Derived from latest history)
+  moeInternalWorkloadRequested?: number;
+  moeInternalWorkloadEngaged?: number;
+  moeInternalWorkloadConsumed?: number;
+  moeExternalWorkloadRequested?: number;
+  moeExternalWorkloadEngaged?: number;
+  moeExternalWorkloadConsumed?: number;
+
+  // Budget fields (Derived from latest history)
   budgetRequested?: number;
   budgetApproved?: number;
   budgetCommitted?: number;

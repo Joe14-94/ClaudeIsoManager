@@ -24,12 +24,15 @@ export const projects: Project[] = [
     budgetApproved: 120000,
     budgetCommitted: 75000,
     completedPV: 20000,
-    internalWorkloadRequested: 100,
-    internalWorkloadEngaged: 80,
-    internalWorkloadConsumed: 25,
-    externalWorkloadRequested: 50,
-    externalWorkloadEngaged: 50,
-    externalWorkloadConsumed: 10,
+    moaInternalWorkloadRequested: 20,
+    moaInternalWorkloadEngaged: 20,
+    moaInternalWorkloadConsumed: 5,
+    moeInternalWorkloadRequested: 80,
+    moeInternalWorkloadEngaged: 60,
+    moeInternalWorkloadConsumed: 20,
+    moeExternalWorkloadRequested: 50,
+    moeExternalWorkloadEngaged: 50,
+    moeExternalWorkloadConsumed: 10,
   },
   {
     id: 'proj-demo-2',
@@ -53,10 +56,12 @@ export const projects: Project[] = [
     budgetApproved: 250000,
     budgetCommitted: 245000,
     completedPV: 245000,
-    internalWorkloadConsumed: 200,
-    internalWorkloadEngaged: 200,
-    externalWorkloadConsumed: 350,
-    externalWorkloadEngaged: 350,
+    moaInternalWorkloadConsumed: 50,
+    moaInternalWorkloadEngaged: 50,
+    moeInternalWorkloadConsumed: 150,
+    moeInternalWorkloadEngaged: 150,
+    moeExternalWorkloadConsumed: 350,
+    moeExternalWorkloadEngaged: 350,
   },
    {
     id: 'proj-demo-3',
@@ -113,7 +118,7 @@ export const projects: Project[] = [
     budgetApproved: 30000,
     budgetCommitted: 35000, // Budget dépassé
     completedPV: 15000,
-    internalWorkloadEngaged: 20,
-    internalWorkloadConsumed: 25, // Consommé > Engagé
+    moaInternalWorkloadEngaged: 20,
+    moaInternalWorkloadConsumed: 25, // Consommé > Engagé
   }
 ];

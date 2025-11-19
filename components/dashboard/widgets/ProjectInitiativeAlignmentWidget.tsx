@@ -19,7 +19,8 @@ const ProjectInitiativeAlignmentWidget: React.FC = () => {
     const initiativeMap = new Map<string, { code: string; fullLabel: string; }>(initiatives.map(i => [i.id, { code: i.code, fullLabel: `${i.code} - ${i.label}` }]));
 
     projects.forEach(project => {
-      const workload = (project.internalWorkloadEngaged || 0) + (project.externalWorkloadEngaged || 0);
+      // FIX: Correctly calculate total engaged workload by summing MOA and MOE for both internal and external types.
+      const workload = (project.moaInternalWorkloadEngaged || 0) + (project.moaExternalWorkloadEngaged || 0) + (project.moeInternalWorkloadEngaged || 0) + (project.moeExternalWorkloadEngaged || 0);
       const budget = project.completedPV || 0;
 
       if ((workload > 0 || budget > 0) && project.initiativeId) {

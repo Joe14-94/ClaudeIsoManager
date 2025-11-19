@@ -31,35 +31,41 @@ const formatCurrency = (value: number) => {
 };
 
 const ProjectsDashboardPage: React.FC = () => {
-  const { projects, lastCsvImportDate } = useData();
+  const { projects, lastCsvImportDate, lastImportWeek, lastImportYear } = useData();
   const navigate = useNavigate();
   const timelineContainerRef = useRef<HTMLDivElement>(null);
   
   const [filters, setFilters] = useState<Partial<{ status: ProjectStatus }>>({});
 
+  const validProjects = useMemo(() => {
+    const uoPattern = /^([a-zA-Z]+|\d+)\.\d+\.\d+\.\d+$/;
+    // Exclure TOTAL_GENERAL des listes et calculs statistiques basés sur la liste des projets
+    return projects.filter(p => !uoPattern.test(p.projectId) && p.projectId !== 'TOTAL_GENERAL');
+  }, [projects]);
+
   const filteredProjects = useMemo(() => {
     if (Object.keys(filters).length === 0) {
-      return projects;
+      return validProjects;
     }
-    return projects.filter(project => {
+    return validProjects.filter(project => {
       const statusMatch = !filters.status || project.status === filters.status;
       return statusMatch;
     });
-  }, [projects, filters]);
+  }, [validProjects, filters]);
 
 
   const stats = useMemo(() => {
-    const total = projects.length;
-    const top30 = projects.filter(p => p.isTop30).length;
+    const total = validProjects.length;
+    const top30 = validProjects.filter(p => p.isTop30).length;
     
-    const completed = projects.filter(p => p.status === ProjectStatus.NF).length;
-    const inProgress = projects.filter(p => p.status === ProjectStatus.NO).length;
+    const completed = validProjects.filter(p => p.status === ProjectStatus.NF).length;
+    const inProgress = validProjects.filter(p => p.status === ProjectStatus.NO).length;
     
-    const totalConsumed = projects.reduce((sum, p) => sum + (p.internalWorkloadConsumed || 0) + (p.externalWorkloadConsumed || 0), 0);
-    const totalEngaged = projects.reduce((sum, p) => sum + (p.internalWorkloadEngaged || 0) + (p.externalWorkloadEngaged || 0), 0);
+    const totalConsumed = validProjects.reduce((sum, p) => sum + (p.moaInternalWorkloadConsumed || 0) + (p.moaExternalWorkloadConsumed || 0) + (p.moeInternalWorkloadConsumed || 0) + (p.moeExternalWorkloadConsumed || 0), 0);
+    const totalEngaged = validProjects.reduce((sum, p) => sum + (p.moaInternalWorkloadEngaged || 0) + (p.moaExternalWorkloadEngaged || 0) + (p.moeInternalWorkloadEngaged || 0) + (p.moeExternalWorkloadEngaged || 0), 0);
     const overallProgress = totalEngaged > 0 ? Math.round((totalConsumed / totalEngaged) * 100) : 0;
     
-    const totalBudgetApproved = projects.reduce((sum, p) => sum + (p.budgetApproved || 0), 0);
+    const totalBudgetApproved = validProjects.reduce((sum, p) => sum + (p.budgetApproved || 0), 0);
 
     return {
       total,
@@ -69,7 +75,7 @@ const ProjectsDashboardPage: React.FC = () => {
       overallProgress,
       totalBudgetApproved
     };
-  }, [projects]);
+  }, [validProjects]);
   
   const handleSliceClick = (status: ProjectStatus) => {
     setFilters({ status });
@@ -95,7 +101,11 @@ const ProjectsDashboardPage: React.FC = () => {
         {lastCsvImportDate && (
             <div className="flex items-center gap-2 text-xs text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
                 <Info size={14} />
-                <span>Données FDR mises à jour le {new Date(lastCsvImportDate).toLocaleString('fr-FR')}</span>
+                {lastImportWeek && lastImportYear ? (
+                    <span>Données FDR S{lastImportWeek}-{lastImportYear} (importé le {new Date(lastCsvImportDate).toLocaleString('fr-FR')})</span>
+                ) : (
+                    <span>Données FDR mises à jour le {new Date(lastCsvImportDate).toLocaleString('fr-FR')}</span>
+                )}
             </div>
         )}
       </div>
@@ -131,7 +141,7 @@ const ProjectsDashboardPage: React.FC = () => {
         <Card>
           <CardHeader><CardTitle>Répartition par statut</CardTitle></CardHeader>
           <CardContent>
-            <ProjectStatusDonutChart data={projects} onSliceClick={handleSliceClick} />
+            <ProjectStatusDonutChart data={validProjects} onSliceClick={handleSliceClick} />
           </CardContent>
         </Card>
       </div>

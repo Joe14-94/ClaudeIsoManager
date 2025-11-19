@@ -119,6 +119,7 @@ const Objectives: React.FC = () => {
       setCurrentItem({ code: '', label: '', description: '', strategicOrientations: [], chantierId: chantiers[0]?.id || '', mesures_iso: [] });
       setIsEditing(true);
     }
+    setIsoSearchTerm('');
     setIsModalOpen(true);
   };
 
@@ -126,6 +127,7 @@ const Objectives: React.FC = () => {
     setIsModalOpen(false);
     setCurrentItem(null);
     setIsEditing(false);
+    setIsoSearchTerm('');
   };
   
   const handleCancel = () => {
@@ -429,34 +431,39 @@ const Objectives: React.FC = () => {
                 heightClass="h-24"
             />
             
-             {isEditing && (
-                <div>
-                    <label className="block text-sm font-medium text-slate-700">Mesures ISO 27002 liées</label>
-                    <div className="mt-1">
-                        <input
-                        type="text"
-                        placeholder="Rechercher une mesure par code ou titre..."
-                        className="w-full px-3 py-2 border border-slate-300 rounded-md bg-white mb-2"
-                        value={isoSearchTerm}
-                        onChange={(e) => setIsoSearchTerm(e.target.value)}
-                        disabled={isReadOnly || !isEditing}
+            <div>
+                <label className="block text-sm font-medium text-slate-700">Mesures ISO 27002 liées</label>
+                {isEditing ? (
+                    <>
+                        <div className="mt-1">
+                            <input
+                            type="text"
+                            placeholder="Rechercher une mesure par code ou titre..."
+                            className="w-full px-3 py-2 border border-slate-300 rounded-md bg-white mb-2"
+                            value={isoSearchTerm}
+                            onChange={(e) => setIsoSearchTerm(e.target.value)}
+                            disabled={isReadOnly || !isEditing}
+                            />
+                        </div>
+                        <CustomMultiSelect
+                            label=""
+                            name="mesures_iso"
+                            options={filteredIsoOptions}
+                            selectedValues={currentItem.mesures_iso?.map(m => m.numero_mesure) || []}
+                            onChange={handleCustomMultiSelectChange}
+                            disabled={isReadOnly || !isEditing}
+                            heightClass="h-48"
                         />
-                    </div>
-                    <CustomMultiSelect
-                        label=""
-                        name="mesures_iso"
-                        options={filteredIsoOptions}
-                        selectedValues={currentItem.mesures_iso?.map(m => m.numero_mesure) || []}
-                        onChange={handleCustomMultiSelectChange}
-                        disabled={isReadOnly || !isEditing}
-                        heightClass="h-48"
-                    />
-                </div>
-            )}
+                    </>
+                ) : (
+                  currentItem.id && <ObjectiveDetails objective={currentItem as Objective} orientations={orientations} />
+                )}
+            </div>
             
             {currentItem.id && !isEditing && (
-                <ObjectiveDetails objective={currentItem as Objective} orientations={orientations} />
+              <></> // Placeholder, details are shown inside the "Mesures ISO" section now
             )}
+
 
             <div className="flex justify-between items-center gap-2 pt-4 border-t mt-6">
                 <div>

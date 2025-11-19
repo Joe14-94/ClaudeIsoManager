@@ -17,7 +17,11 @@ const ProjectsTimelinePage: React.FC = () => {
   const [zoomLevel, setZoomLevel] = useState(1);
 
   const filteredProjects = useMemo(() => {
+    const uoPattern = /^([a-zA-Z]+|\d+)\.\d+\.\d+\.\d+$/;
     return projects.filter(project => {
+      if (uoPattern.test(project.projectId)) {
+          return false;
+      }
       return (
         (statusFilter === '' || project.status === statusFilter) &&
         (top30Filter === '' || String(project.isTop30) === top30Filter)

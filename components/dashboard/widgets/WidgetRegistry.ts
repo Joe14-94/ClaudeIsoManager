@@ -1,3 +1,4 @@
+
 import React from 'react';
 import StatCardWidget from './StatCardWidget';
 import IsoCoverageWidget from './IsoCoverageWidget';
@@ -9,6 +10,7 @@ import ProjectWorkloadSummaryWidget from './ProjectWorkloadSummaryWidget';
 import KpiCardWidget from './KpiCardWidget';
 import StrategicAlignmentWidget from './StrategicAlignmentWidget';
 import ProjectInitiativeAlignmentWidget from './ProjectInitiativeAlignmentWidget';
+import ConsolidatedWorkloadWidget from './ConsolidatedWorkloadWidget';
 
 export interface WidgetConfig {
   id: string;
@@ -76,6 +78,13 @@ export const WIDGET_REGISTRY: WidgetConfig[] = [
     props: { type: 'avgActivityAge' },
   },
   // Charts & complex widgets
+  {
+    id: 'consolidatedWorkload',
+    name: 'Synthèse des Charges (J/H)',
+    description: 'Affiche un tableau consolidé des charges MOA, MOE et Totales (demandées et consommées).',
+    component: ConsolidatedWorkloadWidget,
+    defaultLayout: { w: 12, h: 4, minW: 6, minH: 4 },
+  },
   {
     id: 'strategicAlignment',
     name: 'Graphique : Alignement Activités par Orientation',

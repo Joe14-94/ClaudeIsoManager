@@ -1,17 +1,644 @@
 
-
-// FIX: The import statement was malformed and was missing the 'useState' hook import.
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Card, { CardContent, CardHeader, CardTitle } from '../components/ui/Card';
-import { Upload, HelpCircle, DatabaseBackup, Info, AlertTriangle, Trash2, Workflow, FileDown, Database } from 'lucide-react';
+import { Upload, HelpCircle, DatabaseBackup, Info, AlertTriangle, Trash2, Workflow, FileDown, Database, ClipboardPaste, CheckCircle, XCircle, Table, Play, Calendar, Coins, Timer } from 'lucide-react';
 import { useData } from '../contexts/DataContext';
 import { useAuth } from '../contexts/AuthContext';
 import Tooltip from '../components/ui/Tooltip';
-// FIX: Imported 'ProjectCategory' to resolve missing property errors when creating new Project instances.
-import { Activity, Chantier, Objective, StrategicOrientation, Resource, SecurityProcess, Project, TShirtSize, Initiative, ProjectCategory, ProjectStatus, IsoLink } from '../types';
+import { Activity, Chantier, Objective, StrategicOrientation, Resource, SecurityProcess, Project, TShirtSize, Initiative, ProjectCategory, ProjectStatus, IsoLink, FdrHistoryEntry } from '../types';
 import Modal from '../components/ui/Modal';
 import { loadReferenceData } from '../utils/referenceData';
 import { ISO_MEASURES_DATA } from '../constants';
+
+type AnalysisType = 'workload' | 'budget';
+
+interface AnalysisResult {
+    updates: {
+        existingProject: Project;
+        newData: Partial<Project>;
+        changes: { field: keyof Project, fieldLabel: string, oldValue: any, newValue: any }[];
+    }[];
+    creates: Partial<Project>[];
+    errors: { line: number; rowData: string[]; reason: string }[];
+}
+
+const fieldAliases: { [key in keyof Partial<Project> | string]: { label: string, aliases: string[] } } = {
+    projectId: { label: 'ID Projet', aliases: ['id projet', 'project id', 'identifiant projet', 'id', 'projet', 'project', 'id-projet', 'id_projet', 'portefeuille', 'objet de cout'] },
+    title: { label: 'Titre', aliases: ['titre', 'title', 'libellé', 'libelle', 'nom du projet'] },
+    category: { label: 'Catégorie', aliases: ['catégorie', 'categorie', 'category'] },
+    
+    // MOA Workload
+    moaInternalWorkloadRequested: { label: 'Charge MOA Int. Demandée', aliases: ['moa int demandée', 'moa interne demandé'] },
+    moaInternalWorkloadEngaged: { label: 'Charge MOA Int. Engagée', aliases: ['moa int engagée', 'moa interne engagé'] },
+    moaInternalWorkloadConsumed: { label: 'Charge MOA Int. Consommée', aliases: ['moa int consommée', 'moa interne consommé'] },
+    moaExternalWorkloadRequested: { label: 'Charge MOA Ext. Demandée', aliases: ['moa ext demandée', 'moa externe demandé'] },
+    moaExternalWorkloadEngaged: { label: 'Charge MOA Ext. Engagée', aliases: ['moa ext engagée', 'moa externe engagé'] },
+    moaExternalWorkloadConsumed: { label: 'Charge MOA Ext. Consommée', aliases: ['moa ext consommée', 'moa externe consommé'] },
+
+    // MOE Workload (Mapped from generic "Interne/Externe" in simple paste mode)
+    moeInternalWorkloadRequested: { label: 'Charge MOE Int. Demandée', aliases: ['interne demandé', 'moe int demandée'] },
+    moeInternalWorkloadEngaged: { label: 'Charge MOE Int. Engagée', aliases: ['interne engagé', 'moe int engagée'] },
+    moeInternalWorkloadConsumed: { label: 'Charge MOE Int. Consommée', aliases: ['interne réalisé', 'interne consommé', 'moe int consommée'] },
+    moeExternalWorkloadRequested: { label: 'Charge MOE Ext. Demandée', aliases: ['externe demandé', 'moe ext demandée'] },
+    moeExternalWorkloadEngaged: { label: 'Charge MOE Ext. Engagée', aliases: ['externe engagé', 'moe ext engagée'] },
+    moeExternalWorkloadConsumed: { label: 'Charge MOE Ext. Consommée', aliases: ['externe réalisé', 'externe consommé', 'moe ext consommée'] },
+
+    // Budget fields
+    budgetRequested: { label: 'Budget demandé', aliases: ['budget demandé', 'demandé', 'budget demande', 'budget demandé (€)', 'demande'] },
+    budgetApproved: { label: 'Budget accordé', aliases: ['budget accordé', 'accordé', 'budget accorde', 'budget accordé (€)', 'accorde'] },
+    budgetCommitted: { label: 'Budget engagé', aliases: ['budget engagé', 'engagé', 'budget engage', 'budget engagé (€)', 'engage'] },
+    validatedPurchaseOrders: { label: 'DA validées', aliases: ['da validées', 'demandes d’achat validées', 'demandes d\'achat valides', 'da valides', 'da validees'] },
+    completedPV: { label: 'Réalisé (PV)', aliases: ['réalisé (pv)', 'réalisé', 'pv', 'realise', 'realise (pv)'] },
+    forecastedPurchaseOrders: { label: 'DA prévues', aliases: ['da prévues', 'demandes d’achat prévues', 'da prevues', 'demandes d\'achat prevues'] },
+};
+
+
+const ImportedDataDisplay: React.FC<{ data: Partial<Project> }> = ({ data }) => {
+    const workloadMOAKeys: (keyof Project)[] = ['moaInternalWorkloadRequested', 'moaInternalWorkloadEngaged', 'moaInternalWorkloadConsumed', 'moaExternalWorkloadRequested', 'moaExternalWorkloadEngaged', 'moaExternalWorkloadConsumed'];
+    const workloadMOEKeys: (keyof Project)[] = ['moeInternalWorkloadRequested', 'moeInternalWorkloadEngaged', 'moeInternalWorkloadConsumed', 'moeExternalWorkloadRequested', 'moeExternalWorkloadEngaged', 'moeExternalWorkloadConsumed'];
+    const budgetKeys: (keyof Project)[] = ['budgetRequested', 'budgetApproved', 'budgetCommitted', 'validatedPurchaseOrders', 'completedPV', 'forecastedPurchaseOrders'];
+    const otherKeys: (keyof Project)[] = ['category'];
+
+    const renderGroup = (title: string, keys: (keyof Project)[]) => {
+        const items = keys.map(key => {
+            const value = data[key];
+            if (value === undefined || value === null || value === '') return null;
+            const label = fieldAliases[key as keyof typeof fieldAliases]?.label || key;
+            const displayValue = typeof value === 'number' ? value.toLocaleString('fr-FR') : String(value);
+            return <div key={key} className="truncate text-slate-700"><span className="font-medium text-slate-500">{label}:</span> {displayValue}</div>
+        }).filter(Boolean);
+
+        if (items.length === 0) return null;
+
+        return (
+            <div>
+                <h6 className="font-semibold text-slate-600 mt-2">{title}</h6>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 pl-2">
+                    {items}
+                </div>
+            </div>
+        );
+    };
+    
+    return (
+        <div className="space-y-1 text-xs">
+            {renderGroup('Charge MOA', workloadMOAKeys)}
+            {renderGroup('Charge MOE', workloadMOEKeys)}
+            {renderGroup('Budget', budgetKeys)}
+            {renderGroup('Autres', otherKeys)}
+        </div>
+    );
+};
+
+const FdrChoiceModal: React.FC<{
+    isOpen: boolean;
+    onClose: () => void;
+    onSelect: (type: 'workload' | 'budget') => void;
+}> = ({ isOpen, onClose, onSelect }) => {
+    return (
+        <Modal isOpen={isOpen} onClose={onClose} title="Mise à jour FDR">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4">
+                <button 
+                    onClick={() => onSelect('workload')}
+                    className="flex flex-col items-center justify-center p-8 bg-blue-50 border-2 border-blue-100 rounded-xl hover:bg-blue-100 hover:border-blue-300 transition-all group"
+                >
+                    <div className="p-4 bg-blue-600 text-white rounded-full mb-4 group-hover:scale-110 transition-transform">
+                        <Timer size={32} />
+                    </div>
+                    <h3 className="text-lg font-bold text-slate-800">Mise à jour Charges</h3>
+                    <p className="text-sm text-slate-500 mt-2 text-center">Importer les données de consommation en jours/homme (J/H)</p>
+                </button>
+                
+                <button 
+                    onClick={() => onSelect('budget')}
+                    className="flex flex-col items-center justify-center p-8 bg-purple-50 border-2 border-purple-100 rounded-xl hover:bg-purple-100 hover:border-purple-300 transition-all group"
+                >
+                    <div className="p-4 bg-purple-600 text-white rounded-full mb-4 group-hover:scale-110 transition-transform">
+                        <Coins size={32} />
+                    </div>
+                    <h3 className="text-lg font-bold text-slate-800">Mise à jour Budgets</h3>
+                    <p className="text-sm text-slate-500 mt-2 text-center">Importer les données budgétaires en Euros (€)</p>
+                </button>
+            </div>
+        </Modal>
+    );
+};
+
+
+// Composant Modal pour la Mise à jour FDR (générique)
+const FdrImportModal: React.FC<{
+    isOpen: boolean;
+    mode: 'workload' | 'budget';
+    onClose: () => void;
+    onImport: (projects: Project[], week: string, year: string) => void;
+    existingProjects: Project[];
+    initiatives: Initiative[];
+}> = ({ isOpen, mode, onClose, onImport, existingProjects, initiatives }) => {
+    const [pastedData, setPastedData] = useState('');
+    const [displayedData, setDisplayedData] = useState<string[][]>([]);
+    const [headers, setHeaders] = useState<string[]>([]);
+    const [step, setStep] = useState<'input' | 'preview'>('input');
+    const [importStats, setImportStats] = useState<{created: number, updated: number} | null>(null);
+
+    // Nouveaux états pour la semaine et l'année
+    const [week, setWeek] = useState<string>('');
+    const [year, setYear] = useState<string>(new Date().getFullYear().toString());
+
+    // Initialiser la semaine par défaut à la semaine précédente
+    useEffect(() => {
+        if (isOpen) {
+             const now = new Date();
+             const oneJan = new Date(now.getFullYear(), 0, 1);
+             const numberOfDays = Math.floor((now.getTime() - oneJan.getTime()) / (24 * 60 * 60 * 1000));
+             const currentWeek = Math.ceil((now.getDay() + 1 + numberOfDays) / 7);
+             const prevWeek = currentWeek > 1 ? currentWeek - 1 : 52; // Simplification
+             setWeek(prevWeek.toString());
+             setYear(now.getFullYear().toString());
+             
+             // Reset internal state
+             setPastedData('');
+             setDisplayedData([]);
+             setStep('input');
+             setImportStats(null);
+        }
+    }, [isOpen]);
+
+    // Calcul des totaux pour la prévisualisation
+    const previewTotals = useMemo(() => {
+        if (displayedData.length === 0 || headers.length === 0) return null;
+
+        // Initialiser le tableau des totaux avec des zéros
+        const totals = new Array(headers.length).fill(0);
+
+        displayedData.forEach(row => {
+            // Exclure la ligne "Total général" du calcul des sommes de la prévisualisation
+            // pour éviter de doubler les montants (puisque c'est déjà une somme)
+            if (row[1] === 'TOTAL_GENERAL') return;
+
+            row.forEach((cell, index) => {
+                // On ignore les colonnes Catégorie, ID, Libellé (indices 0, 1, 2)
+                if (index > 2) {
+                     // Nettoyage : enlever ' JH', ' €', espaces, et remplacer virgule par point pour le calcul
+                    const cleanVal = cell.replace(/[^0-9,.-]/g, '').replace(',', '.');
+                    const num = parseFloat(cleanVal);
+                    if (!isNaN(num)) {
+                        totals[index] += num;
+                    }
+                }
+            });
+        });
+
+        // Formater les totaux pour l'affichage
+        return totals.map((val, index) => {
+            if (index === 0) return "TOTAL (Calc)";
+            if (index < 3) return ""; // Cellules vides pour ID et Libellé
+            // Format français avec séparateur de milliers
+            return val.toLocaleString('fr-FR', { maximumFractionDigits: 2 });
+        });
+    }, [displayedData, headers]);
+
+    const handleVisualize = () => {
+        if (!pastedData.trim()) return;
+
+        const rows = pastedData.trim().split('\n');
+        const rawData = rows.map(row => row.split('\t'));
+        
+        const categoryKeywords = ["Activité", "EPA", "MCO", "Opportunité", "Opération", "Projet"];
+        let currentCategory = "";
+
+        // 1. Identifier la ligne d'en-tête
+        let headerRowIndex = -1;
+        
+        const keywords = mode === 'workload' 
+            ? ["Demandé", "Réalisé", "Interne"] 
+            : ["Budget", "Engagé", "Accordé", "PV"];
+
+        for(let i=0; i<rawData.length; i++) {
+             // On regarde à partir de la colonne 1 pour éviter de confondre avec des titres en col 0
+            const rowString = rawData[i].slice(1).join(' ');
+            if (keywords.some(k => rowString.includes(k))) {
+                headerRowIndex = i;
+                break;
+            }
+        }
+
+        if (headerRowIndex === -1) {
+             headerRowIndex = 0;
+        }
+
+        // 2. Préparer les nouveaux en-têtes
+        const originalHeaders = rawData[headerRowIndex];
+        const newHeaders = ["Catégorie", "ID Projet", "Libellé"];
+        
+        if (mode === 'workload') {
+            for (let i = 1; i < originalHeaders.length; i++) {
+                let h = originalHeaders[i] || `Col ${i}`;
+                if (i >= 1 && i <= 4) h = "Interne " + h;
+                if (i >= 5 && i <= 8) h = "Externe " + h;
+                if (i >= 9) h = "Total " + h;
+                newHeaders.push(h);
+            }
+        } else {
+            // Budget mapping usually implies:
+            // Col 1: ..., Col 2: ..., Col 3: Budget Demandé, Col 4: Budget Accordé, Col 5: Engagé, Col 6: DA Validées, Col 7: Réalisé (PV), Col 8: DA Prévues
+             for (let i = 1; i < originalHeaders.length; i++) {
+                newHeaders.push(originalHeaders[i] || `Col ${i}`);
+            }
+        }
+
+        const finalRows: string[][] = [];
+
+        // 3. Itérer sur les données (après la ligne d'en-tête)
+        for (let i = headerRowIndex + 1; i < rawData.length; i++) {
+            const row = rawData[i];
+            const colA = (row[0] || '').trim();
+
+            // Sauter les lignes vides
+            if (!colA && row.length < 2) continue;
+
+            // A. Détection de catégorie (Stricte)
+            if (categoryKeywords.includes(colA)) {
+                currentCategory = colA;
+                continue;
+            }
+            
+            // A bis. Détection de la ligne "Total général"
+            if (colA.toLowerCase().includes('total général')) {
+                const id = 'TOTAL_GENERAL';
+                const label = 'Total Général FDR';
+                 // Récupérer les données (colonnes 1 à fin)
+                const dataValues = row.slice(1);
+                 // Si dataValues est plus court que prévu, on complète avec des vides
+                while (dataValues.length < newHeaders.length - 3) {
+                    dataValues.push('');
+                }
+                 // Construire la nouvelle ligne pour le total général.
+                finalRows.push(['Total', id, label, ...dataValues]);
+                continue;
+            }
+
+            // B. Exclusion (3 points)
+            const dotCount = (colA.match(/\./g) || []).length;
+            if (dotCount === 3) continue;
+
+            // C. Traitement des lignes de données
+            if (colA.includes(':')) {
+                const separatorIndex = colA.indexOf(':');
+                const id = colA.substring(0, separatorIndex).trim();
+                const label = colA.substring(separatorIndex + 1).trim();
+
+                // Récupérer les données (colonnes 1 à fin)
+                const dataValues = row.slice(1);
+                
+                // Si dataValues est plus court que prévu, on complète avec des vides
+                while (dataValues.length < newHeaders.length - 3) {
+                    dataValues.push('');
+                }
+
+                // Construire la nouvelle ligne
+                finalRows.push([currentCategory, id, label, ...dataValues]);
+            }
+        }
+
+        if (finalRows.length === 0) {
+             alert("Aucune donnée valide n'a été trouvée. Assurez-vous que les lignes de projets contiennent le séparateur ':' (ex: P25-001 : Mon Projet) ou qu'une ligne 'Total général' est présente.");
+             return;
+        }
+
+        setHeaders(newHeaders);
+        setDisplayedData(finalRows);
+        setStep('preview');
+        setImportStats(null);
+    };
+
+    // Helper pour calculer le score de récence d'une entrée d'historique
+    const getRecencyScore = (w: string, y: string): number => {
+        return parseInt(y) * 100 + parseInt(w);
+    };
+
+    // Fonction pour recalculer les champs "plats" d'un projet en fonction de son historique
+    const recalculateProjectFields = (project: Project): Project => {
+        if (!project.fdrHistory || project.fdrHistory.length === 0) return project;
+
+        // Trier l'historique du plus récent au plus ancien
+        const sortedHistory = [...project.fdrHistory].sort((a, b) => {
+            return getRecencyScore(b.week, b.year) - getRecencyScore(a.week, a.year);
+        });
+
+        const latestWorkload = sortedHistory.find(h => h.type === 'workload');
+        const latestBudget = sortedHistory.find(h => h.type === 'budget');
+
+        const newData: Partial<Project> = {};
+
+        // Appliquer les dernières données de charge
+        if (latestWorkload && latestWorkload.data) {
+            newData.moaInternalWorkloadRequested = latestWorkload.data.moaInternalWorkloadRequested;
+            newData.moaInternalWorkloadEngaged = latestWorkload.data.moaInternalWorkloadEngaged;
+            newData.moaInternalWorkloadConsumed = latestWorkload.data.moaInternalWorkloadConsumed;
+            newData.moaExternalWorkloadRequested = latestWorkload.data.moaExternalWorkloadRequested;
+            newData.moaExternalWorkloadEngaged = latestWorkload.data.moaExternalWorkloadEngaged;
+            newData.moaExternalWorkloadConsumed = latestWorkload.data.moaExternalWorkloadConsumed;
+            
+            newData.moeInternalWorkloadRequested = latestWorkload.data.moeInternalWorkloadRequested;
+            newData.moeInternalWorkloadEngaged = latestWorkload.data.moeInternalWorkloadEngaged;
+            newData.moeInternalWorkloadConsumed = latestWorkload.data.moeInternalWorkloadConsumed;
+            newData.moeExternalWorkloadRequested = latestWorkload.data.moeExternalWorkloadRequested;
+            newData.moeExternalWorkloadEngaged = latestWorkload.data.moeExternalWorkloadEngaged;
+            newData.moeExternalWorkloadConsumed = latestWorkload.data.moeExternalWorkloadConsumed;
+        }
+
+        // Appliquer les dernières données budgétaires
+        if (latestBudget && latestBudget.data) {
+            newData.budgetRequested = latestBudget.data.budgetRequested;
+            newData.budgetApproved = latestBudget.data.budgetApproved;
+            newData.budgetCommitted = latestBudget.data.budgetCommitted;
+            newData.validatedPurchaseOrders = latestBudget.data.validatedPurchaseOrders;
+            newData.completedPV = latestBudget.data.completedPV;
+            newData.forecastedPurchaseOrders = latestBudget.data.forecastedPurchaseOrders;
+        }
+
+        return { ...project, ...newData };
+    };
+
+
+    const handleImportData = () => {
+        const h = headers;
+        const existingMap = new Map<string, Project>(existingProjects.map(p => [p.projectId, p] as [string, Project]));
+        let created = 0;
+        let updated = 0;
+        const updatedProjectsList: Project[] = [];
+        
+        const parseNum = (val: string) => {
+            if (!val) return 0;
+            // Remove currency symbols, JH, spaces
+            const v = val.replace(/JH|€|k€|M€/gi, '').replace(/\s/g, '').replace(',', '.');
+            const n = parseFloat(v);
+            return isNaN(n) ? 0 : n;
+        }
+
+        // Indices identification
+        let idxIntDemande = -1, idxIntEngage = -1, idxIntRealise = -1;
+        let idxExtDemande = -1, idxExtEngage = -1, idxExtRealise = -1;
+        
+        let idxBudReq = -1, idxBudApp = -1, idxBudCom = -1, idxDaVal = -1, idxPv = -1, idxDaPrev = -1;
+
+        if (mode === 'workload') {
+            idxIntDemande = h.findIndex(s => s.includes("Interne Demandé"));
+            idxIntEngage = h.findIndex(s => s.includes("Interne Engagé"));
+            idxIntRealise = h.findIndex(s => s.includes("Interne Réalisé") || s.includes("Interne Consommé"));
+            idxExtDemande = h.findIndex(s => s.includes("Externe Demandé"));
+            idxExtEngage = h.findIndex(s => s.includes("Externe Engagé"));
+            idxExtRealise = h.findIndex(s => s.includes("Externe Réalisé") || s.includes("Externe Consommé"));
+        } else {
+            // Budget Mapping based on typical FDR export
+            // Col 3: Budget Demandé
+            idxBudReq = 3;
+            // Col 4: Budget Accordé
+            idxBudApp = 4;
+            // Col 5: Engagé
+            idxBudCom = 5;
+            // Col 6: DA Validées
+            idxDaVal = 6;
+            // Col 7: Réalisé (PV)
+            idxPv = 7;
+            // Col 8: DA Prévues
+            idxDaPrev = 8;
+        }
+
+        displayedData.forEach(row => {
+            const rawCategory = row[0];
+            const projectId = row[1];
+            const title = row[2];
+            
+            if (!projectId) return;
+
+            let categoryEnum = ProjectCategory.PROJECT;
+            if (rawCategory === 'Activité') categoryEnum = ProjectCategory.ACTIVITY;
+            else if (rawCategory === 'EPA') categoryEnum = ProjectCategory.EPA;
+            else if (rawCategory === 'MCO') categoryEnum = ProjectCategory.MCO;
+            else if (rawCategory === 'Opportunité') categoryEnum = ProjectCategory.OPPORTUNITY;
+            else if (rawCategory === 'Opération') categoryEnum = ProjectCategory.OPERATION;
+            
+            // On extrait uniquement les données spécifiques à l'import en cours pour l'historique
+            const specificImportData: Partial<Project> = {};
+
+            if (mode === 'workload') {
+                specificImportData.moeInternalWorkloadRequested = idxIntDemande > -1 ? parseNum(row[idxIntDemande]) : 0;
+                specificImportData.moeInternalWorkloadEngaged = idxIntEngage > -1 ? parseNum(row[idxIntEngage]) : 0;
+                specificImportData.moeInternalWorkloadConsumed = idxIntRealise > -1 ? parseNum(row[idxIntRealise]) : 0;
+                specificImportData.moeExternalWorkloadRequested = idxExtDemande > -1 ? parseNum(row[idxExtDemande]) : 0;
+                specificImportData.moeExternalWorkloadEngaged = idxExtEngage > -1 ? parseNum(row[idxExtEngage]) : 0;
+                specificImportData.moeExternalWorkloadConsumed = idxExtRealise > -1 ? parseNum(row[idxExtRealise]) : 0;
+            } else {
+                specificImportData.budgetRequested = idxBudReq > -1 ? parseNum(row[idxBudReq]) : 0;
+                specificImportData.budgetApproved = idxBudApp > -1 ? parseNum(row[idxBudApp]) : 0;
+                specificImportData.budgetCommitted = idxBudCom > -1 ? parseNum(row[idxBudCom]) : 0;
+                specificImportData.validatedPurchaseOrders = idxDaVal > -1 ? parseNum(row[idxDaVal]) : 0;
+                specificImportData.completedPV = idxPv > -1 ? parseNum(row[idxPv]) : 0;
+                specificImportData.forecastedPurchaseOrders = idxDaPrev > -1 ? parseNum(row[idxDaPrev]) : 0;
+            }
+
+            const historyEntry: FdrHistoryEntry = {
+                week,
+                year,
+                type: mode,
+                importDate: new Date().toISOString(),
+                data: specificImportData
+            };
+
+            if (existingMap.has(projectId)) {
+                const existing = existingMap.get(projectId)!;
+                
+                // Mise à jour de l'historique
+                const currentHistory = existing.fdrHistory ? [...existing.fdrHistory] : [];
+                // Supprimer une éventuelle entrée existante pour la même semaine/année/type pour éviter les doublons
+                const filteredHistory = currentHistory.filter(h => !(h.week === week && h.year === year && h.type === mode));
+                filteredHistory.push(historyEntry);
+
+                // Recalculer les champs plats à partir du nouvel historique complet
+                const updatedProjectWithHistory = {
+                    ...existing,
+                    updatedAt: new Date().toISOString(),
+                    fdrHistory: filteredHistory
+                };
+
+                const fullyUpdatedProject = recalculateProjectFields(updatedProjectWithHistory);
+
+                updatedProjectsList.push(fullyUpdatedProject);
+                existingMap.delete(projectId);
+                updated++;
+            } else {
+                // Nouveau projet
+                const newProjectBase: Project = {
+                    id: `proj-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
+                    projectId,
+                    title: title || 'Projet sans titre',
+                    status: ProjectStatus.IDENTIFIED,
+                    tShirtSize: TShirtSize.M,
+                    isTop30: false,
+                    initiativeId: initiatives[0]?.id || '', 
+                    isoMeasures: [],
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                    category: categoryEnum,
+                    fdrHistory: [historyEntry], // Initialiser avec l'historique
+                     // Initialiser les champs à 0
+                    budgetRequested: 0, budgetApproved: 0, budgetCommitted: 0, validatedPurchaseOrders: 0, completedPV: 0, forecastedPurchaseOrders: 0,
+                    moaInternalWorkloadRequested: 0, moaInternalWorkloadEngaged: 0, moaInternalWorkloadConsumed: 0,
+                    moaExternalWorkloadRequested: 0, moaExternalWorkloadEngaged: 0, moaExternalWorkloadConsumed: 0,
+                    moeInternalWorkloadRequested: 0, moeInternalWorkloadEngaged: 0, moeInternalWorkloadConsumed: 0,
+                    moeExternalWorkloadRequested: 0, moeExternalWorkloadEngaged: 0, moeExternalWorkloadConsumed: 0,
+                };
+                
+                if (projectId === 'TOTAL_GENERAL') {
+                    newProjectBase.isTop30 = false;
+                }
+
+                // Appliquer les champs de l'import courant
+                const newProject = recalculateProjectFields(newProjectBase);
+                
+                updatedProjectsList.push(newProject);
+                created++;
+            }
+        });
+
+        // Ajouter les projets existants non touchés par l'import
+        existingMap.forEach(p => updatedProjectsList.push(p));
+
+        onImport(updatedProjectsList, week, year);
+        setImportStats({ created, updated });
+    };
+
+    return (
+        <Modal isOpen={isOpen} onClose={onClose} title={`Mise à jour FDR (${mode === 'workload' ? 'Charges J/H' : 'Budget €'})`}>
+            {importStats ? (
+                 <div className="flex flex-col items-center justify-center py-8 space-y-4">
+                    <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center">
+                        <CheckCircle size={32} />
+                    </div>
+                    <h3 className="text-xl font-bold text-slate-800">Importation réussie !</h3>
+                    <div className="flex gap-8 text-center">
+                        <div>
+                            <p className="text-3xl font-bold text-slate-700">{importStats.updated}</p>
+                            <p className="text-sm text-slate-500">Projets mis à jour</p>
+                        </div>
+                        <div>
+                            <p className="text-3xl font-bold text-slate-700">{importStats.created}</p>
+                            <p className="text-sm text-slate-500">Projets créés</p>
+                        </div>
+                    </div>
+                    <p className="text-sm text-slate-600 italic">Les données ont été archivées sous S{week}-{year}.</p>
+                    <button onClick={onClose} className="mt-4 px-6 py-2 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded-lg transition-colors">
+                        Fermer
+                    </button>
+                 </div>
+            ) : (
+                <div className="space-y-4 h-[70vh] flex flex-col">
+                    {step === 'input' ? (
+                        <>
+                            <p className="text-sm text-slate-600">
+                                1. Précisez la semaine et l'année de référence.<br/>
+                                2. Copiez les données <strong>{mode === 'workload' ? 'charges' : 'budgétaires'}</strong> depuis votre fichier Excel (incluant les en-têtes) et collez-les ci-dessous.
+                            </p>
+                            <div className="flex gap-4 items-center p-3 bg-slate-50 border border-slate-200 rounded-md">
+                                <div className="flex items-center gap-2">
+                                    <Calendar size={18} className="text-slate-500" />
+                                    <label htmlFor="weekInput" className="text-sm font-medium text-slate-700">Semaine :</label>
+                                    <div className="relative">
+                                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">S</span>
+                                        <input 
+                                            id="weekInput"
+                                            type="number" 
+                                            min="1" 
+                                            max="53"
+                                            className="w-20 pl-6 pr-2 py-1.5 border border-slate-300 rounded-md text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none"
+                                            placeholder="44"
+                                            value={week}
+                                            onChange={(e) => setWeek(e.target.value)}
+                                        />
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <label htmlFor="yearInput" className="text-sm font-medium text-slate-700">Année :</label>
+                                    <input 
+                                        id="yearInput"
+                                        type="number" 
+                                        min="2020" 
+                                        max="2030"
+                                        className="w-20 px-3 py-1.5 border border-slate-300 rounded-md text-sm bg-white focus:ring-2 focus:ring-blue-500 outline-none"
+                                        placeholder="2025"
+                                        value={year}
+                                        onChange={(e) => setYear(e.target.value)}
+                                    />
+                                </div>
+                            </div>
+
+                            <textarea 
+                                value={pastedData}
+                                onChange={e => setPastedData(e.target.value)}
+                                className="flex-grow w-full p-3 border border-slate-300 rounded-md font-mono text-xs bg-white text-slate-900 focus:ring-2 focus:ring-blue-500 outline-none resize-none"
+                                placeholder={`Collez vos données ${mode === 'workload' ? 'de charges (J/H)' : 'de budget (€)'} ici...`}
+                            />
+                            <div className="flex justify-end pt-2">
+                                <button onClick={handleVisualize} disabled={!pastedData || !week || !year} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-slate-300 transition-colors">
+                                    <Play size={16} />
+                                    Visualiser le traitement
+                                </button>
+                            </div>
+                        </>
+                    ) : (
+                        <>
+                            <div className="flex justify-between items-center">
+                                <h3 className="font-semibold text-slate-800">Prévisualisation (Données S{week}-{year})</h3>
+                                <button onClick={() => { setStep('input'); setDisplayedData([]); }} className="text-sm text-blue-600 hover:underline">
+                                    Modifier les données brutes
+                                </button>
+                            </div>
+                            <div className="flex-grow overflow-auto border border-slate-200 rounded-md bg-slate-50 relative">
+                                <table className="w-full text-xs text-left whitespace-nowrap">
+                                    <thead className="bg-slate-100 text-slate-700 font-semibold sticky top-0 shadow-sm z-10">
+                                        <tr>
+                                            {headers.map((h, i) => <th key={i} className="px-3 py-2 border-b border-r last:border-r-0 border-slate-200">{h}</th>)}
+                                        </tr>
+                                    </thead>
+                                    <tbody className="bg-white divide-y divide-slate-100">
+                                        {displayedData.map((row, i) => (
+                                            <tr key={i} className={`hover:bg-blue-50 ${row[1] === 'TOTAL_GENERAL' ? 'bg-slate-100 font-semibold' : ''}`}>
+                                                {row.map((cell, j) => <td key={j} className="px-3 py-1.5 border-r last:border-r-0 border-slate-100">{cell}</td>)}
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                    {previewTotals && (
+                                        <tfoot className="bg-slate-800 text-white font-bold sticky bottom-0 z-10 shadow-md">
+                                            <tr>
+                                                {previewTotals.map((cell, i) => (
+                                                    <td key={i} className="px-3 py-3 border-r last:border-r-0 border-slate-600">
+                                                        {cell}
+                                                    </td>
+                                                ))}
+                                            </tr>
+                                        </tfoot>
+                                    )}
+                                </table>
+                            </div>
+                             <div className="flex justify-end pt-2 gap-3">
+                                <button onClick={onClose} className="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition-colors">
+                                    Annuler
+                                </button>
+                                <button onClick={handleImportData} disabled={displayedData.length === 0} className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-slate-300 transition-colors">
+                                    <Database size={16} />
+                                    Importer les données
+                                </button>
+                            </div>
+                        </>
+                    )}
+                </div>
+            )}
+        </Modal>
+    );
+};
+
 
 const DataManagement: React.FC = () => {
   const { 
@@ -24,9 +651,14 @@ const DataManagement: React.FC = () => {
     projects, setProjects,
     initiatives, setInitiatives,
     dashboardLayouts, setDashboardLayouts,
-    setLastCsvImportDate
+    setLastCsvImportDate,
+    setLastImportWeek,
+    setLastImportYear
   } = useData();
   const { userRole } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation(); // To read state from navigation
+  
   const isReadOnly = false;
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error', message: string } | null>(null);
   
@@ -34,6 +666,26 @@ const DataManagement: React.FC = () => {
   const [showResetProjectsModal, setShowResetProjectsModal] = useState(false);
   const [showAppInitModal, setShowAppInitModal] = useState(false);
   const [showDeleteAllDataModal, setShowDeleteAllDataModal] = useState(false);
+
+  // FDR Choice & Import Modal States
+  const [isFdrChoiceModalOpen, setIsFdrChoiceModalOpen] = useState(false);
+  const [isFdrImportModalOpen, setIsFdrImportModalOpen] = useState(false);
+  const [fdrImportMode, setFdrImportMode] = useState<'workload' | 'budget'>('workload');
+
+  useEffect(() => {
+      // Check if navigation requested to open FDR choice
+      if ((location.state && (location.state as any).openFdrChoice) || location.pathname.endsWith('/fdr')) {
+          setIsFdrChoiceModalOpen(true);
+          // Clean state
+          window.history.replaceState({}, document.title);
+      }
+  }, [location]);
+  
+  const handleFdrChoice = (type: 'workload' | 'budget') => {
+      setFdrImportMode(type);
+      setIsFdrChoiceModalOpen(false);
+      setIsFdrImportModalOpen(true);
+  };
 
   const storageUsage = useMemo(() => {
     const dataToMeasure = {
@@ -209,207 +861,6 @@ const DataManagement: React.FC = () => {
     }
   };
 
-  const handleFdrJhImport = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (isReadOnly) {
-        if(event.target) event.target.value = '';
-        return;
-    }
-    const file = event.target.files?.[0];
-    const inputElement = event.target;
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        try {
-          const content = e.target?.result as string;
-          const lines = content.split('\n').slice(2); // Skip header lines
-          
-          const updatedProjects: Project[] = [];
-          const newProjects: Project[] = [];
-          
-          const existingProjectsMap = new Map(projects.map(p => [p.projectId, p]));
-
-          lines.forEach(line => {
-            if (!line.trim()) return;
-            const columns = line.split(';');
-
-            const [idPart, titlePart] = (columns[0] || '').split(' : ');
-            if (!idPart || !titlePart) return;
-
-            const projectId = idPart.trim();
-            const title = titlePart.trim();
-            
-            const parseJH = (value: string) => value ? parseFloat(value.replace(' JH', '').replace(',', '.')) : 0;
-
-            const internalWorkloadRequested = parseJH(columns[1]);
-            const internalWorkloadEngaged = parseJH(columns[2]);
-            const internalWorkloadConsumed = parseJH(columns[3]);
-            const externalWorkloadRequested = parseJH(columns[5]);
-            const externalWorkloadEngaged = parseJH(columns[6]);
-            const externalWorkloadConsumed = parseJH(columns[7]);
-
-            const existingProject = existingProjectsMap.get(projectId);
-            
-            if (existingProject) {
-                updatedProjects.push({
-// FIX: Explicitly cast `existingProject` to `Project` before spreading to resolve a potential type inference issue.
-                    ...(existingProject as Project),
-                    internalWorkloadRequested,
-                    internalWorkloadEngaged,
-                    internalWorkloadConsumed,
-                    externalWorkloadRequested,
-                    externalWorkloadEngaged,
-                    externalWorkloadConsumed,
-                    updatedAt: new Date().toISOString(),
-                });
-            } else {
-                 newProjects.push({
-                    id: `proj-${Date.now()}-${Math.random()}`,
-                    projectId,
-                    title,
-                    status: ProjectStatus.IDENTIFIED,
-                    tShirtSize: TShirtSize.M,
-                    // FIX: Added missing 'category' property to satisfy the Project type definition.
-                    category: ProjectCategory.PROJECT,
-                    isTop30: false,
-                    initiativeId: initiatives[0]?.id || '',
-                    isoMeasures: [],
-                    internalWorkloadRequested,
-                    internalWorkloadEngaged,
-                    internalWorkloadConsumed,
-                    externalWorkloadRequested,
-                    externalWorkloadEngaged,
-                    externalWorkloadConsumed,
-                    createdAt: new Date().toISOString(),
-                    updatedAt: new Date().toISOString(),
-                });
-            }
-          });
-
-          setProjects(prev => {
-            const prevMap = new Map(prev.map(p => [p.projectId, p]));
-            updatedProjects.forEach(p => prevMap.set(p.projectId, p));
-            newProjects.forEach(p => prevMap.set(p.projectId, p));
-            return Array.from(prevMap.values());
-          });
-          setLastCsvImportDate(new Date().toISOString());
-          showFeedback('success', `${newProjects.length} projet(s) créé(s) et ${updatedProjects.length} projet(s) mis à jour.`);
-
-        } catch (error) {
-          console.error(error);
-          showFeedback('error', 'Erreur lors du traitement du fichier CSV.');
-        } finally {
-            if(inputElement) inputElement.value = '';
-        }
-      };
-      reader.onerror = () => {
-          showFeedback('error', 'Erreur de lecture du fichier.');
-          if(inputElement) inputElement.value = '';
-      };
-      reader.readAsText(file, 'ISO-8859-1'); // Or 'UTF-8' if that's the encoding
-    }
-  };
-  
-  const handleFdrEurosImport = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (isReadOnly) {
-        if(event.target) event.target.value = '';
-        return;
-    }
-    const file = event.target.files?.[0];
-    const inputElement = event.target;
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        try {
-          const content = e.target?.result as string;
-          const lines = content.split('\n').slice(1); // Skip header line
-
-          const updatedProjects: Project[] = [];
-          const newProjects: Project[] = [];
-          
-          const existingProjectsMap = new Map(projects.map(p => [p.projectId, p]));
-
-          const parseEuros = (value: string): number | undefined => {
-              if (!value || !value.trim()) return undefined;
-              const cleanedValue = value.replace(/K€/g, '').replace(/€/g, '').trim();
-              const number = parseFloat(cleanedValue.replace(',', '.'));
-              return isNaN(number) ? undefined : number * 1000;
-          };
-
-          lines.forEach(line => {
-              if (!line.trim()) return;
-              const columns = line.split(';');
-
-              let idTitlePart = columns[0] || '';
-              if (idTitlePart.startsWith('\"') && idTitlePart.endsWith('\"')) {
-                  idTitlePart = idTitlePart.substring(1, idTitlePart.length - 1);
-              }
-              const [idPart, titlePart] = idTitlePart.split(' : ');
-              if (!idPart || !titlePart) return;
-
-              const projectId = idPart.trim();
-              const title = titlePart.trim();
-
-              const budgetData = {
-                  budgetRequested: parseEuros(columns[1]),
-                  budgetCommitted: parseEuros(columns[2]),
-                  budgetApproved: parseEuros(columns[3]),
-                  validatedPurchaseOrders: parseEuros(columns[4]),
-                  completedPV: parseEuros(columns[5]),
-                  forecastedPurchaseOrders: parseEuros(columns[9]),
-              };
-
-              const existingProject = existingProjectsMap.get(projectId);
-              
-              if (existingProject) {
-                  updatedProjects.push({
-// FIX: Explicitly cast `existingProject` to `Project` before spreading to resolve a potential type inference issue.
-                      ...(existingProject as Project),
-                      ...budgetData,
-                      updatedAt: new Date().toISOString(),
-                  });
-              } else {
-                   newProjects.push({
-                      id: `proj-${Date.now()}-${Math.random()}`,
-                      projectId,
-                      title,
-                      status: ProjectStatus.IDENTIFIED,
-                      tShirtSize: TShirtSize.M,
-                      // FIX: Added missing 'category' property to satisfy the Project type definition.
-                      category: ProjectCategory.PROJECT,
-                      isTop30: false,
-                      initiativeId: initiatives[0]?.id || '',
-                      isoMeasures: [],
-                      ...budgetData,
-                      createdAt: new Date().toISOString(),
-                      updatedAt: new Date().toISOString(),
-                  });
-              }
-          });
-
-          setProjects(prev => {
-            const prevMap = new Map(prev.map(p => [p.projectId, p]));
-            updatedProjects.forEach(p => prevMap.set(p.projectId, p));
-            newProjects.forEach(p => prevMap.set(p.projectId, p));
-            return Array.from(prevMap.values());
-          });
-          setLastCsvImportDate(new Date().toISOString());
-          showFeedback('success', `${newProjects.length} projet(s) créé(s) et ${updatedProjects.length} projet(s) mis à jour.`);
-
-        } catch (error) {
-          console.error(error);
-          showFeedback('error', 'Erreur lors du traitement du fichier CSV budgétaire.');
-        } finally {
-            if(inputElement) inputElement.value = '';
-        }
-      };
-      reader.onerror = () => {
-          showFeedback('error', 'Erreur de lecture du fichier.');
-          if(inputElement) inputElement.value = '';
-      };
-      reader.readAsText(file, 'UTF-8');
-    }
-  };
-
   const handleStrategyIsoImport = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (isReadOnly) {
       if (event.target) event.target.value = '';
@@ -571,6 +1022,16 @@ const DataManagement: React.FC = () => {
     showFeedback('success', 'Toutes les données de l\'application ont été supprimées.');
   };
 
+    // Callback pour la nouvelle modale FDR
+    const handleFdrUpdate = (updatedProjects: Project[], week: string, year: string) => {
+        setProjects(updatedProjects);
+        setLastCsvImportDate(new Date().toISOString());
+        setLastImportWeek(week);
+        setLastImportYear(year);
+        setIsFdrImportModalOpen(false);
+        showFeedback('success', `Données FDR (S${week}-${year}) importées et mises à jour avec succès.`);
+    }
+
 
   const buttonClasses = "flex items-center justify-center px-4 py-2 rounded-lg transition-colors";
   const disabledClasses = "bg-slate-300 text-slate-500 cursor-not-allowed";
@@ -606,12 +1067,6 @@ const DataManagement: React.FC = () => {
         Importez, exportez ou sauvegardez/restaurez les données de votre application.
       </p>
 
-      {feedback && (
-        <div className={`p-4 rounded-md text-sm my-4 border ${feedback.type === 'success' ? 'bg-green-100 border-green-300 text-green-800' : 'bg-red-100 border-red-300 text-red-800'}`}>
-            <p>{feedback.message}</p>
-        </div>
-      )}
-
       {isReadOnly && (
         <div className="p-4 bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700">
           <p className="font-bold">Mode lecture seule</p>
@@ -623,7 +1078,7 @@ const DataManagement: React.FC = () => {
         <Card>
           <CardHeader className="flex items-center justify-between">
             <CardTitle>Sauvegarde et restauration</CardTitle>
-            <Tooltip text="La sauvegarde complète inclut : projets, activités, objectifs, orientations, chantiers, ressources, initiatives, processus de sécurité et la disposition du tableau de bord.">
+            <Tooltip text="La sauvegarde complète inclut : projets (avec historique FDR), activités, objectifs, orientations, chantiers, ressources, initiatives, processus de sécurité et la disposition du tableau de bord.">
               <Info size={18} className="text-slate-500 cursor-help" />
             </Tooltip>
           </CardHeader>
@@ -664,6 +1119,15 @@ const DataManagement: React.FC = () => {
           </CardContent>
         </Card>
       )}
+      
+      <div className="my-4">
+        {feedback && (
+            <div className={`p-4 rounded-md text-sm border ${feedback.type === 'success' ? 'bg-green-100 border-green-300 text-green-800' : 'bg-red-100 border-red-300 text-red-800'}`}>
+                <p>{feedback.message}</p>
+            </div>
+        )}
+      </div>
+      
 
       <Card>
         <CardHeader>
@@ -749,7 +1213,7 @@ const DataManagement: React.FC = () => {
                 <h3 className="font-semibold">Importer des projets (JSON)</h3>
                 <div className="flex items-center text-sm text-slate-500 mt-1 mb-2">
                   <HelpCircle size={16} className="mr-2"/>
-                  <span>Le fichier JSON doit être un tableau d'objets `Project`.</span>
+                  <span>Le fichier JSON doit être un tableau d'objets `Project`. Attention: l'historique FDR sera écrasé.</span>
                 </div>
                 <label className={`${buttonClasses} text-sm w-fit ${isReadOnly ? disabledClasses : 'bg-green-600 text-white hover:bg-green-700 cursor-pointer'}`}>
                   <Upload size={16} className="mr-2" /> Importer
@@ -770,39 +1234,10 @@ const DataManagement: React.FC = () => {
               </div>
             </>
           )}
-          
-          {(userRole === 'admin' || userRole === 'pmo') && (
-            <>
-              <div className="p-4 border rounded-lg md:col-span-1">
-                <h3 className="font-semibold">Import FDR JH (CSV)</h3>
-                <div className="flex items-center text-sm text-slate-500 mt-1 mb-2">
-                  <HelpCircle size={16} className="mr-2"/>
-                  <span>Import spécifique pour la mise à jour des charges projets (J/H).</span>
-                </div>
-                <label className={`${buttonClasses} text-sm w-fit ${isReadOnly ? disabledClasses : 'bg-teal-600 text-white hover:bg-teal-700 cursor-pointer'}`}>
-                  <Upload size={16} className="mr-2" /> Importer le CSV des charges
-                  <input type="file" className="hidden" accept=".csv" onChange={handleFdrJhImport} disabled={isReadOnly}/>
-                </label>
-              </div>
-
-              <div className="p-4 border rounded-lg md:col-span-1">
-                <h3 className="font-semibold">Import FDR Euros (CSV)</h3>
-                <div className="flex items-center text-sm text-slate-500 mt-1 mb-2">
-                  <HelpCircle size={16} className="mr-2"/>
-                  <span>Import spécifique pour la mise à jour des budgets projets (€).</span>
-                </div>
-                <label className={`${buttonClasses} text-sm w-fit ${isReadOnly ? disabledClasses : 'bg-teal-600 text-white hover:bg-teal-700 cursor-pointer'}`}>
-                  <Upload size={16} className="mr-2" /> Importer le CSV des budgets
-                  <input type="file" className="hidden" accept=".csv" onChange={handleFdrEurosImport} disabled={isReadOnly}/>
-                </label>
-              </div>
-            </>
-          )}
-
-
         </CardContent>
       </Card>
       
+
       {(userRole === 'admin' || userRole === 'pmo') && (
         <Card>
           <CardHeader>
@@ -843,7 +1278,7 @@ const DataManagement: React.FC = () => {
             <div className="p-4 border border-red-200 rounded-lg bg-red-50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
                     <h3 className="font-semibold text-red-800">Supprimer toutes les données</h3>
-                    <p className="text-sm text-red-600 mt-1">Supprime DÉFINITIVEMENT toutes les données : projets, activités, et l'ensemble du référentiel (orientations, chantiers, etc.).</p>
+                    <p className="text-sm text-red-600 mt-1">Supprime DÉFINITIVEMENT toutes les données : projets, activités, et l'ensemble du référentiel (orientations, chantiers, Objectifs, Initiatives, Processus, Ressources)</p>
                 </div>
                 <button onClick={() => setShowDeleteAllDataModal(true)} disabled={isReadOnly} className={`${buttonClasses} ${isReadOnly ? disabledClasses : 'bg-red-600 text-white hover:bg-red-700'}`}>
                     <Trash2 className="mr-2" size={18} /> Supprimer toutes les données
@@ -900,6 +1335,22 @@ const DataManagement: React.FC = () => {
             </div>
         </Modal>
       )}
+      
+      <FdrChoiceModal 
+        isOpen={isFdrChoiceModalOpen}
+        onClose={() => setIsFdrChoiceModalOpen(false)}
+        onSelect={handleFdrChoice}
+      />
+
+      <FdrImportModal 
+        isOpen={isFdrImportModalOpen} 
+        mode={fdrImportMode}
+        onClose={() => { setIsFdrImportModalOpen(false); navigate('/data-management'); }}
+        onImport={handleFdrUpdate} 
+        existingProjects={projects}
+        initiatives={initiatives}
+      />
+
     </div>
   );
 };
