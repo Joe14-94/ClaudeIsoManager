@@ -11,6 +11,7 @@ import KpiCardWidget from './KpiCardWidget';
 import StrategicAlignmentWidget from './StrategicAlignmentWidget';
 import ProjectInitiativeAlignmentWidget from './ProjectInitiativeAlignmentWidget';
 import ConsolidatedWorkloadWidget from './ConsolidatedWorkloadWidget';
+import ConsolidatedBudgetWidget from './ConsolidatedBudgetWidget';
 
 export interface WidgetConfig {
   id: string;
@@ -81,8 +82,15 @@ export const WIDGET_REGISTRY: WidgetConfig[] = [
   {
     id: 'consolidatedWorkload',
     name: 'Synthèse des Charges (J/H)',
-    description: 'Affiche un tableau consolidé des charges MOA, MOE et Totales (demandées et consommées).',
+    description: 'Affiche un tableau consolidé des charges MOA, MOE et Totales (demandées et consommées) avec gestion de la ligne Totale.',
     component: ConsolidatedWorkloadWidget,
+    defaultLayout: { w: 12, h: 4, minW: 6, minH: 4 },
+  },
+  {
+    id: 'consolidatedBudget',
+    name: 'Synthèse Budgétaire (€)',
+    description: 'Affiche un tableau consolidé complet des budgets (Demandé, Accordé, Engagé, Réalisé) avec gestion de la ligne Totale.',
+    component: ConsolidatedBudgetWidget,
     defaultLayout: { w: 12, h: 4, minW: 6, minH: 4 },
   },
   {
@@ -133,16 +141,16 @@ export const WIDGET_REGISTRY: WidgetConfig[] = [
   },
     {
     id: 'projectBudgetSummary',
-    name: 'Résumé budgétaire projets',
-    description: 'Synthèse des budgets demandés, accordés et engagés pour les projets.',
+    name: 'Résumé budgétaire (Simple)',
+    description: 'Synthèse simplifiée des budgets demandés, accordés et engagés.',
     component: ProjectBudgetSummaryWidget,
     defaultLayout: { w: 12, h: 2, minW: 6, minH: 2 },
     props: {},
   },
   {
     id: 'projectWorkloadSummary',
-    name: 'Résumé des charges projets',
-    description: 'Synthèse des charges (J/H) pour les projets.',
+    name: 'Résumé des charges (Simple)',
+    description: 'Synthèse simplifiée des charges (J/H).',
     component: ProjectWorkloadSummaryWidget,
     defaultLayout: { w: 12, h: 3, minW: 6, minH: 3 },
     props: {},
