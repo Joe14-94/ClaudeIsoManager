@@ -12,6 +12,10 @@ import StrategicAlignmentWidget from './StrategicAlignmentWidget';
 import ProjectInitiativeAlignmentWidget from './ProjectInitiativeAlignmentWidget';
 import ConsolidatedWorkloadWidget from './ConsolidatedWorkloadWidget';
 import ConsolidatedBudgetWidget from './ConsolidatedBudgetWidget';
+import ProjectWeatherWidget from './ProjectWeatherWidget';
+import TopPriorityProjectsWidget from './TopPriorityProjectsWidget';
+import ProjectSCurveWidget from './ProjectSCurveWidget';
+import RiskCoverageMatrixWidget from './RiskCoverageMatrixWidget';
 
 export interface WidgetConfig {
   id: string;
@@ -79,6 +83,34 @@ export const WIDGET_REGISTRY: WidgetConfig[] = [
     props: { type: 'avgActivityAge' },
   },
   // Charts & complex widgets
+  {
+    id: 'projectSCurve',
+    name: 'Courbe en S (Finance)',
+    description: "Graphique comparant le budget planifié (linéaire) au budget engagé et réalisé au fil du temps pour un projet donné.",
+    component: ProjectSCurveWidget,
+    defaultLayout: { w: 6, h: 5, minW: 4, minH: 4 },
+  },
+  {
+    id: 'riskMatrix',
+    name: 'Matrice de Risques',
+    description: "Tableau croisant les Risques Majeurs et les Projets pour identifier la couverture des risques.",
+    component: RiskCoverageMatrixWidget,
+    defaultLayout: { w: 8, h: 6, minW: 6, minH: 4 },
+  },
+  {
+    id: 'projectWeather',
+    name: 'Météo des Projets',
+    description: 'Répartition des projets selon leur indicateur météo (Soleil, Nuageux, Pluie, Orage).',
+    component: ProjectWeatherWidget,
+    defaultLayout: { w: 4, h: 4, minW: 3, minH: 3 },
+  },
+  {
+    id: 'topPriorityProjects',
+    name: 'Top 5 Projets Prioritaires',
+    description: 'Liste des 5 projets actifs ayant le score de priorité le plus élevé.',
+    component: TopPriorityProjectsWidget,
+    defaultLayout: { w: 4, h: 4, minW: 3, minH: 3 },
+  },
   {
     id: 'consolidatedWorkload',
     name: 'Synthèse des Charges (J/H)',

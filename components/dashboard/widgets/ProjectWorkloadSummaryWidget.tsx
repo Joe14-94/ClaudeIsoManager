@@ -1,59 +1,150 @@
+
 import React, { useMemo } from 'react';
 import { CardContent, CardHeader, CardTitle } from '../../ui/Card';
 import { useData } from '../../../contexts/DataContext';
-import { Info } from 'lucide-react';
+import { Info, Timer, Users } from 'lucide-react';
+import Tooltip from '../../ui/Tooltip';
 
-const formatJH = (value?: number) => {
-    if (value === undefined || value === null || isNaN(value)) return 'N/A';
-    return `${Math.round(value)} J/H`;
+const formatJH = (value?: number): string => {
+    if (value === undefined || value === null || isNaN(value)) return '0';
+    return Math.round(value).toLocaleString('fr-FR');
+};
+
+const CircularProgress: React.FC<{ value: number, label: string, subLabel: string, color: string }> = ({ value, label, subLabel, color }) => {
+    // Configuration du SVG pour éviter les coupures (clipping) et assurer un centrage parfait
+    const size = 100; // Taille du viewBox
+    const strokeWidth = 8;
+    const center = size / 2;
+    const radius = (size - strokeWidth) / 2 - 2; // -2 pour laisser une petite marge de sécurité (padding)
+    const circumference = 2 * Math.PI * radius;
+    const progress = Math.min(value, 100);
+    const dashoffset = circumference - (progress / 100) * circumference;
+    
+    return (
+        <div className="flex flex-col items-center">
+            <div className="relative w-20 h-20">
+                <svg 
+                    className="w-full h-full" 
+                    viewBox={`0 0 ${size} ${size}`}
+                >
+                    {/* Cercle de fond */}
+                    <circle
+                        cx={center}
+                        cy={center}
+                        r={radius}
+                        stroke="currentColor"
+                        strokeWidth={strokeWidth}
+                        fill="transparent"
+                        className="text-slate-100"
+                    />
+                    {/* Cercle de progression */}
+                    <circle
+                        cx={center}
+                        cy={center}
+                        r={radius}
+                        stroke={color}
+                        strokeWidth={strokeWidth}
+                        fill="transparent"
+                        strokeDasharray={circumference}
+                        strokeDashoffset={dashoffset}
+                        strokeLinecap="round"
+                        transform={`rotate(-90 ${center} ${center})`}
+                        className="transition-all duration-1000 ease-out"
+                    />
+                    {/* Texte centré mathématiquement dans le SVG */}
+                    <text
+                        x="50%"
+                        y="50%"
+                        dominantBaseline="central"
+                        textAnchor="middle"
+                        className="text-xl font-bold fill-slate-700"
+                        style={{ fontSize: '24px' }}
+                    >
+                        {Math.round(value)}%
+                    </text>
+                </svg>
+            </div>
+            <p className="text-xs font-medium text-slate-600 mt-1">{label}</p>
+            <p className="text-[10px] text-slate-400">{subLabel}</p>
+        </div>
+    );
 };
 
 const ProjectWorkloadSummaryWidget: React.FC = () => {
     const { projects, lastCsvImportDate } = useData();
 
-    const totalStats = useMemo(() => {
-        // FIX: Correctly sum both MOA and MOE workloads for internal and external types to match the `Project` type definition.
+    const stats = useMemo(() => {
         return projects.reduce((acc, p) => {
-            acc.intReq += (p.moaInternalWorkloadRequested || 0) + (p.moeInternalWorkloadRequested || 0);
-            acc.intEng += (p.moaInternalWorkloadEngaged || 0) + (p.moeInternalWorkloadEngaged || 0);
-            acc.intCon += (p.moaInternalWorkloadConsumed || 0) + (p.moeInternalWorkloadConsumed || 0);
-            acc.extReq += (p.moaExternalWorkloadRequested || 0) + (p.moeExternalWorkloadRequested || 0);
-            acc.extEng += (p.moaExternalWorkloadEngaged || 0) + (p.moeExternalWorkloadEngaged || 0);
-            acc.extCon += (p.moaExternalWorkloadConsumed || 0) + (p.moeExternalWorkloadConsumed || 0);
+            if (p.projectId === 'TOTAL_GENERAL') return acc;
+
+            // MOA
+            acc.moaEngaged += (p.moaInternalWorkloadEngaged || 0) + (p.moaExternalWorkloadEngaged || 0);
+            acc.moaConsumed += (p.moaInternalWorkloadConsumed || 0) + (p.moaExternalWorkloadConsumed || 0);
+            
+            // MOE
+            acc.moeEngaged += (p.moeInternalWorkloadEngaged || 0) + (p.moeExternalWorkloadEngaged || 0);
+            acc.moeConsumed += (p.moeInternalWorkloadConsumed || 0) + (p.moeExternalWorkloadConsumed || 0);
+            
             return acc;
-        }, { intReq: 0, intEng: 0, intCon: 0, extReq: 0, extEng: 0, extCon: 0 });
+        }, { moaEngaged: 0, moaConsumed: 0, moeEngaged: 0, moeConsumed: 0 });
     }, [projects]);
     
-    const totalEngaged = totalStats.intEng + totalStats.extEng;
-    const totalConsumed = totalStats.intCon + totalStats.extCon;
-    const totalProgress = totalEngaged > 0 ? Math.round((totalConsumed / totalEngaged) * 100) : 0;
+    const totalEngaged = stats.moaEngaged + stats.moeEngaged;
+    const totalConsumed = stats.moaConsumed + stats.moeConsumed;
+    const totalProgress = totalEngaged > 0 ? (totalConsumed / totalEngaged) * 100 : 0;
+    
+    const moaProgress = stats.moaEngaged > 0 ? (stats.moaConsumed / stats.moaEngaged) * 100 : 0;
+    const moeProgress = stats.moeEngaged > 0 ? (stats.moeConsumed / stats.moeEngaged) * 100 : 0;
 
     return (
         <div className="h-full w-full flex flex-col">
-            <CardHeader className="non-draggable">
+            <CardHeader className="non-draggable pb-2">
                  <div className="flex justify-between items-start">
-                    <CardTitle>Résumé des charges projets</CardTitle>
+                    <CardTitle className="flex items-center gap-2">
+                        <Timer className="text-blue-600" size={20} />
+                        Synthèse Charges
+                    </CardTitle>
                     {lastCsvImportDate && (
-                        <div className="flex items-center gap-1 text-xs text-slate-500">
-                            <Info size={14} />
-                            <span>MàJ: {new Date(lastCsvImportDate).toLocaleDateString('fr-FR')}</span>
-                        </div>
+                        <Tooltip text={`Données mises à jour le ${new Date(lastCsvImportDate).toLocaleDateString('fr-FR')}`}>
+                            <Info size={16} className="text-slate-400 cursor-help" />
+                        </Tooltip>
                     )}
                 </div>
             </CardHeader>
-            <CardContent className="flex-grow flex items-center justify-around">
-                <div className="text-center">
-                    <p className="text-sm text-slate-500">Charge totale engagée</p>
-                    <p className="text-2xl font-bold text-slate-800">{formatJH(totalEngaged)}</p>
+            <CardContent className="flex-grow flex flex-col justify-center gap-4">
+                
+                {/* Global Progress Bar */}
+                <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
+                    <div className="flex justify-between items-baseline mb-1">
+                        <span className="text-sm font-semibold text-slate-700">Avancement Global</span>
+                        <span className="text-lg font-bold text-blue-600">{Math.round(totalProgress)}%</span>
+                    </div>
+                    <div className="w-full bg-slate-200 rounded-full h-2.5 mb-1">
+                        <div className="bg-blue-600 h-2.5 rounded-full transition-all duration-1000" style={{ width: `${Math.min(totalProgress, 100)}%` }}></div>
+                    </div>
+                    <div className="flex justify-between text-xs text-slate-500">
+                        <span>Conso: {formatJH(totalConsumed)} J/H</span>
+                        <span>Engagé: {formatJH(totalEngaged)} J/H</span>
+                    </div>
                 </div>
-                 <div className="text-center">
-                    <p className="text-sm text-slate-500">Charge totale consommée</p>
-                    <p className="text-2xl font-bold text-slate-800">{formatJH(totalConsumed)}</p>
+
+                {/* Circular Breakdown */}
+                <div className="flex justify-around items-center pt-2">
+                    <CircularProgress 
+                        value={moaProgress} 
+                        label="Avancement MOA" 
+                        subLabel={`${formatJH(stats.moaConsumed)} / ${formatJH(stats.moaEngaged)} JH`}
+                        color="#8b5cf6" // Violet
+                    />
+                    <div className="h-12 w-px bg-slate-200"></div>
+                    <CircularProgress 
+                        value={moeProgress} 
+                        label="Avancement MOE" 
+                        subLabel={`${formatJH(stats.moeConsumed)} / ${formatJH(stats.moeEngaged)} JH`}
+                        color="#0ea5e9" // Sky Blue
+                    />
                 </div>
-                 <div className="text-center">
-                    <p className="text-sm text-slate-500">Avancement global</p>
-                    <p className="text-2xl font-bold text-blue-600">{totalProgress}%</p>
-                </div>
+
             </CardContent>
         </div>
     );

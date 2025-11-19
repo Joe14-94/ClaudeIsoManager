@@ -134,7 +134,7 @@ const ActivityTimeline: React.FC<ActivityTimelineProps> = ({ activities, zoomLev
                         >
                             <p className="truncate text-slate-800 font-medium">{activity.title}</p>
                         </div>
-                        <div className="absolute bottom-full mb-2 w-max max-w-xs p-2 text-xs text-white bg-slate-700 rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-20 whitespace-pre-wrap">
+                        <div className="absolute bottom-full mb-2 w-max max-w-xs p-2 text-xs text-slate-800 bg-white border border-slate-200 rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-20 whitespace-pre-wrap">
                             {tooltipText.trim()}
                         </div>
                     </div>

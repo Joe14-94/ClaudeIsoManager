@@ -6,7 +6,8 @@ import { resources as initialResources } from '../data/resources';
 import { securityProcesses as initialSecurityProcesses } from '../data/securityProcesses';
 import { initiatives as initialInitiatives } from '../data/initiatives';
 import { projects as initialProjects } from '../data/projects';
-import { Activity, Chantier, Objective, StrategicOrientation, Resource, SecurityProcess, Initiative, Project } from '../types';
+import { majorRisks as initialMajorRisks } from '../data/majorRisks';
+import { Activity, Chantier, Objective, StrategicOrientation, Resource, SecurityProcess, Initiative, Project, MajorRisk } from '../types';
 import { loadReferenceData } from '../utils/referenceData';
 import type { Layout } from 'react-grid-layout';
 
@@ -27,6 +28,8 @@ interface DataContextType {
     setResources: React.Dispatch<React.SetStateAction<Resource[]>>;
     securityProcesses: SecurityProcess[];
     setSecurityProcesses: React.Dispatch<React.SetStateAction<SecurityProcess[]>>;
+    majorRisks: MajorRisk[];
+    setMajorRisks: React.Dispatch<React.SetStateAction<MajorRisk[]>>;
     dashboardLayouts: { [breakpoint: string]: Layout[] };
     setDashboardLayouts: React.Dispatch<React.SetStateAction<{ [breakpoint: string]: Layout[] }>>;
     lastCsvImportDate: string | null;
@@ -61,6 +64,7 @@ export const DataProvider = ({ children }: PropsWithChildren) => {
     const [objectives, setObjectives] = useState<Objective[]>([]);
     const [initiatives, setInitiatives] = useState<Initiative[]>([]);
     const [projects, setProjects] = useState<Project[]>([]);
+    const [majorRisks, setMajorRisks] = useState<MajorRisk[]>([]);
     const [dashboardLayouts, setDashboardLayouts] = useState<{ [breakpoint: string]: Layout[] }>(() => loadFromLocalStorage('dashboardLayouts', initialLayouts));
     const [lastCsvImportDate, setLastCsvImportDate] = useState<string | null>(() => loadFromLocalStorage('lastCsvImportDate', null));
     const [lastImportWeek, setLastImportWeek] = useState<string | null>(() => loadFromLocalStorage('lastImportWeek', null));
@@ -75,6 +79,7 @@ export const DataProvider = ({ children }: PropsWithChildren) => {
             setSecurityProcesses(loadFromLocalStorage('securityProcesses', initialSecurityProcesses));
             setInitiatives(loadFromLocalStorage('initiatives', initialInitiatives));
             setProjects(loadFromLocalStorage('projects', initialProjects));
+            setMajorRisks(loadFromLocalStorage('majorRisks', initialMajorRisks));
             setDashboardLayouts(loadFromLocalStorage('dashboardLayouts', initialLayouts));
             setLastCsvImportDate(loadFromLocalStorage('lastCsvImportDate', null));
             setLastImportWeek(loadFromLocalStorage('lastImportWeek', null));
@@ -122,6 +127,7 @@ export const DataProvider = ({ children }: PropsWithChildren) => {
     useEffect(() => { if (!isLoading) saveToLocalStorage('securityProcesses', securityProcesses); }, [securityProcesses, isLoading]);
     useEffect(() => { if (!isLoading) saveToLocalStorage('initiatives', initiatives); }, [initiatives, isLoading]);
     useEffect(() => { if (!isLoading) saveToLocalStorage('projects', projects); }, [projects, isLoading]);
+    useEffect(() => { if (!isLoading) saveToLocalStorage('majorRisks', majorRisks); }, [majorRisks, isLoading]);
     useEffect(() => { if (!isLoading) saveToLocalStorage('dashboardLayouts', dashboardLayouts); }, [dashboardLayouts, isLoading]);
     useEffect(() => { if (!isLoading) saveToLocalStorage('lastCsvImportDate', lastCsvImportDate); }, [lastCsvImportDate, isLoading]);
     useEffect(() => { if (!isLoading) saveToLocalStorage('lastImportWeek', lastImportWeek); }, [lastImportWeek, isLoading]);
@@ -142,6 +148,7 @@ export const DataProvider = ({ children }: PropsWithChildren) => {
         projects, setProjects,
         resources, setResources,
         securityProcesses, setSecurityProcesses,
+        majorRisks, setMajorRisks,
         dashboardLayouts, setDashboardLayouts,
         lastCsvImportDate, setLastCsvImportDate,
         lastImportWeek, setLastImportWeek,

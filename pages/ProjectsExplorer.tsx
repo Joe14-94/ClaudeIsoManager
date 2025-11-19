@@ -17,7 +17,8 @@ type FieldKey =
   | 'moaIntReq' | 'moaIntEng' | 'moaIntCon' 
   | 'moaExtReq' | 'moaExtEng' | 'moaExtCon'
   | 'moeIntReq' | 'moeIntEng' | 'moeIntCon'
-  | 'moeExtReq' | 'moeExtEng' | 'moeExtCon';
+  | 'moeExtReq' | 'moeExtEng' | 'moeExtCon'
+  | 'weather' | 'priorityScore' | 'strategicImpact' | 'riskCoverage' | 'effort';
 
 interface Field {
   key: FieldKey;
@@ -55,6 +56,11 @@ const AVAILABLE_FIELDS: Field[] = [
   { key: 'projectTitle', label: 'Titre', getValue: row => row.project.title },
   { key: 'description', label: 'Description', getValue: row => row.project.description },
   { key: 'projectStatus', label: 'Statut', getValue: row => row.project.status },
+  { key: 'weather', label: 'Météo', getValue: row => row.project.weather },
+  { key: 'priorityScore', label: 'Score Priorité', getValue: row => row.project.priorityScore?.toFixed(1), isNumeric: true },
+  { key: 'strategicImpact', label: 'Impact Stratégique', getValue: row => row.project.strategicImpact?.toString(), isNumeric: true },
+  { key: 'riskCoverage', label: 'Couv. Risque', getValue: row => row.project.riskCoverage?.toString(), isNumeric: true },
+  { key: 'effort', label: 'Effort', getValue: row => row.project.effort?.toString(), isNumeric: true },
   { key: 'tShirtSize', label: 'Taille', getValue: row => row.project.tShirtSize },
   { key: 'projectCategory', label: 'Catégorie', getValue: row => row.project.category },
   { key: 'isTop30', label: 'Top 30', getValue: row => row.project.isTop30 ? 'Oui' : 'Non' },

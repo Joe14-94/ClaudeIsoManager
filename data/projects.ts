@@ -1,5 +1,5 @@
 
-import { Project, ProjectStatus, TShirtSize, ProjectCategory } from '../types';
+import { Project, ProjectStatus, TShirtSize, ProjectCategory, ProjectWeather } from '../types';
 
 export const projects: Project[] = [
   {
@@ -20,19 +20,47 @@ export const projects: Project[] = [
     updatedAt: '2025-11-01T00:00:00Z',
     initiativeId: 'init-demo-A',
     isoMeasures: ['8.7', '8.16'],
+    
+    // Données financières
     budgetRequested: 150000,
     budgetApproved: 120000,
     budgetCommitted: 75000,
-    completedPV: 20000,
+    completedPV: 45000,
+    forecastedPurchaseOrders: 40000,
+
+    // Charges
     moaInternalWorkloadRequested: 20,
     moaInternalWorkloadEngaged: 20,
-    moaInternalWorkloadConsumed: 5,
+    moaInternalWorkloadConsumed: 12,
     moeInternalWorkloadRequested: 80,
     moeInternalWorkloadEngaged: 60,
-    moeInternalWorkloadConsumed: 20,
+    moeInternalWorkloadConsumed: 45,
     moeExternalWorkloadRequested: 50,
     moeExternalWorkloadEngaged: 50,
-    moeExternalWorkloadConsumed: 10,
+    moeExternalWorkloadConsumed: 30,
+
+    // Nouveaux champs
+    weather: ProjectWeather.SUNNY,
+    weatherDescription: "Le déploiement avance bien sur le périmètre pilote. Aucun blocage majeur.",
+    strategicImpact: 5,
+    riskCoverage: 5,
+    effort: 3,
+    priorityScore: 8.3, // (5*5)/3
+    majorRiskIds: ['risk-ransomware', 'risk-insider', 'risk-availability'],
+    milestones: [
+        { id: 'm1', label: 'Kick-off', date: '2025-06-01T00:00:00Z', completed: true },
+        { id: 'm2', label: 'Validation Architecture', date: '2025-07-15T00:00:00Z', completed: true },
+        { id: 'm3', label: 'Fin du Pilote (500 postes)', date: '2025-10-30T00:00:00Z', completed: true },
+        { id: 'm4', label: 'Déploiement Général', date: '2026-03-01T00:00:00Z', completed: false },
+    ],
+    // Simulation d'historique pour la Courbe en S
+    fdrHistory: [
+        { week: '26', year: '2025', type: 'budget', importDate: '2025-06-30T12:00:00Z', data: { budgetCommitted: 10000, completedPV: 0 } },
+        { week: '30', year: '2025', type: 'budget', importDate: '2025-07-28T12:00:00Z', data: { budgetCommitted: 25000, completedPV: 5000 } },
+        { week: '35', year: '2025', type: 'budget', importDate: '2025-09-01T12:00:00Z', data: { budgetCommitted: 40000, completedPV: 15000 } },
+        { week: '39', year: '2025', type: 'budget', importDate: '2025-09-29T12:00:00Z', data: { budgetCommitted: 60000, completedPV: 25000 } },
+        { week: '44', year: '2025', type: 'budget', importDate: '2025-10-31T12:00:00Z', data: { budgetCommitted: 75000, completedPV: 45000 } },
+    ]
   },
   {
     id: 'proj-demo-2',
@@ -62,6 +90,14 @@ export const projects: Project[] = [
     moeInternalWorkloadEngaged: 150,
     moeExternalWorkloadConsumed: 350,
     moeExternalWorkloadEngaged: 350,
+    
+    weather: ProjectWeather.SUNNY,
+    weatherDescription: "Projet terminé avec succès.",
+    majorRiskIds: ['risk-availability'],
+    strategicImpact: 5,
+    riskCoverage: 3,
+    effort: 5,
+    priorityScore: 3.0,
   },
    {
     id: 'proj-demo-3',
@@ -82,6 +118,18 @@ export const projects: Project[] = [
     isoMeasures: ['5.12', '5.13', '8.11'],
     budgetRequested: 80000,
     budgetApproved: 60000,
+    
+    weather: ProjectWeather.CLOUDY,
+    weatherDescription: "Retard sur la livraison de l'éditeur. POC décalé de 2 semaines.",
+    majorRiskIds: ['risk-leak', 'risk-compliance'],
+    strategicImpact: 4,
+    riskCoverage: 4,
+    effort: 3,
+    priorityScore: 5.3,
+    milestones: [
+        { id: 'm3-1', label: 'Choix de la solution', date: '2025-09-15T00:00:00Z', completed: true },
+        { id: 'm3-2', label: 'Lancement POC', date: '2025-11-15T00:00:00Z', completed: false },
+    ]
   },
   {
     id: 'proj-demo-4',
@@ -98,6 +146,12 @@ export const projects: Project[] = [
     updatedAt: '2025-10-01T00:00:00Z',
     initiativeId: 'init-demo-D',
     isoMeasures: ['5.16', '5.17', '5.18', '8.5'],
+    
+    strategicImpact: 5,
+    riskCoverage: 5,
+    effort: 5,
+    priorityScore: 5.0,
+    majorRiskIds: ['risk-insider', 'risk-fraud']
   },
   {
     id: 'proj-demo-5',
@@ -120,5 +174,94 @@ export const projects: Project[] = [
     completedPV: 15000,
     moaInternalWorkloadEngaged: 20,
     moaInternalWorkloadConsumed: 25, // Consommé > Engagé
+    
+    weather: ProjectWeather.STORM,
+    weatherDescription: "Budget dépassé suite à l'extension du périmètre d'audit demandé par le DPO.",
+    majorRiskIds: ['risk-compliance'],
+    strategicImpact: 3,
+    riskCoverage: 2,
+    effort: 1,
+    priorityScore: 30.0, // Score aberrant car effort très faible mais impact fort (formule simple)
+  },
+  {
+    id: 'proj-demo-6',
+    projectId: 'P25-020',
+    title: 'Durcissement Active Directory',
+    description: 'Plan de remédiation suite à l\'audit AD (Tiering model, comptes de service, administration sécurisée).',
+    status: ProjectStatus.NO,
+    tShirtSize: TShirtSize.M,
+    projectManagerMOE: 'res-demo-4',
+    projectStartDate: '2025-05-01T00:00:00Z',
+    projectEndDate: '2026-03-01T00:00:00Z',
+    isTop30: true,
+    category: ProjectCategory.PROJECT,
+    createdAt: '2025-04-01T00:00:00Z',
+    updatedAt: '2025-11-01T00:00:00Z',
+    initiativeId: 'init-demo-D',
+    isoMeasures: ['8.2', '8.5', '5.15'],
+    budgetApproved: 80000,
+    budgetCommitted: 40000,
+    
+    weather: ProjectWeather.RAINY,
+    weatherDescription: "Difficultés techniques rencontrées sur le Tier 0. Manque d'expertise interne disponible.",
+    majorRiskIds: ['risk-ransomware', 'risk-insider', 'risk-supplychain'],
+    strategicImpact: 5,
+    riskCoverage: 5,
+    effort: 4,
+    priorityScore: 6.3,
+  },
+  {
+    id: 'proj-demo-7',
+    projectId: 'P25-030',
+    title: 'Mise en place SOC Hybride 24/7',
+    description: 'Externalisation de la surveillance nocturne et week-end vers un MSSP.',
+    status: ProjectStatus.NO,
+    tShirtSize: TShirtSize.L,
+    projectManagerMOE: 'res-demo-1',
+    projectStartDate: '2025-02-01T00:00:00Z',
+    projectEndDate: '2025-12-31T00:00:00Z',
+    isTop30: true,
+    category: ProjectCategory.PROJECT,
+    createdAt: '2025-01-15T00:00:00Z',
+    updatedAt: '2025-11-05T00:00:00Z',
+    initiativeId: 'init-demo-A',
+    isoMeasures: ['8.16', '5.26'],
+    budgetApproved: 300000,
+    budgetCommitted: 280000,
+    
+    weather: ProjectWeather.SUNNY,
+    weatherDescription: "Contrat signé avec le MSSP. Phase de transition en cours.",
+    majorRiskIds: ['risk-ransomware', 'risk-leak'],
+    strategicImpact: 5,
+    riskCoverage: 5,
+    effort: 3,
+    priorityScore: 8.3,
+  },
+   {
+    id: 'proj-demo-8',
+    projectId: 'P25-040',
+    title: 'Campagne Phishing S2 2025',
+    description: 'Exercice semestriel de simulation de phishing.',
+    status: ProjectStatus.NO,
+    tShirtSize: TShirtSize.XS,
+    projectManagerMOA: 'res-demo-3',
+    projectStartDate: '2025-11-01T00:00:00Z',
+    projectEndDate: '2025-11-30T00:00:00Z',
+    isTop30: false,
+    category: ProjectCategory.ACTIVITY,
+    createdAt: '2025-10-01T00:00:00Z',
+    updatedAt: '2025-11-10T00:00:00Z',
+    initiativeId: 'init-demo-C',
+    isoMeasures: ['6.3'],
+    budgetApproved: 5000,
+    budgetCommitted: 5000,
+    
+    weather: ProjectWeather.SUNNY,
+    weatherDescription: "Campagne prête à être lancée.",
+    majorRiskIds: ['risk-fraud'],
+    strategicImpact: 3,
+    riskCoverage: 3,
+    effort: 1,
+    priorityScore: 45.0, // Petit effort, bon impact
   }
 ];

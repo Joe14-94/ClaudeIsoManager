@@ -109,7 +109,7 @@ const Tooltip: React.FC<{ children: React.ReactElement, text: string }> = ({ chi
     <div onMouseEnter={() => setIsVisible(true)} onMouseLeave={() => setIsVisible(false)} className="relative">
       {children}
       {isVisible && (
-        <div className="absolute bottom-full mb-2 right-1/2 translate-x-1/2 w-max px-2 py-1 bg-slate-700 text-white text-xs rounded-md shadow-lg">
+        <div className="absolute bottom-full mb-2 right-1/2 translate-x-1/2 w-max px-2 py-1 bg-white border border-slate-200 text-slate-800 text-xs rounded-md shadow-lg z-50">
           {text}
         </div>
       )}

@@ -129,14 +129,38 @@ const ProjectsWorkload: React.FC = () => {
             </div>
 
             <Card>
-                <CardHeader><CardTitle>Totaux des Charges</CardTitle></CardHeader>
-                <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                    <div><p className="text-sm text-slate-500">Total MOA Engagé</p><p className="text-lg font-bold">{formatJH(totalStats.moaIntEng + totalStats.moaExtEng)}</p></div>
-                    <div><p className="text-sm text-slate-500">Total MOA Consommé</p><p className="text-lg font-bold">{formatJH(totalStats.moaIntCon + totalStats.moaExtCon)}</p></div>
-                    <div><p className="text-sm text-slate-500">Total MOE Engagé</p><p className="text-lg font-bold">{formatJH(totalStats.moeIntEng + totalStats.moeExtEng)}</p></div>
-                    <div><p className="text-sm text-slate-500">Total MOE Consommé</p><p className="text-lg font-bold">{formatJH(totalStats.moeIntCon + totalStats.moeExtCon)}</p></div>
-                    <div className="md:col-span-2"><p className="text-sm text-slate-500">Total Engagé (Global)</p><p className="text-xl font-bold">{formatJH(totalEngaged)}</p></div>
-                    <div className="md:col-span-2"><p className="text-sm text-slate-500">Total Consommé (Global)</p><p className="text-xl font-bold">{formatJH(totalConsumed)}</p></div>
+                <CardHeader className="py-3 border-b border-slate-100"><CardTitle>Totaux des Charges</CardTitle></CardHeader>
+                <CardContent className="py-4">
+                     <div className="flex flex-wrap justify-around items-center gap-4 text-center">
+                        <div className="flex flex-col">
+                             <span className="text-xs text-slate-500 uppercase font-semibold mb-1">MOA Engagé</span>
+                             <span className="text-lg font-bold text-slate-700">{formatJH(totalStats.moaIntEng + totalStats.moaExtEng)}</span>
+                        </div>
+                        <div className="w-px h-10 bg-slate-200 hidden md:block"></div>
+                        <div className="flex flex-col">
+                             <span className="text-xs text-slate-500 uppercase font-semibold mb-1">MOA Conso.</span>
+                             <span className="text-lg font-bold text-slate-700">{formatJH(totalStats.moaIntCon + totalStats.moaExtCon)}</span>
+                        </div>
+                        <div className="w-px h-10 bg-slate-200 hidden md:block"></div>
+                         <div className="flex flex-col">
+                             <span className="text-xs text-slate-500 uppercase font-semibold mb-1">MOE Engagé</span>
+                             <span className="text-lg font-bold text-slate-700">{formatJH(totalStats.moeIntEng + totalStats.moeExtEng)}</span>
+                        </div>
+                        <div className="w-px h-10 bg-slate-200 hidden md:block"></div>
+                        <div className="flex flex-col">
+                             <span className="text-xs text-slate-500 uppercase font-semibold mb-1">MOE Conso.</span>
+                             <span className="text-lg font-bold text-slate-700">{formatJH(totalStats.moeIntCon + totalStats.moeExtCon)}</span>
+                        </div>
+                        <div className="w-px h-10 bg-slate-200 hidden md:block"></div>
+                         <div className="flex flex-col bg-blue-50 px-4 py-1 rounded-lg border border-blue-100">
+                             <span className="text-xs text-blue-600 uppercase font-bold mb-1">Global Engagé</span>
+                             <span className="text-xl font-extrabold text-blue-800">{formatJH(totalEngaged)}</span>
+                        </div>
+                        <div className="flex flex-col bg-emerald-50 px-4 py-1 rounded-lg border border-emerald-100">
+                             <span className="text-xs text-emerald-600 uppercase font-bold mb-1">Global Conso.</span>
+                             <span className="text-xl font-extrabold text-emerald-800">{formatJH(totalConsumed)}</span>
+                        </div>
+                    </div>
                 </CardContent>
             </Card>
 

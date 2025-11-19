@@ -1,12 +1,65 @@
+
 import React from 'react';
 import Card, { CardContent, CardHeader, CardTitle } from '../components/ui/Card';
-import { Info, ListChecks, Workflow, Settings, BrainCircuit } from 'lucide-react';
+import { Info, ListChecks, Workflow, Settings, BrainCircuit, Sparkles, TrendingUp, ShieldAlert, Target } from 'lucide-react';
 import { APP_VERSION } from '../config';
+
+const NewBadge = () => (
+  <span className="ml-2 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-indigo-600 bg-indigo-100 border border-indigo-200 rounded-full align-middle">
+    Nouveau
+  </span>
+);
 
 const HelpPage: React.FC = () => {
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-bold text-slate-800">Aide et informations</h1>
+
+      {/* Section Nouveautés */}
+      <Card className="border-l-4 border-l-indigo-500">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-indigo-900">
+            <Sparkles size={22} className="text-indigo-600" />
+            Nouveautés de la version {APP_VERSION}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6 text-slate-600">
+          <div>
+            <h4 className="font-semibold text-slate-800 flex items-center gap-2">
+              <TrendingUp size={18} /> Pilotage Financier Avancé
+            </h4>
+            <ul className="mt-2 space-y-2 text-sm list-disc list-inside pl-2">
+              <li>
+                <strong>Courbe en S (S-Curve) :</strong> Visualisez l'atterrissage budgétaire de vos projets en comparant le planifié, l'engagé et le réalisé dans le temps. <NewBadge />
+              </li>
+              <li>
+                <strong>Jauges Budgétaires :</strong> Nouveaux visuels pour suivre la consommation des enveloppes (MOA/MOE). <NewBadge />
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h4 className="font-semibold text-slate-800 flex items-center gap-2">
+              <ShieldAlert size={18} /> Gestion des Risques & Conformité
+            </h4>
+            <ul className="mt-2 space-y-2 text-sm list-disc list-inside pl-2">
+              <li>
+                <strong>Matrice de Couverture :</strong> Un tableau croisé dynamique pour identifier les "trous dans la raquette" entre vos Risques Majeurs et vos Projets. <NewBadge />
+              </li>
+              <li>
+                <strong>Scoring d'arbitrage :</strong> Calcul automatique d'un score de priorité basé sur l'impact, la couverture de risque et l'effort. <NewBadge />
+              </li>
+            </ul>
+          </div>
+          <div className="md:col-span-2">
+            <h4 className="font-semibold text-slate-800 flex items-center gap-2">
+              <Target size={18} /> Suivi Opérationnel
+            </h4>
+            <p className="mt-2 text-sm">
+              La fiche projet s'enrichit avec la <strong>Météo du projet</strong> (Flash Report) pour qualifier l'état de santé, et la gestion des <strong>Jalons clés</strong> pour suivre les échéances majeures. <NewBadge />
+            </p>
+          </div>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
@@ -25,7 +78,7 @@ const HelpPage: React.FC = () => {
           <ul className="list-disc list-inside space-y-2 pl-4">
             <li><strong>La conformité normative :</strong> en liant les actions aux mesures du référentiel ISO 27002:2022.</li>
             <li><strong>La stratégie de l'entreprise :</strong> en associant les actions à des orientations stratégiques, des chantiers et des objectifs définis.</li>
-            <li><strong>Le pilotage opérationnel :</strong> en suivant les statuts, les budgets, les charges et les échéances.</li>
+            <li><strong>Le pilotage opérationnel :</strong> en suivant les statuts, les budgets, les charges, les jalons et les risques.</li>
           </ul>
         </CardContent>
       </Card>

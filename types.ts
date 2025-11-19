@@ -98,6 +98,13 @@ export interface Risk {
   mitigation: string;
 }
 
+export interface MajorRisk {
+  id: string;
+  label: string;
+  description: string;
+  category: string; // e.g., "Cybercriminalité", "Conformité", "Opérationnel"
+}
+
 export interface Objective {
   id: string;
   code: string;
@@ -207,6 +214,20 @@ export enum ProjectStatus {
   NT = "NT",
 }
 
+export enum ProjectWeather {
+  SUNNY = "Soleil",
+  CLOUDY = "Nuageux",
+  RAINY = "Pluie",
+  STORM = "Orage"
+}
+
+export interface ProjectMilestone {
+  id: string;
+  label: string;
+  date: DateTime;
+  completed: boolean;
+}
+
 export interface FdrHistoryEntry {
   week: string;
   year: string;
@@ -234,6 +255,22 @@ export interface Project {
   updatedAt: DateTime;
   initiativeId: string;
   isoMeasures: string[];
+
+  // Météo & Reporting
+  weather?: ProjectWeather;
+  weatherDescription?: string;
+
+  // Jalons
+  milestones?: ProjectMilestone[];
+  
+  // Risques Majeurs
+  majorRiskIds?: string[]; // IDs of MajorRisk
+
+  // Scoring d'arbitrage
+  strategicImpact?: number; // 1-5
+  riskCoverage?: number; // 1-5
+  effort?: number; // 1-5
+  priorityScore?: number; // Calculé
 
   // History of FDR imports
   fdrHistory?: FdrHistoryEntry[];

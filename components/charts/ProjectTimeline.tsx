@@ -1,4 +1,3 @@
-
 import React, { useMemo, useRef, useEffect, useCallback } from 'react';
 import { Project } from '../../types';
 import { PROJECT_STATUS_HEX_COLORS } from '../../constants';
@@ -144,12 +143,28 @@ const ProjectTimeline: React.FC<ProjectTimelineProps> = ({ projects, zoomLevel =
                         onClick={() => onProjectClick && onProjectClick(project.id)}
                     >
                         <div 
-                            className="w-full h-full rounded-md px-2 overflow-hidden whitespace-nowrap text-sm flex items-center transition-all duration-200 group-hover:ring-2 group-hover:ring-blue-500 group-hover:z-10"
+                            className="w-full h-full rounded-md px-2 overflow-hidden whitespace-nowrap text-sm flex items-center transition-all duration-200 group-hover:ring-2 group-hover:ring-blue-500 group-hover:z-10 relative"
                             style={{ backgroundColor: PROJECT_STATUS_HEX_COLORS[project.status] }}
                         >
-                            <p className="truncate text-slate-800 font-medium">{project.title}</p>
+                            <p className="truncate text-slate-800 font-medium z-10 relative">{project.title}</p>
+                            {/* Milestones indicators on the bar */}
+                            {project.milestones?.map(ms => {
+                                const msDate = new Date(ms.date);
+                                if (msDate >= project.projectStartDate! && msDate <= project.projectEndDate!) {
+                                    const msPos = getPositionForDate(msDate, false) - left;
+                                    return (
+                                        <div 
+                                            key={ms.id}
+                                            className="absolute bottom-0 w-2 h-2 bg-white rotate-45 border border-slate-500 z-20"
+                                            style={{ left: `${msPos}px`, marginBottom: '-4px' }}
+                                            title={`${ms.label} (${msDate.toLocaleDateString()})`}
+                                        />
+                                    );
+                                }
+                                return null;
+                            })}
                         </div>
-                        <div className="absolute bottom-full mb-2 w-max max-w-xs p-2 text-xs text-white bg-slate-700 rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-20 whitespace-pre-wrap">
+                        <div className="absolute bottom-full mb-2 w-max max-w-xs p-2 text-xs text-slate-800 bg-white border border-slate-200 rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-30 whitespace-pre-wrap">
                             {tooltipText.trim()}
                         </div>
                     </div>
