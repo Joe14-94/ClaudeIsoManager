@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import Card, { CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import { useData } from '../contexts/DataContext';
 import { ProjectStatus, Project } from '../types';
-import { ClipboardList, Star, TrendingUp, DollarSign, Info, CheckCircle, Clock } from 'lucide-react';
+import { ClipboardList, Star, TrendingUp, Euro, Info, CheckCircle, Clock } from 'lucide-react';
 import ProjectStatusDonutChart from '../components/charts/ProjectStatusDonutChart';
 import ProjectTimeline from '../components/charts/ProjectTimeline';
 import ActiveFiltersDisplay from '../components/ui/ActiveFiltersDisplay';
@@ -61,8 +61,8 @@ const ProjectsDashboardPage: React.FC = () => {
     const completed = validProjects.filter(p => p.status === ProjectStatus.NF).length;
     const inProgress = validProjects.filter(p => p.status === ProjectStatus.NO).length;
     
-    const totalConsumed = validProjects.reduce((sum, p) => sum + (p.moaInternalWorkloadConsumed || 0) + (p.moaExternalWorkloadConsumed || 0) + (p.moeInternalWorkloadConsumed || 0) + (p.moeExternalWorkloadConsumed || 0), 0);
-    const totalEngaged = validProjects.reduce((sum, p) => sum + (p.moaInternalWorkloadEngaged || 0) + (p.moaExternalWorkloadEngaged || 0) + (p.moeInternalWorkloadEngaged || 0) + (p.moeExternalWorkloadEngaged || 0), 0);
+    const totalConsumed = validProjects.reduce((sum, p) => sum + (p.internalWorkloadConsumed || 0) + (p.externalWorkloadConsumed || 0), 0);
+    const totalEngaged = validProjects.reduce((sum, p) => sum + (p.internalWorkloadEngaged || 0) + (p.externalWorkloadEngaged || 0), 0);
     const overallProgress = totalEngaged > 0 ? Math.round((totalConsumed / totalEngaged) * 100) : 0;
     
     const totalBudgetApproved = validProjects.reduce((sum, p) => sum + (p.budgetApproved || 0), 0);
@@ -132,7 +132,7 @@ const ProjectsDashboardPage: React.FC = () => {
         <StatCard 
           title="Budget total accordé" 
           value={formatCurrency(stats.totalBudgetApproved)} 
-          icon={<DollarSign size={24} />}
+          icon={<Euro size={24} />}
           onClick={() => navigate('/projects-budget')}
         />
       </div>

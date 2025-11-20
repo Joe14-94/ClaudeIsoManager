@@ -143,7 +143,7 @@ const ProjectSCurveWidget: React.FC = () => {
         xAxisGroup.select('.domain')
             .attr('stroke', '#94a3b8')
             .attr('stroke-width', 1.5);
-        xAxisGroup.selectAll('text').attr('fill', '#475569');
+        xAxisGroup.selectAll('text').attr('fill', '#64748b');
         xAxisGroup.selectAll('line').attr('stroke', '#cbd5e1');
 
         // Dessiner l'axe Y
@@ -154,7 +154,7 @@ const ProjectSCurveWidget: React.FC = () => {
         yAxisGroup.select('.domain')
             .attr('stroke', '#94a3b8')
             .attr('stroke-width', 1.5);
-        yAxisGroup.selectAll('text').attr('fill', '#475569');
+        yAxisGroup.selectAll('text').attr('fill', '#64748b');
         yAxisGroup.selectAll('line').attr('stroke', '#cbd5e1');
         
         // Grille
@@ -163,7 +163,7 @@ const ProjectSCurveWidget: React.FC = () => {
             .call(axisLeft(yScale).tickSize(-innerWidth).tickFormat(() => ""))
             .attr('color', '#e2e8f0')
             .style('stroke-dasharray', '3,3')
-            .select('.domain').remove(); // Enlever la ligne de domaine de la grille pour ne pas doubler l'axe Y
+            .select('.domain').remove();
 
         // Générateurs de ligne
         const lineGen = line<{date: Date, value: number}>()
@@ -171,22 +171,22 @@ const ProjectSCurveWidget: React.FC = () => {
             .y(d => yScale(d.value))
             .curve(curveMonotoneX);
 
-        // 1. Courbe Planifiée (Gris pointillé)
+        // 1. Courbe Planifiée (Gris Pastel pointillé)
         g.append('path')
             .datum(plannedData)
             .attr('fill', 'none')
-            .attr('stroke', '#94a3b8') // Slate 400
+            .attr('stroke', '#cbd5e1') // Slate 300 (Pastel Grey)
             .attr('stroke-width', 2)
             .attr('stroke-dasharray', '5,5')
             .attr('d', lineGen);
             
-        // 2. Courbe Engagé (Bleu)
+        // 2. Courbe Engagé (Bleu Pastel)
         if (committedData.length > 0) {
             g.append('path')
                 .datum(committedData)
                 .attr('fill', 'none')
-                .attr('stroke', '#3b82f6') // Blue 500
-                .attr('stroke-width', 2)
+                .attr('stroke', '#93c5fd') // Blue 300 (Pastel Blue)
+                .attr('stroke-width', 3)
                 .attr('d', lineGen);
             
              // Points finaux
@@ -195,17 +195,19 @@ const ProjectSCurveWidget: React.FC = () => {
                 .enter().append('circle')
                 .attr('cx', d => xScale(d.date))
                 .attr('cy', d => yScale(d.value))
-                .attr('r', 3)
-                .attr('fill', '#3b82f6');
+                .attr('r', 4)
+                .attr('fill', '#93c5fd')
+                .attr('stroke', '#fff')
+                .attr('stroke-width', 2);
         }
 
-        // 3. Courbe Réalisé (Vert)
+        // 3. Courbe Réalisé (Vert Pastel)
         if (realizedData.length > 0) {
             g.append('path')
                 .datum(realizedData)
                 .attr('fill', 'none')
-                .attr('stroke', '#10b981') // Emerald 500
-                .attr('stroke-width', 2)
+                .attr('stroke', '#6ee7b7') // Emerald 300 (Pastel Green)
+                .attr('stroke-width', 3)
                 .attr('d', lineGen);
              
              // Points finaux
@@ -214,8 +216,10 @@ const ProjectSCurveWidget: React.FC = () => {
                 .enter().append('circle')
                 .attr('cx', d => xScale(d.date))
                 .attr('cy', d => yScale(d.value))
-                .attr('r', 3)
-                .attr('fill', '#10b981');
+                .attr('r', 4)
+                .attr('fill', '#6ee7b7')
+                .attr('stroke', '#fff')
+                .attr('stroke-width', 2);
         }
         
     }, [chartData]);
@@ -225,13 +229,13 @@ const ProjectSCurveWidget: React.FC = () => {
             <CardHeader className="non-draggable pb-2">
                 <div className="flex justify-between items-center">
                     <CardTitle className="flex items-center gap-2">
-                        <TrendingUp size={20} className="text-blue-600" />
+                        <TrendingUp size={20} className="text-blue-400" />
                         Courbe en S (Financier)
                     </CardTitle>
                     <select 
                         value={selectedProjectId}
                         onChange={(e) => setSelectedProjectId(e.target.value)}
-                        className="text-sm border border-slate-300 rounded px-2 py-1 max-w-[200px] truncate bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="text-sm border border-slate-200 rounded px-2 py-1 max-w-[200px] truncate bg-slate-50 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-200"
                     >
                         <option value="" disabled>Sélectionner un projet</option>
                         {eligibleProjects.map(p => (
@@ -245,15 +249,15 @@ const ProjectSCurveWidget: React.FC = () => {
                     <>
                         <div className="flex justify-center gap-6 mb-2 text-xs">
                             <div className="flex items-center gap-1">
-                                <div className="w-3 h-0.5 bg-slate-400 border-t-2 border-dashed"></div>
-                                <span className="text-slate-600">Budget Planifié</span>
+                                <div className="w-3 h-0.5 bg-slate-300 border-t-2 border-dashed"></div>
+                                <span className="text-slate-500">Budget Planifié</span>
                             </div>
                             <div className="flex items-center gap-1">
-                                <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                                <div className="w-3 h-3 bg-blue-300 rounded-full border border-white shadow-sm"></div>
                                 <span className="text-slate-600">Engagé (Commandé)</span>
                             </div>
                              <div className="flex items-center gap-1">
-                                <div className="w-3 h-3 bg-emerald-500 rounded-full"></div>
+                                <div className="w-3 h-3 bg-emerald-300 rounded-full border border-white shadow-sm"></div>
                                 <span className="text-slate-600">Réalisé (Facturé/PV)</span>
                             </div>
                         </div>

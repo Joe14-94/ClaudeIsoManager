@@ -2,7 +2,7 @@
 import React, { useMemo } from 'react';
 import { CardContent, CardHeader, CardTitle } from '../../ui/Card';
 import { useData } from '../../../contexts/DataContext';
-import { Info, Timer, Users } from 'lucide-react';
+import { Info, Timer } from 'lucide-react';
 import Tooltip from '../../ui/Tooltip';
 
 const formatJH = (value?: number): string => {
@@ -11,11 +11,10 @@ const formatJH = (value?: number): string => {
 };
 
 const CircularProgress: React.FC<{ value: number, label: string, subLabel: string, color: string }> = ({ value, label, subLabel, color }) => {
-    // Configuration du SVG pour éviter les coupures (clipping) et assurer un centrage parfait
-    const size = 100; // Taille du viewBox
+    const size = 100; 
     const strokeWidth = 8;
     const center = size / 2;
-    const radius = (size - strokeWidth) / 2 - 2; // -2 pour laisser une petite marge de sécurité (padding)
+    const radius = (size - strokeWidth) / 2 - 2;
     const circumference = 2 * Math.PI * radius;
     const progress = Math.min(value, 100);
     const dashoffset = circumference - (progress / 100) * circumference;
@@ -27,7 +26,6 @@ const CircularProgress: React.FC<{ value: number, label: string, subLabel: strin
                     className="w-full h-full" 
                     viewBox={`0 0 ${size} ${size}`}
                 >
-                    {/* Cercle de fond */}
                     <circle
                         cx={center}
                         cy={center}
@@ -37,7 +35,6 @@ const CircularProgress: React.FC<{ value: number, label: string, subLabel: strin
                         fill="transparent"
                         className="text-slate-100"
                     />
-                    {/* Cercle de progression */}
                     <circle
                         cx={center}
                         cy={center}
@@ -51,7 +48,6 @@ const CircularProgress: React.FC<{ value: number, label: string, subLabel: strin
                         transform={`rotate(-90 ${center} ${center})`}
                         className="transition-all duration-1000 ease-out"
                     />
-                    {/* Texte centré mathématiquement dans le SVG */}
                     <text
                         x="50%"
                         y="50%"
@@ -77,31 +73,29 @@ const ProjectWorkloadSummaryWidget: React.FC = () => {
         return projects.reduce((acc, p) => {
             if (p.projectId === 'TOTAL_GENERAL') return acc;
 
-            // MOA
-            acc.moaEngaged += (p.moaInternalWorkloadEngaged || 0) + (p.moaExternalWorkloadEngaged || 0);
-            acc.moaConsumed += (p.moaInternalWorkloadConsumed || 0) + (p.moaExternalWorkloadConsumed || 0);
+            acc.intEngaged += p.internalWorkloadEngaged || 0;
+            acc.intConsumed += p.internalWorkloadConsumed || 0;
             
-            // MOE
-            acc.moeEngaged += (p.moeInternalWorkloadEngaged || 0) + (p.moeExternalWorkloadEngaged || 0);
-            acc.moeConsumed += (p.moeInternalWorkloadConsumed || 0) + (p.moeExternalWorkloadConsumed || 0);
+            acc.extEngaged += p.externalWorkloadEngaged || 0;
+            acc.extConsumed += p.externalWorkloadConsumed || 0;
             
             return acc;
-        }, { moaEngaged: 0, moaConsumed: 0, moeEngaged: 0, moeConsumed: 0 });
+        }, { intEngaged: 0, intConsumed: 0, extEngaged: 0, extConsumed: 0 });
     }, [projects]);
     
-    const totalEngaged = stats.moaEngaged + stats.moeEngaged;
-    const totalConsumed = stats.moaConsumed + stats.moeConsumed;
+    const totalEngaged = stats.intEngaged + stats.extEngaged;
+    const totalConsumed = stats.intConsumed + stats.extConsumed;
     const totalProgress = totalEngaged > 0 ? (totalConsumed / totalEngaged) * 100 : 0;
     
-    const moaProgress = stats.moaEngaged > 0 ? (stats.moaConsumed / stats.moaEngaged) * 100 : 0;
-    const moeProgress = stats.moeEngaged > 0 ? (stats.moeConsumed / stats.moeEngaged) * 100 : 0;
+    const intProgress = stats.intEngaged > 0 ? (stats.intConsumed / stats.intEngaged) * 100 : 0;
+    const extProgress = stats.extEngaged > 0 ? (stats.extConsumed / stats.extEngaged) * 100 : 0;
 
     return (
         <div className="h-full w-full flex flex-col">
             <CardHeader className="non-draggable pb-2">
                  <div className="flex justify-between items-start">
                     <CardTitle className="flex items-center gap-2">
-                        <Timer className="text-blue-600" size={20} />
+                        <Timer className="text-blue-400" size={20} />
                         Synthèse Charges
                     </CardTitle>
                     {lastCsvImportDate && (
@@ -117,10 +111,10 @@ const ProjectWorkloadSummaryWidget: React.FC = () => {
                 <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
                     <div className="flex justify-between items-baseline mb-1">
                         <span className="text-sm font-semibold text-slate-700">Avancement Global</span>
-                        <span className="text-lg font-bold text-blue-600">{Math.round(totalProgress)}%</span>
+                        <span className="text-lg font-bold text-blue-400">{Math.round(totalProgress)}%</span>
                     </div>
                     <div className="w-full bg-slate-200 rounded-full h-2.5 mb-1">
-                        <div className="bg-blue-600 h-2.5 rounded-full transition-all duration-1000" style={{ width: `${Math.min(totalProgress, 100)}%` }}></div>
+                        <div className="bg-blue-300 h-2.5 rounded-full transition-all duration-1000" style={{ width: `${Math.min(totalProgress, 100)}%` }}></div>
                     </div>
                     <div className="flex justify-between text-xs text-slate-500">
                         <span>Conso: {formatJH(totalConsumed)} J/H</span>
@@ -131,17 +125,17 @@ const ProjectWorkloadSummaryWidget: React.FC = () => {
                 {/* Circular Breakdown */}
                 <div className="flex justify-around items-center pt-2">
                     <CircularProgress 
-                        value={moaProgress} 
-                        label="Avancement MOA" 
-                        subLabel={`${formatJH(stats.moaConsumed)} / ${formatJH(stats.moaEngaged)} JH`}
-                        color="#8b5cf6" // Violet
+                        value={intProgress} 
+                        label="Avancement Interne" 
+                        subLabel={`${formatJH(stats.intConsumed)} / ${formatJH(stats.intEngaged)} JH`}
+                        color="#c4b5fd" // Violet 300 (Pastel)
                     />
                     <div className="h-12 w-px bg-slate-200"></div>
                     <CircularProgress 
-                        value={moeProgress} 
-                        label="Avancement MOE" 
-                        subLabel={`${formatJH(stats.moeConsumed)} / ${formatJH(stats.moeEngaged)} JH`}
-                        color="#0ea5e9" // Sky Blue
+                        value={extProgress} 
+                        label="Avancement Externe" 
+                        subLabel={`${formatJH(stats.extConsumed)} / ${formatJH(stats.extEngaged)} JH`}
+                        color="#7dd3fc" // Sky 300 (Pastel)
                     />
                 </div>
 

@@ -1,5 +1,5 @@
+
 import React, { useRef, useEffect, useMemo } from 'react';
-// FIX: Replace monolithic d3 import with specific named imports to resolve type errors.
 import { select, scaleBand, max, scaleLinear, axisLeft, axisBottom, axisTop, format, easeCubicOut } from 'd3';
 import { useData } from '../../../contexts/DataContext';
 import { CardHeader, CardTitle, CardContent } from '../../ui/Card';
@@ -19,8 +19,7 @@ const ProjectInitiativeAlignmentWidget: React.FC = () => {
     const initiativeMap = new Map<string, { code: string; fullLabel: string; }>(initiatives.map(i => [i.id, { code: i.code, fullLabel: `${i.code} - ${i.label}` }]));
 
     projects.forEach(project => {
-      // FIX: Correctly calculate total engaged workload by summing MOA and MOE for both internal and external types.
-      const workload = (project.moaInternalWorkloadEngaged || 0) + (project.moaExternalWorkloadEngaged || 0) + (project.moeInternalWorkloadEngaged || 0) + (project.moeExternalWorkloadEngaged || 0);
+      const workload = (project.internalWorkloadEngaged || 0) + (project.externalWorkloadEngaged || 0);
       const budget = project.completedPV || 0;
 
       if ((workload > 0 || budget > 0) && project.initiativeId) {
@@ -53,7 +52,9 @@ const ProjectInitiativeAlignmentWidget: React.FC = () => {
 
     const container = containerRef.current;
     const svg = select(svgRef.current);
-    const tooltip = select('body').selectAll('.d3-tooltip').data([null]).join('div').attr('class', 'd3-tooltip');
+    // Clean up existing tooltips to prevent duplicates
+    select('body').selectAll('.d3-tooltip').remove();
+    const tooltip = select('body').append('div').attr('class', 'd3-tooltip').style('opacity', 0);
     
     const workloadColor = '#7dd3fc'; // sky-300
     const budgetColor = '#c4b5fd'; // violet-300
@@ -116,7 +117,6 @@ const ProjectInitiativeAlignmentWidget: React.FC = () => {
                    .html(`<strong>${(d as any).fullLabel}</strong><br/>Charge: ${(d as any).workload.toFixed(1)} J/H`);
         })
         .on('mousemove', (event) => {
-            // FIX: Cast the result of tooltip.node() to HTMLDivElement to access offsetWidth and offsetHeight.
             const tooltipNode = tooltip.node() as HTMLDivElement;
             if (!tooltipNode) return;
             const { offsetWidth: tooltipWidth, offsetHeight: tooltipHeight } = tooltipNode;
@@ -154,7 +154,6 @@ const ProjectInitiativeAlignmentWidget: React.FC = () => {
                    .html(`<strong>${(d as any).fullLabel}</strong><br/>Budget consommé: ${formatCurrency((d as any).budget)}`);
         })
         .on('mousemove', (event) => {
-            // FIX: Cast the result of tooltip.node() to HTMLDivElement to access offsetWidth and offsetHeight.
             const tooltipNode = tooltip.node() as HTMLDivElement;
             if (!tooltipNode) return;
             const { offsetWidth: tooltipWidth, offsetHeight: tooltipHeight } = tooltipNode;
@@ -200,16 +199,15 @@ const ProjectInitiativeAlignmentWidget: React.FC = () => {
 
     const resizeObserver = new ResizeObserver(drawChart);
     resizeObserver.observe(container);
-    
+
     return () => resizeObserver.disconnect();
   }, [alignmentData]);
-
 
   return (
     <div className="h-full w-full flex flex-col">
       <CardHeader className="non-draggable">
-        <CardTitle>Alignement des projets par initiative</CardTitle>
-        <p className="text-sm text-slate-500 mt-1">Charge de travail (J/H) et budget consommé (€) des projets par initiative.</p>
+        <CardTitle>Alignement Projets / Initiatives</CardTitle>
+        <p className="text-sm text-slate-500 mt-1">Charges engagées et budgets consommés par initiative.</p>
       </CardHeader>
       <CardContent className="flex-grow min-h-0" ref={containerRef}>
         {alignmentData.length === 0 ? (

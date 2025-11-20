@@ -266,6 +266,9 @@ export interface Project {
   // Risques Majeurs
   majorRiskIds?: string[]; // IDs of MajorRisk
 
+  // Gestion des dépendances
+  predecessorIds?: string[]; // IDs of projects this project depends on (End-to-Start)
+
   // Scoring d'arbitrage
   strategicImpact?: number; // 1-5
   riskCoverage?: number; // 1-5
@@ -275,21 +278,16 @@ export interface Project {
   // History of FDR imports
   fdrHistory?: FdrHistoryEntry[];
 
-  // Workload fields MOA (Derived from latest history)
-  moaInternalWorkloadRequested?: number;
-  moaInternalWorkloadEngaged?: number;
-  moaInternalWorkloadConsumed?: number;
-  moaExternalWorkloadRequested?: number;
-  moaExternalWorkloadEngaged?: number;
-  moaExternalWorkloadConsumed?: number;
-
-  // Workload fields MOE (Derived from latest history)
-  moeInternalWorkloadRequested?: number;
-  moeInternalWorkloadEngaged?: number;
-  moeInternalWorkloadConsumed?: number;
-  moeExternalWorkloadRequested?: number;
-  moeExternalWorkloadEngaged?: number;
-  moeExternalWorkloadConsumed?: number;
+  // Workload fields (Simplified: Internal vs External)
+  // Internal (derived from history)
+  internalWorkloadRequested?: number;
+  internalWorkloadEngaged?: number;
+  internalWorkloadConsumed?: number;
+  
+  // External (derived from history)
+  externalWorkloadRequested?: number;
+  externalWorkloadEngaged?: number;
+  externalWorkloadConsumed?: number;
 
   // Budget fields (Derived from latest history)
   budgetRequested?: number;
@@ -315,7 +313,6 @@ export interface CoverageMatrix {
   }
 }
 
-// FIX: Add 'readonly' to UserRole to support its usage in permission display components, fixing a type error in AccessRightsPage.tsx.
 export type UserRole = 'admin' | 'pmo' | 'readonly';
 
 export interface Notification {

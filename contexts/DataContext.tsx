@@ -43,7 +43,7 @@ interface DataContextType {
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
 // Version pour les données de référence. Incrémenter cette version forcera le rechargement.
-const REFERENCE_DATA_VERSION = '2.3';
+const REFERENCE_DATA_VERSION = '2.4';
 const VERSION_KEY = 'reference_data_version';
 
 const initialLayouts = {
@@ -73,11 +73,8 @@ export const DataProvider = ({ children }: PropsWithChildren) => {
 
     useEffect(() => {
         const initializeData = async () => {
-            // Charger les données modifiables par l'utilisateur depuis le localStorage
+            // Charger les données transactionnelles depuis le localStorage
             setActivities(loadFromLocalStorage('activities', initialActivities));
-            setResources(loadFromLocalStorage('resources', initialResources));
-            setSecurityProcesses(loadFromLocalStorage('securityProcesses', initialSecurityProcesses));
-            setInitiatives(loadFromLocalStorage('initiatives', initialInitiatives));
             setProjects(loadFromLocalStorage('projects', initialProjects));
             setMajorRisks(loadFromLocalStorage('majorRisks', initialMajorRisks));
             setDashboardLayouts(loadFromLocalStorage('dashboardLayouts', initialLayouts));
@@ -89,31 +86,46 @@ export const DataProvider = ({ children }: PropsWithChildren) => {
             const storedVersion = loadFromLocalStorage<string>(VERSION_KEY, '1.0');
 
             if (storedVersion !== REFERENCE_DATA_VERSION) {
-                // Version différente : le cache est invalide. On force le rechargement.
+                // Version différente : le cache est invalide. On force le rechargement de TOUTES les données de référence.
                 try {
                     console.log(`Mise à jour des données de référence de la version ${storedVersion} à ${REFERENCE_DATA_VERSION}...`);
                     const data = await loadReferenceData();
+                    
+                    // Mise à jour des états
                     setOrientations(data.orientations);
                     setChantiers(data.chantiers);
                     setObjectives(data.objectives);
+                    setInitiatives(data.initiatives);
+                    setResources(data.resources);
+                    setSecurityProcesses(data.securityProcesses);
                     
-                    // Sauvegarder les nouvelles données et la nouvelle version
+                    // Sauvegarde explicite pour éviter d'attendre le cycle useEffect
                     saveToLocalStorage('orientations', data.orientations);
                     saveToLocalStorage('chantiers', data.chantiers);
                     saveToLocalStorage('objectives', data.objectives);
+                    saveToLocalStorage('initiatives', data.initiatives);
+                    saveToLocalStorage('resources', data.resources);
+                    saveToLocalStorage('securityProcesses', data.securityProcesses);
+                    
                     saveToLocalStorage(VERSION_KEY, REFERENCE_DATA_VERSION);
                 } catch (error) {
                     console.error("Échec du chargement des nouvelles données de référence:", error);
-                    // En cas d'erreur (ex: hors ligne), on charge quand même les anciennes données si elles existent
+                    // Fallback : on charge les anciennes données du LS
                     setOrientations(loadFromLocalStorage('orientations', []));
                     setChantiers(loadFromLocalStorage('chantiers', []));
                     setObjectives(loadFromLocalStorage('objectives', []));
+                    setInitiatives(loadFromLocalStorage('initiatives', []));
+                    setResources(loadFromLocalStorage('resources', []));
+                    setSecurityProcesses(loadFromLocalStorage('securityProcesses', []));
                 }
             } else {
                 // La version est correcte, on charge depuis le localStorage.
                 setOrientations(loadFromLocalStorage('orientations', []));
                 setChantiers(loadFromLocalStorage('chantiers', []));
                 setObjectives(loadFromLocalStorage('objectives', []));
+                setInitiatives(loadFromLocalStorage('initiatives', initialInitiatives));
+                setResources(loadFromLocalStorage('resources', initialResources));
+                setSecurityProcesses(loadFromLocalStorage('securityProcesses', initialSecurityProcesses));
             }
 
             setIsLoading(false);

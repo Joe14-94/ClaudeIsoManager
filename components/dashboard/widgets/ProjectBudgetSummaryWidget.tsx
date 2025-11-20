@@ -1,3 +1,4 @@
+
 import React, { useMemo } from 'react';
 import { CardContent, CardHeader, CardTitle } from '../../ui/Card';
 import { useData } from '../../../contexts/DataContext';
@@ -18,20 +19,20 @@ const ProgressBar: React.FC<{ value: number, max: number, colorClass: string, la
             <div className="flex justify-between items-end mb-1">
                 <span className="text-sm font-medium text-slate-700">{label}</span>
                 <div className="text-right">
-                    <span className={`text-sm font-bold ${isOver ? 'text-red-600' : 'text-slate-800'}`}>{formatCurrency(value)}</span>
+                    <span className={`text-sm font-bold ${isOver ? 'text-red-400' : 'text-slate-800'}`}>{formatCurrency(value)}</span>
                     <span className="text-xs text-slate-500 ml-1">/ {formatCurrency(max)}</span>
                 </div>
             </div>
             <div className="w-full bg-slate-100 rounded-full h-3 overflow-hidden relative">
                 <div 
-                    className={`h-full rounded-full transition-all duration-500 ${isOver ? 'bg-red-500' : colorClass}`} 
+                    className={`h-full rounded-full transition-all duration-500 ${isOver ? 'bg-red-300' : colorClass}`} 
                     style={{ width: `${percentage}%` }}
                 ></div>
                 {isOver && (
-                     <div className="absolute top-0 bottom-0 right-0 w-1 bg-red-600 animate-pulse"></div>
+                     <div className="absolute top-0 bottom-0 right-0 w-1 bg-red-400 animate-pulse"></div>
                 )}
             </div>
-            <p className="text-xs text-slate-500 mt-1 text-right">{subLabel}: {isOver ? <span className="text-red-600 font-bold">Dépassement</span> : <span className="text-green-600 font-medium">{Math.round(percentage)}%</span>}</p>
+            <p className="text-xs text-slate-500 mt-1 text-right">{subLabel}: {isOver ? <span className="text-red-400 font-bold">Dépassement</span> : <span className="text-emerald-500 font-medium">{Math.round(percentage)}%</span>}</p>
         </div>
     );
 };
@@ -60,7 +61,7 @@ const ProjectBudgetSummaryWidget: React.FC = () => {
             <CardHeader className="non-draggable pb-2">
                 <div className="flex justify-between items-start">
                     <CardTitle className="flex items-center gap-2">
-                        <TrendingUp className="text-emerald-600" size={20} />
+                        <TrendingUp className="text-emerald-400" size={20} />
                         Synthèse Budgétaire
                     </CardTitle>
                     {lastCsvImportDate && (
@@ -76,7 +77,7 @@ const ProjectBudgetSummaryWidget: React.FC = () => {
                     label="Consommation (Engagé vs Accordé)" 
                     value={stats.committed} 
                     max={stats.approved} 
-                    colorClass="bg-blue-500"
+                    colorClass="bg-blue-300"
                     subLabel="Taux d'engagement"
                 />
 
@@ -84,7 +85,7 @@ const ProjectBudgetSummaryWidget: React.FC = () => {
                     label="Réalisation (PV vs Engagé)" 
                     value={stats.completedPV} 
                     max={stats.committed} 
-                    colorClass="bg-emerald-500"
+                    colorClass="bg-emerald-300"
                     subLabel="Taux de facturation"
                 />
 

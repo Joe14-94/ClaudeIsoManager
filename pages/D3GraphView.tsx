@@ -1,3 +1,4 @@
+
 import React, { useRef, useEffect, useMemo, useState } from 'react';
 // FIX: Replace monolithic d3 import with specific named imports to resolve type errors.
 import { select, zoom, hierarchy, tree, linkHorizontal, zoomIdentity, HierarchyPointNode } from 'd3';
@@ -17,13 +18,14 @@ interface D3Node {
     data: Partial<StrategicOrientation | Chantier | Objective | Activity | IsoMeasure>;
 }
 
+// Couleurs pastelles pour les nœuds
 const nodeColors: { [key: string]: string } = {
-  orientation: '#a855f7', // purple-500
-  chantier: '#2563eb',    // blue-600
-  objective: '#16a34a',   // green-600
-  activity: '#f59e0b',   // amber-500
-  isoMeasure: '#ef4444',  // red-500
-  root: '#475569',        // slate-600
+  orientation: '#e9d5ff', // purple-200
+  chantier: '#bfdbfe',    // blue-200
+  objective: '#bbf7d0',   // green-200
+  activity: '#fde68a',    // amber-200
+  isoMeasure: '#fecaca',  // red-200
+  root: '#cbd5e1',        // slate-300
 };
 
 const buildStrategicTreeData = (
@@ -423,6 +425,7 @@ const D3GraphView: React.FC = () => {
                 .attr('class', 'node')
                 .attr('r', 1e-6)
                 .style('stroke', d => nodeColors[(d.data as D3Node).type] || '#ccc')
+                .style('stroke-width', '2px')
                 .on('click', click);
                 
 
@@ -443,7 +446,7 @@ const D3GraphView: React.FC = () => {
                 .attr('transform', d => `translate(${d.y},${d.x})`);
 
             nodeUpdate.select('circle.node')
-                .attr('r', 6)
+                .attr('r', 8) // Slightly larger nodes for visibility with pastel colors
                 .style('fill', d => (d as any)._children ? nodeColors[(d.data as D3Node).type] : '#fff')
                 .attr('cursor', d => d.children || (d as any)._children ? 'pointer' : 'default');
 

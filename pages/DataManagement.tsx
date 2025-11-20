@@ -10,6 +10,7 @@ import { Activity, Chantier, Objective, StrategicOrientation, Resource, Security
 import Modal from '../components/ui/Modal';
 import { loadReferenceData } from '../utils/referenceData';
 import { ISO_MEASURES_DATA } from '../constants';
+import { majorRisks as defaultMajorRisks } from '../data/majorRisks';
 
 type AnalysisType = 'workload' | 'budget';
 
@@ -28,21 +29,14 @@ const fieldAliases: { [key in keyof Partial<Project> | string]: { label: string,
     title: { label: 'Titre', aliases: ['titre', 'title', 'libellé', 'libelle', 'nom du projet'] },
     category: { label: 'Catégorie', aliases: ['catégorie', 'categorie', 'category'] },
     
-    // MOA Workload
-    moaInternalWorkloadRequested: { label: 'Charge MOA Int. Demandée', aliases: ['moa int demandée', 'moa interne demandé'] },
-    moaInternalWorkloadEngaged: { label: 'Charge MOA Int. Engagée', aliases: ['moa int engagée', 'moa interne engagé'] },
-    moaInternalWorkloadConsumed: { label: 'Charge MOA Int. Consommée', aliases: ['moa int consommée', 'moa interne consommé'] },
-    moaExternalWorkloadRequested: { label: 'Charge MOA Ext. Demandée', aliases: ['moa ext demandée', 'moa externe demandé'] },
-    moaExternalWorkloadEngaged: { label: 'Charge MOA Ext. Engagée', aliases: ['moa ext engagée', 'moa externe engagé'] },
-    moaExternalWorkloadConsumed: { label: 'Charge MOA Ext. Consommée', aliases: ['moa ext consommée', 'moa externe consommé'] },
-
-    // MOE Workload (Mapped from generic "Interne/Externe" in simple paste mode)
-    moeInternalWorkloadRequested: { label: 'Charge MOE Int. Demandée', aliases: ['interne demandé', 'moe int demandée'] },
-    moeInternalWorkloadEngaged: { label: 'Charge MOE Int. Engagée', aliases: ['interne engagé', 'moe int engagée'] },
-    moeInternalWorkloadConsumed: { label: 'Charge MOE Int. Consommée', aliases: ['interne réalisé', 'interne consommé', 'moe int consommée'] },
-    moeExternalWorkloadRequested: { label: 'Charge MOE Ext. Demandée', aliases: ['externe demandé', 'moe ext demandée'] },
-    moeExternalWorkloadEngaged: { label: 'Charge MOE Ext. Engagée', aliases: ['externe engagé', 'moe ext engagée'] },
-    moeExternalWorkloadConsumed: { label: 'Charge MOE Ext. Consommée', aliases: ['externe réalisé', 'externe consommé', 'moe ext consommée'] },
+    // Workload (Internal/External)
+    internalWorkloadRequested: { label: 'Charge Interne Demandée', aliases: ['interne demandé', 'charge interne demandée'] },
+    internalWorkloadEngaged: { label: 'Charge Interne Engagée', aliases: ['interne engagé', 'charge interne engagée'] },
+    internalWorkloadConsumed: { label: 'Charge Interne Consommée', aliases: ['interne consommé', 'interne réalisé', 'charge interne consommée'] },
+    
+    externalWorkloadRequested: { label: 'Charge Externe Demandée', aliases: ['externe demandé', 'charge externe demandée'] },
+    externalWorkloadEngaged: { label: 'Charge Externe Engagée', aliases: ['externe engagé', 'charge externe engagée'] },
+    externalWorkloadConsumed: { label: 'Charge Externe Consommée', aliases: ['externe consommé', 'externe réalisé', 'charge externe consommée'] },
 
     // Budget fields
     budgetRequested: { label: 'Budget demandé', aliases: ['budget demandé', 'demandé', 'budget demande', 'budget demandé (€)', 'demande'] },
@@ -55,8 +49,7 @@ const fieldAliases: { [key in keyof Partial<Project> | string]: { label: string,
 
 
 const ImportedDataDisplay: React.FC<{ data: Partial<Project> }> = ({ data }) => {
-    const workloadMOAKeys: (keyof Project)[] = ['moaInternalWorkloadRequested', 'moaInternalWorkloadEngaged', 'moaInternalWorkloadConsumed', 'moaExternalWorkloadRequested', 'moaExternalWorkloadEngaged', 'moaExternalWorkloadConsumed'];
-    const workloadMOEKeys: (keyof Project)[] = ['moeInternalWorkloadRequested', 'moeInternalWorkloadEngaged', 'moeInternalWorkloadConsumed', 'moeExternalWorkloadRequested', 'moeExternalWorkloadEngaged', 'moeExternalWorkloadConsumed'];
+    const workloadKeys: (keyof Project)[] = ['internalWorkloadRequested', 'internalWorkloadEngaged', 'internalWorkloadConsumed', 'externalWorkloadRequested', 'externalWorkloadEngaged', 'externalWorkloadConsumed'];
     const budgetKeys: (keyof Project)[] = ['budgetRequested', 'budgetApproved', 'budgetCommitted', 'validatedPurchaseOrders', 'completedPV', 'forecastedPurchaseOrders'];
     const otherKeys: (keyof Project)[] = ['category'];
 
@@ -83,9 +76,8 @@ const ImportedDataDisplay: React.FC<{ data: Partial<Project> }> = ({ data }) => 
     
     return (
         <div className="space-y-1 text-xs">
-            {renderGroup('Charge MOA', workloadMOAKeys)}
-            {renderGroup('Charge MOE', workloadMOEKeys)}
-            {renderGroup('Budget', budgetKeys)}
+            {renderGroup('Charges (J/H)', workloadKeys)}
+            {renderGroup('Budget (€)', budgetKeys)}
             {renderGroup('Autres', otherKeys)}
         </div>
     );
@@ -232,16 +224,24 @@ const FdrImportModal: React.FC<{
         const newHeaders = ["Catégorie", "ID Projet", "Libellé"];
         
         if (mode === 'workload') {
+            // Mapping flexible: On suppose que l'export a Interne et Externe en premiers blocs
             for (let i = 1; i < originalHeaders.length; i++) {
                 let h = originalHeaders[i] || `Col ${i}`;
-                if (i >= 1 && i <= 4) h = "Interne " + h;
-                if (i >= 5 && i <= 8) h = "Externe " + h;
-                if (i >= 9) h = "Total " + h;
+                // Mapping simplifié basé sur l'ordre supposé des colonnes dans l'export FDR standard
+                // Col 1-3: Interne (Demandé, Engagé, Réalisé)
+                // Col 4-6: Externe (Demandé, Engagé, Réalisé)
+                // Col 7+: Totaux
+                
+                if (h.toLowerCase().includes("interne") || (i >= 1 && i <= 3)) {
+                     if (!h.toLowerCase().includes("interne")) h = "Interne " + h;
+                } else if (h.toLowerCase().includes("externe") || (i >= 4 && i <= 6)) {
+                    if (!h.toLowerCase().includes("externe")) h = "Externe " + h;
+                }
+                
                 newHeaders.push(h);
             }
         } else {
-            // Budget mapping usually implies:
-            // Col 1: ..., Col 2: ..., Col 3: Budget Demandé, Col 4: Budget Accordé, Col 5: Engagé, Col 6: DA Validées, Col 7: Réalisé (PV), Col 8: DA Prévues
+            // Budget mapping
              for (let i = 1; i < originalHeaders.length; i++) {
                 newHeaders.push(originalHeaders[i] || `Col ${i}`);
             }
@@ -333,19 +333,12 @@ const FdrImportModal: React.FC<{
 
         // Appliquer les dernières données de charge
         if (latestWorkload && latestWorkload.data) {
-            newData.moaInternalWorkloadRequested = latestWorkload.data.moaInternalWorkloadRequested;
-            newData.moaInternalWorkloadEngaged = latestWorkload.data.moaInternalWorkloadEngaged;
-            newData.moaInternalWorkloadConsumed = latestWorkload.data.moaInternalWorkloadConsumed;
-            newData.moaExternalWorkloadRequested = latestWorkload.data.moaExternalWorkloadRequested;
-            newData.moaExternalWorkloadEngaged = latestWorkload.data.moaExternalWorkloadEngaged;
-            newData.moaExternalWorkloadConsumed = latestWorkload.data.moaExternalWorkloadConsumed;
-            
-            newData.moeInternalWorkloadRequested = latestWorkload.data.moeInternalWorkloadRequested;
-            newData.moeInternalWorkloadEngaged = latestWorkload.data.moeInternalWorkloadEngaged;
-            newData.moeInternalWorkloadConsumed = latestWorkload.data.moeInternalWorkloadConsumed;
-            newData.moeExternalWorkloadRequested = latestWorkload.data.moeExternalWorkloadRequested;
-            newData.moeExternalWorkloadEngaged = latestWorkload.data.moeExternalWorkloadEngaged;
-            newData.moeExternalWorkloadConsumed = latestWorkload.data.moeExternalWorkloadConsumed;
+            newData.internalWorkloadRequested = latestWorkload.data.internalWorkloadRequested;
+            newData.internalWorkloadEngaged = latestWorkload.data.internalWorkloadEngaged;
+            newData.internalWorkloadConsumed = latestWorkload.data.internalWorkloadConsumed;
+            newData.externalWorkloadRequested = latestWorkload.data.externalWorkloadRequested;
+            newData.externalWorkloadEngaged = latestWorkload.data.externalWorkloadEngaged;
+            newData.externalWorkloadConsumed = latestWorkload.data.externalWorkloadConsumed;
         }
 
         // Appliquer les dernières données budgétaires
@@ -384,25 +377,33 @@ const FdrImportModal: React.FC<{
         let idxBudReq = -1, idxBudApp = -1, idxBudCom = -1, idxDaVal = -1, idxPv = -1, idxDaPrev = -1;
 
         if (mode === 'workload') {
-            idxIntDemande = h.findIndex(s => s.includes("Interne Demandé"));
-            idxIntEngage = h.findIndex(s => s.includes("Interne Engagé"));
-            idxIntRealise = h.findIndex(s => s.includes("Interne Réalisé") || s.includes("Interne Consommé"));
-            idxExtDemande = h.findIndex(s => s.includes("Externe Demandé"));
-            idxExtEngage = h.findIndex(s => s.includes("Externe Engagé"));
-            idxExtRealise = h.findIndex(s => s.includes("Externe Réalisé") || s.includes("Externe Consommé"));
+            // On cherche les colonnes contenant "Interne" ou "Externe"
+            idxIntDemande = h.findIndex(s => s.toLowerCase().includes("interne") && s.toLowerCase().includes("demandé"));
+            // Fallback index si non trouvé par nom (conventionnel: col 1, 2, 3 pour interne)
+            if(idxIntDemande === -1) idxIntDemande = 1;
+
+            idxIntEngage = h.findIndex(s => s.toLowerCase().includes("interne") && s.toLowerCase().includes("engagé"));
+            if(idxIntEngage === -1) idxIntEngage = 2;
+
+            idxIntRealise = h.findIndex(s => s.toLowerCase().includes("interne") && (s.toLowerCase().includes("réalisé") || s.toLowerCase().includes("consommé")));
+            if(idxIntRealise === -1) idxIntRealise = 3;
+
+            idxExtDemande = h.findIndex(s => s.toLowerCase().includes("externe") && s.toLowerCase().includes("demandé"));
+            if(idxExtDemande === -1) idxExtDemande = 4;
+
+            idxExtEngage = h.findIndex(s => s.toLowerCase().includes("externe") && s.toLowerCase().includes("engagé"));
+            if(idxExtEngage === -1) idxExtEngage = 5;
+
+            idxExtRealise = h.findIndex(s => s.toLowerCase().includes("externe") && (s.toLowerCase().includes("réalisé") || s.toLowerCase().includes("consommé")));
+            if(idxExtRealise === -1) idxExtRealise = 6;
+
         } else {
             // Budget Mapping based on typical FDR export
-            // Col 3: Budget Demandé
             idxBudReq = 3;
-            // Col 4: Budget Accordé
             idxBudApp = 4;
-            // Col 5: Engagé
             idxBudCom = 5;
-            // Col 6: DA Validées
             idxDaVal = 6;
-            // Col 7: Réalisé (PV)
             idxPv = 7;
-            // Col 8: DA Prévues
             idxDaPrev = 8;
         }
 
@@ -424,12 +425,13 @@ const FdrImportModal: React.FC<{
             const specificImportData: Partial<Project> = {};
 
             if (mode === 'workload') {
-                specificImportData.moeInternalWorkloadRequested = idxIntDemande > -1 ? parseNum(row[idxIntDemande]) : 0;
-                specificImportData.moeInternalWorkloadEngaged = idxIntEngage > -1 ? parseNum(row[idxIntEngage]) : 0;
-                specificImportData.moeInternalWorkloadConsumed = idxIntRealise > -1 ? parseNum(row[idxIntRealise]) : 0;
-                specificImportData.moeExternalWorkloadRequested = idxExtDemande > -1 ? parseNum(row[idxExtDemande]) : 0;
-                specificImportData.moeExternalWorkloadEngaged = idxExtEngage > -1 ? parseNum(row[idxExtEngage]) : 0;
-                specificImportData.moeExternalWorkloadConsumed = idxExtRealise > -1 ? parseNum(row[idxExtRealise]) : 0;
+                specificImportData.internalWorkloadRequested = idxIntDemande > -1 ? parseNum(row[idxIntDemande]) : 0;
+                specificImportData.internalWorkloadEngaged = idxIntEngage > -1 ? parseNum(row[idxIntEngage]) : 0;
+                specificImportData.internalWorkloadConsumed = idxIntRealise > -1 ? parseNum(row[idxIntRealise]) : 0;
+                
+                specificImportData.externalWorkloadRequested = idxExtDemande > -1 ? parseNum(row[idxExtDemande]) : 0;
+                specificImportData.externalWorkloadEngaged = idxExtEngage > -1 ? parseNum(row[idxExtEngage]) : 0;
+                specificImportData.externalWorkloadConsumed = idxExtRealise > -1 ? parseNum(row[idxExtRealise]) : 0;
             } else {
                 specificImportData.budgetRequested = idxBudReq > -1 ? parseNum(row[idxBudReq]) : 0;
                 specificImportData.budgetApproved = idxBudApp > -1 ? parseNum(row[idxBudApp]) : 0;
@@ -485,10 +487,8 @@ const FdrImportModal: React.FC<{
                     fdrHistory: [historyEntry], // Initialiser avec l'historique
                      // Initialiser les champs à 0
                     budgetRequested: 0, budgetApproved: 0, budgetCommitted: 0, validatedPurchaseOrders: 0, completedPV: 0, forecastedPurchaseOrders: 0,
-                    moaInternalWorkloadRequested: 0, moaInternalWorkloadEngaged: 0, moaInternalWorkloadConsumed: 0,
-                    moaExternalWorkloadRequested: 0, moaExternalWorkloadEngaged: 0, moaExternalWorkloadConsumed: 0,
-                    moeInternalWorkloadRequested: 0, moeInternalWorkloadEngaged: 0, moeInternalWorkloadConsumed: 0,
-                    moeExternalWorkloadRequested: 0, moeExternalWorkloadEngaged: 0, moeExternalWorkloadConsumed: 0,
+                    internalWorkloadRequested: 0, internalWorkloadEngaged: 0, internalWorkloadConsumed: 0,
+                    externalWorkloadRequested: 0, externalWorkloadEngaged: 0, externalWorkloadConsumed: 0,
                 };
                 
                 if (projectId === 'TOTAL_GENERAL') {
@@ -653,11 +653,12 @@ const DataManagement: React.FC = () => {
     dashboardLayouts, setDashboardLayouts,
     setLastCsvImportDate,
     setLastImportWeek,
-    setLastImportYear
+    setLastImportYear,
+    setMajorRisks
   } = useData();
   const { userRole } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation(); // To read state from navigation
+  const location = useLocation();
   
   const isReadOnly = false;
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error', message: string } | null>(null);
@@ -837,6 +838,7 @@ const DataManagement: React.FC = () => {
                 if (Array.isArray(content.projects)) { setProjects(content.projects); importedCount++; }
                 if (Array.isArray(content.initiatives)) { setInitiatives(content.initiatives); importedCount++; }
                 if (content.dashboardLayouts) { setDashboardLayouts(content.dashboardLayouts); importedCount++; }
+                if (Array.isArray(content.majorRisks)) { setMajorRisks(content.majorRisks); importedCount++; }
                 
                 if (importedCount > 0) {
                     showFeedback('success', `Sauvegarde restaurée avec succès. ${importedCount} type(s) de données importé(s).`);
@@ -989,15 +991,24 @@ const DataManagement: React.FC = () => {
     try {
         setActivities([]);
         setProjects([]);
-        setInitiatives([]);
-        setResources([]);
-        setSecurityProcesses([]);
+        // Reset dashboards to empty default for clean start
         setDashboardLayouts({ lg: [] });
+        
+        // Restore default Major Risks by deep copying the original constant
+        setMajorRisks(JSON.parse(JSON.stringify(defaultMajorRisks)));
+        
+        setLastCsvImportDate(null);
+        setLastImportWeek(null);
+        setLastImportYear(null);
 
         const refData = await loadReferenceData();
         setOrientations(refData.orientations);
         setChantiers(refData.chantiers);
         setObjectives(refData.objectives);
+        // Mise à jour de toutes les données de référence
+        setInitiatives(refData.initiatives);
+        setResources(refData.resources);
+        setSecurityProcesses(refData.securityProcesses);
         
         setShowAppInitModal(false);
         showFeedback('success', "L'application a été réinitialisée avec succès.");
@@ -1018,6 +1029,12 @@ const DataManagement: React.FC = () => {
     setInitiatives([]);
     setResources([]);
     setSecurityProcesses([]);
+    setMajorRisks([]);
+    setDashboardLayouts({ lg: [] });
+    setLastCsvImportDate(null);
+    setLastImportWeek(null);
+    setLastImportYear(null);
+    
     setShowDeleteAllDataModal(false);
     showFeedback('success', 'Toutes les données de l\'application ont été supprimées.');
   };
@@ -1078,7 +1095,7 @@ const DataManagement: React.FC = () => {
         <Card>
           <CardHeader className="flex items-center justify-between">
             <CardTitle>Sauvegarde et restauration</CardTitle>
-            <Tooltip text="La sauvegarde complète inclut : projets (avec historique FDR), activités, objectifs, orientations, chantiers, ressources, initiatives, processus de sécurité et la disposition du tableau de bord.">
+            <Tooltip text="La sauvegarde complète inclut : projets (avec historique FDR), activités, objectifs, orientations, chantiers, ressources, initiatives, processus de sécurité, risques majeurs et la disposition du tableau de bord.">
               <Info size={18} className="text-slate-500 cursor-help" />
             </Tooltip>
           </CardHeader>
@@ -1278,7 +1295,7 @@ const DataManagement: React.FC = () => {
             <div className="p-4 border border-red-200 rounded-lg bg-red-50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
                     <h3 className="font-semibold text-red-800">Supprimer toutes les données</h3>
-                    <p className="text-sm text-red-600 mt-1">Supprime DÉFINITIVEMENT toutes les données : projets, activités, et l'ensemble du référentiel (orientations, chantiers, Objectifs, Initiatives, Processus, Ressources)</p>
+                    <p className="text-sm text-red-600 mt-1">Supprime DÉFINITIVEMENT toutes les données : projets, activités, et l'ensemble du référentiel (orientations, chantiers, Objectifs, Initiatives, Processus, Ressources, Risques Majeurs)</p>
                 </div>
                 <button onClick={() => setShowDeleteAllDataModal(true)} disabled={isReadOnly} className={`${buttonClasses} ${isReadOnly ? disabledClasses : 'bg-red-600 text-white hover:bg-red-700'}`}>
                     <Trash2 className="mr-2" size={18} /> Supprimer toutes les données
@@ -1326,7 +1343,9 @@ const DataManagement: React.FC = () => {
                 <ul className="list-disc list-inside text-sm text-slate-600 space-y-1">
                     <li>Tous les Projets</li>
                     <li>Toutes les Activités</li>
-                    <li>Tout le référentiel (Orientations, Chantiers, Objectifs, Initiatives, Processus, Ressources)</li>
+                    <li>Tout le référentiel (Orientations, Chantiers, Objectifs, Initiatives, Processus, Ressources, Risques Majeurs)</li>
+                    <li>Historiques d'imports FDR</li>
+                    <li>Configurations des tableaux de bord</li>
                 </ul>
             </div>
             <div className="flex justify-end gap-2 pt-4 mt-6 border-t">

@@ -1,4 +1,37 @@
 
 import { StrategicOrientation } from '../types';
 
-export const orientations: StrategicOrientation[] = [];
+export const orientations: StrategicOrientation[] = [
+  {
+    "id": "so-demo-1",
+    "code": "OS-GOUV",
+    "label": "Gouvernance & Conformité",
+    "description": "Structurer le pilotage de la sécurité, maîtriser les risques et assurer la conformité réglementaire.",
+    "createdAt": "2025-11-01T10:00:00Z",
+    "color": "#9333ea"
+  },
+  {
+    "id": "so-demo-2",
+    "code": "OS-PROT",
+    "label": "Protection des Actifs",
+    "description": "Renforcer la protection des données, des applications et des infrastructures contre les menaces.",
+    "createdAt": "2025-11-01T10:00:00Z",
+    "color": "#2563eb"
+  },
+  {
+    "id": "so-demo-3",
+    "code": "OS-DETEC",
+    "label": "Détection & Réponse",
+    "description": "Améliorer les capacités à détecter les incidents de sécurité et à y répondre efficacement.",
+    "createdAt": "2025-11-01T10:00:00Z",
+    "color": "#db2777"
+  },
+  {
+    "id": "so-demo-4",
+    "code": "OS-RESIL",
+    "label": "Résilience Opérationnelle",
+    "description": "Assurer la continuité et la reprise des activités en cas d'incident ou de crise majeure.",
+    "createdAt": "2025-11-01T10:00:00Z",
+    "color": "#16a34a"
+  }
+];

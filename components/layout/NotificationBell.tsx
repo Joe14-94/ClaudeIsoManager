@@ -1,5 +1,6 @@
+
 import React, { useState, useRef, useEffect } from 'react';
-import { Bell, AlertCircle, CircleDollarSign, Check, DatabaseZap } from 'lucide-react';
+import { Bell, AlertCircle, Euro, Check, DatabaseZap } from 'lucide-react';
 import { useNotificationsContext } from '../../contexts/NotificationContext';
 import { useNavigate } from 'react-router-dom';
 
@@ -32,7 +33,7 @@ const NotificationBell: React.FC = () => {
     if (type === 'warning') {
         return <DatabaseZap className="w-5 h-5 text-orange-500 flex-shrink-0" />;
     }
-    return <CircleDollarSign className="w-5 h-5 text-red-500 flex-shrink-0" />;
+    return <Euro className="w-5 h-5 text-red-500 flex-shrink-0" />;
   };
 
   return (

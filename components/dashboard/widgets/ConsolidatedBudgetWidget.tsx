@@ -3,7 +3,7 @@ import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CardContent, CardHeader, CardTitle } from '../../ui/Card';
 import { useData } from '../../../contexts/DataContext';
-import { CircleDollarSign, Info, PieChart } from 'lucide-react';
+import { Euro, Info, PieChart } from 'lucide-react';
 import Tooltip from '../../ui/Tooltip';
 
 const formatCurrency = (value?: number): string => {
@@ -81,7 +81,7 @@ const ConsolidatedBudgetWidget: React.FC<{ isEditMode?: boolean }> = ({ isEditMo
             <CardHeader className="non-draggable">
                 <div className="flex justify-between items-start">
                     <CardTitle className="flex items-center gap-2">
-                        <CircleDollarSign size={20} />
+                        <Euro size={20} />
                         Synthèse Budgétaire (€)
                     </CardTitle>
                     <div className="flex items-center gap-3">

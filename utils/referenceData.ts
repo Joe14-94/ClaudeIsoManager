@@ -1,42 +1,30 @@
 
-import { StrategicOrientation, Chantier, Objective } from '../types';
+import { StrategicOrientation, Chantier, Objective, Initiative, Resource, SecurityProcess } from '../types';
+import { orientations } from '../data/orientations';
+import { chantiers } from '../data/chantiers';
+import { objectives } from '../data/objectives';
+import { initiatives } from '../data/initiatives';
+import { resources } from '../data/resources';
+import { securityProcesses } from '../data/securityProcesses';
 
 export const loadReferenceData = async (): Promise<{
   orientations: StrategicOrientation[];
   chantiers: Chantier[];
   objectives: Objective[];
+  initiatives: Initiative[];
+  resources: Resource[];
+  securityProcesses: SecurityProcess[];
 }> => {
-  try {
-    const [orientationsRes, chantiersRes, objectivesRes] = await Promise.all([
-      fetch('./data/orientations.json'),
-      fetch('./data/chantiers.json'),
-      fetch('./data/objectives.json')
-    ]);
-
-    if (!orientationsRes.ok || !chantiersRes.ok || !objectivesRes.ok) {
-        let errorMsg = 'Failed to fetch reference data files. Statuses: ';
-        if(!orientationsRes.ok) errorMsg += `orientations: ${orientationsRes.status}, `;
-        if(!chantiersRes.ok) errorMsg += `chantiers: ${chantiersRes.status}, `;
-        if(!objectivesRes.ok) errorMsg += `objectives: ${objectivesRes.status}`;
-        throw new Error(errorMsg);
-    }
-
-    const orientations = await orientationsRes.json();
-    const chantiers = await chantiersRes.json();
-    const objectives = await objectivesRes.json();
-
-    return {
-      orientations,
-      chantiers,
-      objectives
-    };
-  } catch (error) {
-    console.error("Error loading reference data via fetch:", error);
-    // En cas d'échec (ex: fichier introuvable, JSON invalide), retourner des tableaux vides.
-    return {
-      orientations: [],
-      chantiers: [],
-      objectives: [],
-    };
-  }
+    // On retourne directement les données importées statiquement.
+    // L'asynchronisme est conservé pour ne pas casser la signature attendue par les composants existants.
+    // Utilisation de JSON.parse(JSON.stringify(...)) pour créer une copie profonde et éviter 
+    // que les modifications de l'état n'affectent les données sources importées (car les modules JS mettent en cache les exports).
+    return Promise.resolve({
+        orientations: JSON.parse(JSON.stringify(orientations)),
+        chantiers: JSON.parse(JSON.stringify(chantiers)),
+        objectives: JSON.parse(JSON.stringify(objectives)),
+        initiatives: JSON.parse(JSON.stringify(initiatives)),
+        resources: JSON.parse(JSON.stringify(resources)),
+        securityProcesses: JSON.parse(JSON.stringify(securityProcesses)),
+    });
 };

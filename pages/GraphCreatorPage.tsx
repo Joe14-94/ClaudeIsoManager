@@ -1,5 +1,4 @@
 
-
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useData } from '../contexts/DataContext';
 import Card, { CardContent, CardHeader, CardTitle } from '../components/ui/Card';
@@ -13,7 +12,7 @@ import DynamicChartRenderer from '../components/charts/creator/DynamicChartRende
 type ChartType = 'bar' | 'pie' | 'line' | 'area' | 'scatter' | 'bubble' | 'treemap' | 'sunburst';
 type DimensionField = 'status' | 'tShirtSize' | 'projectManagerMOA' | 'projectManagerMOE' | 'initiativeId' | 'isTop30' | 'category' | 'projectStartDate' | 'projectEndDate' | 'goLiveDate' | 'endDate' | 'projectId' | 'projectTitle' | 'isoMeasure';
 type DimensionField2 = DimensionField | 'none';
-type MeasureField = 'count' | 'budgetRequested' | 'budgetApproved' | 'budgetCommitted' | 'validatedPurchaseOrders' | 'completedPV' | 'forecastedPurchaseOrders' | 'moaInternalWorkloadRequested' | 'moaInternalWorkloadEngaged' | 'moaInternalWorkloadConsumed' | 'moaExternalWorkloadRequested' | 'moaExternalWorkloadEngaged' | 'moaExternalWorkloadConsumed' | 'moeInternalWorkloadRequested' | 'moeInternalWorkloadEngaged' | 'moeInternalWorkloadConsumed' | 'moeExternalWorkloadRequested' | 'moeExternalWorkloadEngaged' | 'moeExternalWorkloadConsumed' | 'totalWorkloadRequested' | 'totalWorkloadEngaged' | 'totalWorkloadConsumed';
+type MeasureField = 'count' | 'budgetRequested' | 'budgetApproved' | 'budgetCommitted' | 'validatedPurchaseOrders' | 'completedPV' | 'forecastedPurchaseOrders' | 'internalWorkloadRequested' | 'internalWorkloadEngaged' | 'internalWorkloadConsumed' | 'externalWorkloadRequested' | 'externalWorkloadEngaged' | 'externalWorkloadConsumed' | 'totalWorkloadRequested' | 'totalWorkloadEngaged' | 'totalWorkloadConsumed';
 type AggregationType = 'sum' | 'average';
 type ColorPalette = 'vibrant' | 'professional' | 'pastel' | 'monochromatic';
 type SortOrder = 'value-desc' | 'value-asc' | 'label-asc' | 'label-desc';
@@ -60,18 +59,12 @@ const measureOptions: { value: MeasureField, label: string }[] = [
     { value: 'validatedPurchaseOrders', label: 'DA validées' },
     { value: 'completedPV', label: 'Réalisé (PV)' },
     { value: 'forecastedPurchaseOrders', label: 'DA prévues' },
-    { value: 'moaInternalWorkloadRequested', label: 'Charge MOA Int. Demandée' },
-    { value: 'moaInternalWorkloadEngaged', label: 'Charge MOA Int. Engagée' },
-    { value: 'moaInternalWorkloadConsumed', label: 'Charge MOA Int. Consommée' },
-    { value: 'moaExternalWorkloadRequested', label: 'Charge MOA Ext. Demandée' },
-    { value: 'moaExternalWorkloadEngaged', label: 'Charge MOA Ext. Engagée' },
-    { value: 'moaExternalWorkloadConsumed', label: 'Charge MOA Ext. Consommée' },
-    { value: 'moeInternalWorkloadRequested', label: 'Charge MOE Int. Demandée' },
-    { value: 'moeInternalWorkloadEngaged', label: 'Charge MOE Int. Engagée' },
-    { value: 'moeInternalWorkloadConsumed', label: 'Charge MOE Int. Consommée' },
-    { value: 'moeExternalWorkloadRequested', label: 'Charge MOE Ext. Demandée' },
-    { value: 'moeExternalWorkloadEngaged', label: 'Charge MOE Ext. Engagée' },
-    { value: 'moeExternalWorkloadConsumed', label: 'Charge MOE Ext. Consommée' },
+    { value: 'internalWorkloadRequested', label: 'Charge Interne Demandée' },
+    { value: 'internalWorkloadEngaged', label: 'Charge Interne Engagée' },
+    { value: 'internalWorkloadConsumed', label: 'Charge Interne Consommée' },
+    { value: 'externalWorkloadRequested', label: 'Charge Externe Demandée' },
+    { value: 'externalWorkloadEngaged', label: 'Charge Externe Engagée' },
+    { value: 'externalWorkloadConsumed', label: 'Charge Externe Consommée' },
     { value: 'totalWorkloadRequested', label: 'Charge totale demandée' },
     { value: 'totalWorkloadEngaged', label: 'Charge totale engagée' },
     { value: 'totalWorkloadConsumed', label: 'Charge totale consommée' },
@@ -118,7 +111,7 @@ const GraphCreatorPage: React.FC = () => {
     const [dimension, setDimension] = useState<DimensionField>('status');
     const [dimension2, setDimension2] = useState<DimensionField2>('none');
     const [measure, setMeasure] = useState<MeasureField>('count');
-    const [measureX, setMeasureX] = useState<MeasureField>('moeInternalWorkloadEngaged');
+    const [measureX, setMeasureX] = useState<MeasureField>('internalWorkloadEngaged');
     const [measureY, setMeasureY] = useState<MeasureField>('budgetCommitted');
     const [sizeMeasure, setSizeMeasure] = useState<MeasureField>('budgetApproved');
     const [aggregation, setAggregation] = useState<AggregationType>('sum');
@@ -170,21 +163,15 @@ const GraphCreatorPage: React.FC = () => {
                 case 'validatedPurchaseOrders': return project.validatedPurchaseOrders || 0;
                 case 'completedPV': return project.completedPV || 0;
                 case 'forecastedPurchaseOrders': return project.forecastedPurchaseOrders || 0;
-                case 'moaInternalWorkloadRequested': return project.moaInternalWorkloadRequested || 0;
-                case 'moaInternalWorkloadEngaged': return project.moaInternalWorkloadEngaged || 0;
-                case 'moaInternalWorkloadConsumed': return project.moaInternalWorkloadConsumed || 0;
-                case 'moaExternalWorkloadRequested': return project.moaExternalWorkloadRequested || 0;
-                case 'moaExternalWorkloadEngaged': return project.moaExternalWorkloadEngaged || 0;
-                case 'moaExternalWorkloadConsumed': return project.moaExternalWorkloadConsumed || 0;
-                case 'moeInternalWorkloadRequested': return project.moeInternalWorkloadRequested || 0;
-                case 'moeInternalWorkloadEngaged': return project.moeInternalWorkloadEngaged || 0;
-                case 'moeInternalWorkloadConsumed': return project.moeInternalWorkloadConsumed || 0;
-                case 'moeExternalWorkloadRequested': return project.moeExternalWorkloadRequested || 0;
-                case 'moeExternalWorkloadEngaged': return project.moeExternalWorkloadEngaged || 0;
-                case 'moeExternalWorkloadConsumed': return project.moeExternalWorkloadConsumed || 0;
-                case 'totalWorkloadRequested': return (project.moaInternalWorkloadRequested || 0) + (project.moaExternalWorkloadRequested || 0) + (project.moeInternalWorkloadRequested || 0) + (project.moeExternalWorkloadRequested || 0);
-                case 'totalWorkloadEngaged': return (project.moaInternalWorkloadEngaged || 0) + (project.moaExternalWorkloadEngaged || 0) + (project.moeInternalWorkloadEngaged || 0) + (project.moeExternalWorkloadEngaged || 0);
-                case 'totalWorkloadConsumed': return (project.moaInternalWorkloadConsumed || 0) + (project.moaExternalWorkloadConsumed || 0) + (project.moeInternalWorkloadConsumed || 0) + (project.moeExternalWorkloadConsumed || 0);
+                case 'internalWorkloadRequested': return project.internalWorkloadRequested || 0;
+                case 'internalWorkloadEngaged': return project.internalWorkloadEngaged || 0;
+                case 'internalWorkloadConsumed': return project.internalWorkloadConsumed || 0;
+                case 'externalWorkloadRequested': return project.externalWorkloadRequested || 0;
+                case 'externalWorkloadEngaged': return project.externalWorkloadEngaged || 0;
+                case 'externalWorkloadConsumed': return project.externalWorkloadConsumed || 0;
+                case 'totalWorkloadRequested': return (project.internalWorkloadRequested || 0) + (project.externalWorkloadRequested || 0);
+                case 'totalWorkloadEngaged': return (project.internalWorkloadEngaged || 0) + (project.externalWorkloadEngaged || 0);
+                case 'totalWorkloadConsumed': return (project.internalWorkloadConsumed || 0) + (project.externalWorkloadConsumed || 0);
                 default: return 0;
             }
         };
@@ -390,8 +377,7 @@ const GraphCreatorPage: React.FC = () => {
     const handleLoadConfig = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const config = savedConfigs.find(c => c.name === e.target.value);
         if (config) {
-            // FIX: Corrected default value for measureX to be a valid `MeasureField` type.
-            setChartType(config.chartType); setDimension(config.dimension); setDimension2(config.dimension2 || 'none'); setMeasure(config.measure); setMeasureX(config.measureX || 'moaInternalWorkloadConsumed'); setMeasureY(config.measureY || 'budgetCommitted'); setSizeMeasure(config.sizeMeasure || 'budgetApproved'); setAggregation(config.aggregation); setColorPalette(config.colorPalette); setSortOrder(config.sortOrder || 'value-desc'); setTopN(config.topN || 'all'); setChartTitleInput(config.chartTitle || '');
+            setChartType(config.chartType); setDimension(config.dimension); setDimension2(config.dimension2 || 'none'); setMeasure(config.measure); setMeasureX(config.measureX || 'internalWorkloadConsumed'); setMeasureY(config.measureY || 'budgetCommitted'); setSizeMeasure(config.sizeMeasure || 'budgetApproved'); setAggregation(config.aggregation); setColorPalette(config.colorPalette); setSortOrder(config.sortOrder || 'value-desc'); setTopN(config.topN || 'all'); setChartTitleInput(config.chartTitle || '');
         }
         e.target.value = "";
     };

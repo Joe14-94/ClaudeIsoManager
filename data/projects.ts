@@ -20,6 +20,7 @@ export const projects: Project[] = [
     updatedAt: '2025-11-01T00:00:00Z',
     initiativeId: 'init-demo-A',
     isoMeasures: ['8.7', '8.16'],
+    predecessorIds: ['proj-demo-6'], // Dépend du durcissement AD
     
     // Données financières
     budgetRequested: 150000,
@@ -28,16 +29,13 @@ export const projects: Project[] = [
     completedPV: 45000,
     forecastedPurchaseOrders: 40000,
 
-    // Charges
-    moaInternalWorkloadRequested: 20,
-    moaInternalWorkloadEngaged: 20,
-    moaInternalWorkloadConsumed: 12,
-    moeInternalWorkloadRequested: 80,
-    moeInternalWorkloadEngaged: 60,
-    moeInternalWorkloadConsumed: 45,
-    moeExternalWorkloadRequested: 50,
-    moeExternalWorkloadEngaged: 50,
-    moeExternalWorkloadConsumed: 30,
+    // Charges (Simplifiées Int/Ext)
+    internalWorkloadRequested: 100, // (Anciennement MOA Int + MOE Int)
+    internalWorkloadEngaged: 80,
+    internalWorkloadConsumed: 57,
+    externalWorkloadRequested: 50, // (Anciennement MOA Ext + MOE Ext)
+    externalWorkloadEngaged: 50,
+    externalWorkloadConsumed: 30,
 
     // Nouveaux champs
     weather: ProjectWeather.SUNNY,
@@ -84,12 +82,11 @@ export const projects: Project[] = [
     budgetApproved: 250000,
     budgetCommitted: 245000,
     completedPV: 245000,
-    moaInternalWorkloadConsumed: 50,
-    moaInternalWorkloadEngaged: 50,
-    moeInternalWorkloadConsumed: 150,
-    moeInternalWorkloadEngaged: 150,
-    moeExternalWorkloadConsumed: 350,
-    moeExternalWorkloadEngaged: 350,
+    
+    internalWorkloadConsumed: 200,
+    internalWorkloadEngaged: 200,
+    externalWorkloadConsumed: 350,
+    externalWorkloadEngaged: 350,
     
     weather: ProjectWeather.SUNNY,
     weatherDescription: "Projet terminé avec succès.",
@@ -118,6 +115,7 @@ export const projects: Project[] = [
     isoMeasures: ['5.12', '5.13', '8.11'],
     budgetRequested: 80000,
     budgetApproved: 60000,
+    predecessorIds: ['proj-demo-2'], // Dépend de la migration cloud
     
     weather: ProjectWeather.CLOUDY,
     weatherDescription: "Retard sur la livraison de l'éditeur. POC décalé de 2 semaines.",
@@ -146,6 +144,7 @@ export const projects: Project[] = [
     updatedAt: '2025-10-01T00:00:00Z',
     initiativeId: 'init-demo-D',
     isoMeasures: ['5.16', '5.17', '5.18', '8.5'],
+    predecessorIds: ['proj-demo-6', 'proj-demo-3'], // Dépend du durcissement AD et de la classification
     
     strategicImpact: 5,
     riskCoverage: 5,
@@ -172,8 +171,9 @@ export const projects: Project[] = [
     budgetApproved: 30000,
     budgetCommitted: 35000, // Budget dépassé
     completedPV: 15000,
-    moaInternalWorkloadEngaged: 20,
-    moaInternalWorkloadConsumed: 25, // Consommé > Engagé
+    
+    internalWorkloadEngaged: 20,
+    internalWorkloadConsumed: 25, // Consommé > Engagé
     
     weather: ProjectWeather.STORM,
     weatherDescription: "Budget dépassé suite à l'extension du périmètre d'audit demandé par le DPO.",
@@ -228,6 +228,7 @@ export const projects: Project[] = [
     isoMeasures: ['8.16', '5.26'],
     budgetApproved: 300000,
     budgetCommitted: 280000,
+    predecessorIds: ['proj-demo-2'], // Dépend de la migration cloud
     
     weather: ProjectWeather.SUNNY,
     weatherDescription: "Contrat signé avec le MSSP. Phase de transition en cours.",

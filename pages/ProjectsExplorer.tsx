@@ -14,10 +14,8 @@ type FieldKey =
   | 'initiative' | 'managerMOA' | 'managerMOE' | 'isoMeasure' 
   | 'projectStartDate' | 'projectEndDate' | 'goLiveDate' | 'nfDate'
   | 'budgetRequested' | 'budgetApproved' | 'budgetCommitted' | 'validatedPurchaseOrders' | 'completedPV' | 'forecastedPurchaseOrders'
-  | 'moaIntReq' | 'moaIntEng' | 'moaIntCon' 
-  | 'moaExtReq' | 'moaExtEng' | 'moaExtCon'
-  | 'moeIntReq' | 'moeIntEng' | 'moeIntCon'
-  | 'moeExtReq' | 'moeExtEng' | 'moeExtCon'
+  | 'intReq' | 'intEng' | 'intCon' 
+  | 'extReq' | 'extEng' | 'extCon'
   | 'weather' | 'priorityScore' | 'strategicImpact' | 'riskCoverage' | 'effort';
 
 interface Field {
@@ -85,21 +83,13 @@ const AVAILABLE_FIELDS: Field[] = [
   { key: 'completedPV', label: 'Réalisé (PV)', getValue: row => formatCurrency(row.project.completedPV), isNumeric: true },
   { key: 'forecastedPurchaseOrders', label: 'DA Prévues', getValue: row => formatCurrency(row.project.forecastedPurchaseOrders), isNumeric: true },
 
-  // Charges MOA
-  { key: 'moaIntReq', label: 'Charge MOA Int. Demandée', getValue: row => formatJH(row.project.moaInternalWorkloadRequested), isNumeric: true },
-  { key: 'moaIntEng', label: 'Charge MOA Int. Engagée', getValue: row => formatJH(row.project.moaInternalWorkloadEngaged), isNumeric: true },
-  { key: 'moaIntCon', label: 'Charge MOA Int. Consommée', getValue: row => formatJH(row.project.moaInternalWorkloadConsumed), isNumeric: true },
-  { key: 'moaExtReq', label: 'Charge MOA Ext. Demandée', getValue: row => formatJH(row.project.moaExternalWorkloadRequested), isNumeric: true },
-  { key: 'moaExtEng', label: 'Charge MOA Ext. Engagée', getValue: row => formatJH(row.project.moaExternalWorkloadEngaged), isNumeric: true },
-  { key: 'moaExtCon', label: 'Charge MOA Ext. Consommée', getValue: row => formatJH(row.project.moaExternalWorkloadConsumed), isNumeric: true },
-
-  // Charges MOE
-  { key: 'moeIntReq', label: 'Charge MOE Int. Demandée', getValue: row => formatJH(row.project.moeInternalWorkloadRequested), isNumeric: true },
-  { key: 'moeIntEng', label: 'Charge MOE Int. Engagée', getValue: row => formatJH(row.project.moeInternalWorkloadEngaged), isNumeric: true },
-  { key: 'moeIntCon', label: 'Charge MOE Int. Consommée', getValue: row => formatJH(row.project.moeInternalWorkloadConsumed), isNumeric: true },
-  { key: 'moeExtReq', label: 'Charge MOE Ext. Demandée', getValue: row => formatJH(row.project.moeExternalWorkloadRequested), isNumeric: true },
-  { key: 'moeExtEng', label: 'Charge MOE Ext. Engagée', getValue: row => formatJH(row.project.moeExternalWorkloadEngaged), isNumeric: true },
-  { key: 'moeExtCon', label: 'Charge MOE Ext. Consommée', getValue: row => formatJH(row.project.moeExternalWorkloadConsumed), isNumeric: true },
+  // Charges
+  { key: 'intReq', label: 'Charge Interne Demandée', getValue: row => formatJH(row.project.internalWorkloadRequested), isNumeric: true },
+  { key: 'intEng', label: 'Charge Interne Engagée', getValue: row => formatJH(row.project.internalWorkloadEngaged), isNumeric: true },
+  { key: 'intCon', label: 'Charge Interne Consommée', getValue: row => formatJH(row.project.internalWorkloadConsumed), isNumeric: true },
+  { key: 'extReq', label: 'Charge Externe Demandée', getValue: row => formatJH(row.project.externalWorkloadRequested), isNumeric: true },
+  { key: 'extEng', label: 'Charge Externe Engagée', getValue: row => formatJH(row.project.externalWorkloadEngaged), isNumeric: true },
+  { key: 'extCon', label: 'Charge Externe Consommée', getValue: row => formatJH(row.project.externalWorkloadConsumed), isNumeric: true },
 ];
 
 const PROJECTS_EXPLORER_STATE_KEY = 'projectsExplorerState';

@@ -1,3 +1,4 @@
+
 import React, { useMemo, useRef, useEffect, useCallback } from 'react';
 import { Project } from '../../types';
 import { PROJECT_STATUS_HEX_COLORS } from '../../constants';
@@ -125,11 +126,21 @@ const ProjectTimeline: React.FC<ProjectTimelineProps> = ({ projects, zoomLevel =
                 const right = getPositionForDate(project.projectEndDate, true);
                 const width = Math.max(right - left, 2);
                 
-                const tooltipText = `
+                // Préparation du texte de l'infobulle avec les jalons
+                const sortedMilestones = (project.milestones || []).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+                
+                let tooltipText = `
                     ${project.title} (${project.status})
                     Début: ${project.projectStartDate.toLocaleDateString('fr-FR')}
                     Fin: ${project.projectEndDate.toLocaleDateString('fr-FR')}
                 `;
+
+                if (sortedMilestones.length > 0) {
+                    tooltipText += `\n\n--- Jalons ---`;
+                    sortedMilestones.forEach(ms => {
+                        tooltipText += `\n${new Date(ms.date).toLocaleDateString('fr-FR')}: ${ms.label} ${ms.completed ? '✅' : ''}`;
+                    });
+                }
 
                 return (
                     <div
@@ -155,8 +166,8 @@ const ProjectTimeline: React.FC<ProjectTimelineProps> = ({ projects, zoomLevel =
                                     return (
                                         <div 
                                             key={ms.id}
-                                            className="absolute bottom-0 w-2 h-2 bg-white rotate-45 border border-slate-500 z-20"
-                                            style={{ left: `${msPos}px`, marginBottom: '-4px' }}
+                                            className={`absolute top-1/2 -translate-y-1/2 w-3 h-3 rotate-45 border-2 z-20 transition-transform hover:scale-150 ${ms.completed ? 'bg-green-500 border-white' : 'bg-white border-slate-600'}`}
+                                            style={{ left: `${msPos}px` }}
                                             title={`${ms.label} (${msDate.toLocaleDateString()})`}
                                         />
                                     );
