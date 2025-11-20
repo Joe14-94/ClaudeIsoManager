@@ -20,11 +20,11 @@ interface NavItemProps {
 
 const NavItem: React.FC<NavItemProps> = ({ to, icon, label, isCollapsed, end }) => {
     const { closeMobileSidebar } = useSidebar();
-    const navItemClasses = "flex items-center px-4 py-2.5 text-sm font-medium rounded-lg transition-colors";
+    const navItemClasses = "flex items-center py-2.5 text-sm font-medium rounded-lg transition-colors";
     const activeClasses = "bg-slate-200 text-slate-900";
     const inactiveClasses = "text-slate-600 hover:bg-slate-200 hover:text-slate-900";
     const getNavLinkClass = ({ isActive }: { isActive: boolean }) => 
-        `${navItemClasses} ${isActive ? activeClasses : inactiveClasses} ${isCollapsed ? 'justify-center' : ''}`;
+        `${navItemClasses} ${isActive ? activeClasses : inactiveClasses} ${isCollapsed ? 'justify-center px-2' : 'px-4'}`;
 
     const navLinkContent = (
         <NavLink to={to as any} className={getNavLinkClass} onClick={closeMobileSidebar} end={end}>
@@ -91,7 +91,7 @@ const Sidebar: React.FC = () => {
     closeMobileSidebar();
   };
   
-  const navItemClasses = "flex items-center px-4 py-2.5 text-sm font-medium rounded-lg transition-colors w-full";
+  const navItemClasses = "flex items-center py-2.5 text-sm font-medium rounded-lg transition-colors w-full";
   const inactiveClasses = "text-slate-600 hover:bg-slate-200 hover:text-slate-900";
 
   return (
@@ -124,7 +124,7 @@ const Sidebar: React.FC = () => {
                         {isProjetsOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                     </button>
               </div>
-              <div className={`${isCollapsed ? 'md:hidden' : ''} ${isProjetsOpen ? 'block' : 'hidden'}`}>
+              <div className={`${!isCollapsed && !isProjetsOpen ? 'hidden' : 'block'}`}>
                 <div className='space-y-1'>
                     <NavItem to="/projects-dashboard" icon={<LayoutDashboard/>} label="Tableau de bord" isCollapsed={isCollapsed} />
                     <NavItem to="/projets" icon={<ClipboardList/>} label="Projets" isCollapsed={isCollapsed} />
@@ -146,7 +146,7 @@ const Sidebar: React.FC = () => {
                     {isActivitesOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                   </button>
                 </div>
-              <div className={`${isCollapsed ? 'md:hidden' : ''} ${isActivitesOpen ? 'block' : 'hidden'}`}>
+              <div className={`${!isCollapsed && !isActivitesOpen ? 'hidden' : 'block'}`}>
                 <div className='space-y-1'>
                   <NavItem to="/activities-dashboard" icon={<LayoutDashboard />} label="Tableau de bord" isCollapsed={isCollapsed} />
                   <NavItem to="/activities" icon={<ListChecks />} label="Activités" isCollapsed={isCollapsed} />
@@ -170,7 +170,7 @@ const Sidebar: React.FC = () => {
                         {isReferentielsOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                     </button>
                   </div>
-              <div className={`${isCollapsed ? 'md:hidden' : ''} ${isReferentielsOpen ? 'block' : 'hidden'}`}>
+              <div className={`${!isCollapsed && !isReferentielsOpen ? 'hidden' : 'block'}`}>
                 <div className='space-y-1'>
                     {userRole === 'admin' && (
                       <>
@@ -194,7 +194,7 @@ const Sidebar: React.FC = () => {
                         {isDonneesOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                     </button>
                   </div>
-              <div className={`${isCollapsed ? 'md:hidden' : ''} ${isDonneesOpen ? 'block' : 'hidden'}`}>
+              <div className={`${!isCollapsed && !isDonneesOpen ? 'hidden' : 'block'}`}>
                 <div className='space-y-1'>
                     {(userRole === 'admin' || userRole === 'pmo') && (
                       <>
@@ -231,7 +231,7 @@ const Sidebar: React.FC = () => {
                             {isDroitsAccesOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                         </button>
                     </div>
-                <div className={`${isCollapsed ? 'md:hidden' : ''} ${isDroitsAccesOpen ? 'block' : 'hidden'}`}>
+                <div className={`${!isCollapsed && !isDroitsAccesOpen ? 'hidden' : 'block'}`}>
                     <div className='space-y-1'>
                         <NavItem to="/droits-acces" icon={<UserCog />} label="Droits d'accès" isCollapsed={isCollapsed} />
                     </div>
@@ -246,7 +246,7 @@ const Sidebar: React.FC = () => {
                   {isAideOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                 </button>
               </div>
-              <div className={`${isCollapsed ? 'md:hidden' : ''} ${isAideOpen ? 'block' : 'hidden'}`}>
+              <div className={`${!isCollapsed && !isAideOpen ? 'hidden' : 'block'}`}>
                 <div className='space-y-1'>
                   <NavItem to="/aide" icon={<HelpCircle />} label="Aide" isCollapsed={isCollapsed} />
                 </div>
@@ -267,7 +267,7 @@ const Sidebar: React.FC = () => {
         
            {(userRole === 'admin' || userRole === 'pmo') && (
             <Tooltip text="Sauvegarder les données">
-                <button onClick={handleExport} className={`${navItemClasses} ${inactiveClasses} ${isCollapsed ? 'justify-center' : ''}`}>
+                <button onClick={handleExport} className={`${navItemClasses} ${inactiveClasses} ${isCollapsed ? 'justify-center px-2' : 'px-4'}`}>
                     <FileDown size={18} className={isCollapsed ? '' : 'mr-3'} />
                     {!isCollapsed && <span className="flex-1 truncate">Sauvegarder</span>}
                 </button>
@@ -276,14 +276,14 @@ const Sidebar: React.FC = () => {
 
            {userRole === 'admin' && (
             <Tooltip text="Changer le mot de passe">
-                <button onClick={() => { setIsChangePasswordModalOpen(true); closeMobileSidebar(); }} className={`${navItemClasses} ${inactiveClasses} ${isCollapsed ? 'justify-center' : ''}`}>
+                <button onClick={() => { setIsChangePasswordModalOpen(true); closeMobileSidebar(); }} className={`${navItemClasses} ${inactiveClasses} ${isCollapsed ? 'justify-center px-2' : 'px-4'}`}>
                     <KeyRound size={18} className={isCollapsed ? '' : 'mr-3'} />
                     {!isCollapsed && <span className="flex-1 truncate">Changer le mot de passe</span>}
                 </button>
             </Tooltip>
            )}
            <Tooltip text="Se déconnecter">
-                <button onClick={handleLogout} className={`${navItemClasses} ${inactiveClasses} ${isCollapsed ? 'justify-center' : ''}`}>
+                <button onClick={handleLogout} className={`${navItemClasses} ${inactiveClasses} ${isCollapsed ? 'justify-center px-2' : 'px-4'}`}>
                     <LogOut size={18} className={isCollapsed ? '' : 'mr-3'} />
                     {!isCollapsed && <span className="flex-1 truncate">Se déconnecter</span>}
                 </button>

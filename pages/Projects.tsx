@@ -1,12 +1,12 @@
 
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useData } from '../contexts/DataContext';
 import { Project, ProjectStatus, TShirtSize, Resource, Initiative, ProjectCategory, ProjectWeather, ProjectMilestone } from '../types';
 import { PROJECT_STATUS_COLORS, ISO_MEASURES_DATA } from '../constants';
 import Card, { CardContent, CardHeader } from '../components/ui/Card';
 import Modal from '../components/ui/Modal';
-import { Search, PlusCircle, Edit, ArrowUp, ArrowDown, Trash2, Sun, Cloud, CloudRain, CloudLightning, Flag, Calculator, AlertTriangle } from 'lucide-react';
+import { Search, PlusCircle, Edit, ArrowUp, ArrowDown, Trash2, Sun, Cloud, CloudRain, CloudLightning, Flag, Calculator, AlertTriangle, ChevronDown, Info, FilterX } from 'lucide-react';
 import CalendarDatePicker from '../components/ui/CalendarDatePicker';
 import CustomMultiSelect from '../components/ui/CustomMultiSelect';
 import ActiveFiltersDisplay from '../components/ui/ActiveFiltersDisplay';
@@ -22,16 +22,98 @@ const WEATHER_ICONS = {
     [ProjectWeather.STORM]: <CloudLightning className="text-purple-600" size={20} />,
 };
 
+const BetaBadge = () => (
+  <span className="ml-2 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-indigo-600 bg-indigo-50 border border-indigo-200 rounded-full align-middle">
+    BETA
+  </span>
+);
+
+const CategoryFilterDropdown: React.FC<{
+    selectedCategories: string[];
+    onChange: (categories: string[]) => void;
+}> = ({ selectedCategories, onChange }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const dropdownRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setIsOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const toggleCategory = (category: string) => {
+        if (selectedCategories.includes(category)) {
+            onChange(selectedCategories.filter(c => c !== category));
+        } else {
+            onChange([...selectedCategories, category]);
+        }
+    };
+
+    return (
+        <div className="relative" ref={dropdownRef}>
+             <button
+                type="button"
+                onClick={() => setIsOpen(!isOpen)}
+                className="flex items-center justify-between w-full md:w-auto px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-sm min-w-[180px] text-slate-700"
+            >
+                <span className="truncate">
+                    {selectedCategories.length === 0 
+                        ? "Toutes les catégories" 
+                        : selectedCategories.length === 1 
+                            ? selectedCategories[0] 
+                            : `${selectedCategories.length} catégories`}
+                </span>
+                <ChevronDown size={16} className="ml-2 text-slate-500 flex-shrink-0" />
+            </button>
+            {isOpen && (
+                <div className="absolute z-20 mt-1 w-full md:w-64 bg-white shadow-lg rounded-md py-1 ring-1 ring-black ring-opacity-5 overflow-auto max-h-60 focus:outline-none border border-slate-200">
+                    {Object.values(ProjectCategory).map((category) => (
+                        <div
+                            key={category}
+                            className="flex items-center px-4 py-2 hover:bg-slate-50 cursor-pointer group"
+                            onClick={() => toggleCategory(category)}
+                        >
+                            <div className={`w-4 h-4 border rounded flex-shrink-0 flex items-center justify-center transition-colors bg-white ${
+                                selectedCategories.includes(category) 
+                                ? 'bg-blue-600 border-blue-600' 
+                                : 'border-gray-300 group-hover:border-blue-400'
+                            }`}>
+                                {selectedCategories.includes(category) && (
+                                    <svg className="w-3 h-3 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
+                                        <path d="M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z" />
+                                    </svg>
+                                )}
+                            </div>
+                            <span className="ml-3 block text-sm text-slate-700">
+                                {category}
+                            </span>
+                        </div>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+};
+
 const Projects: React.FC = () => {
     const { projects, setProjects, resources, initiatives } = useData();
     const isReadOnly = false;
 
     const location = useLocation();
     const navigate = useNavigate();
+    const locationState = location.state as any;
 
     const [isModalOnly, setIsModalOnly] = useState(false);
-    const [statusFilter, setStatusFilter] = useState('');
-    const [top30Filter, setTop30Filter] = useState('');
+    
+    // Initialisation des filtres avec les valeurs passées dans la navigation si elles existent
+    const [statusFilter, setStatusFilter] = useState(locationState?.statusFilter || '');
+    const [top30Filter, setTop30Filter] = useState(locationState?.top30Filter || '');
+    
+    const [categoriesFilter, setCategoriesFilter] = useState<string[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: SortDirection } | null>({ key: 'projectId', direction: 'ascending' });
     
@@ -88,25 +170,43 @@ const Projects: React.FC = () => {
     }, [isReadOnly, projects, initiatives]);
 
 
+    // Effet pour gérer l'ouverture d'un projet via la navigation
     useEffect(() => {
-        const projectToOpenId = location.state?.openProject;
+        const projectToOpenId = locationState?.openProject;
         if (projectToOpenId && !isFormModalOpen) {
             const projectToOpen = projects.find(p => p.id === projectToOpenId);
             if (projectToOpen) {
                 setIsModalOnly(true);
                 handleOpenFormModal(projectToOpen);
-                navigate(location.pathname, { replace: true, state: {} });
+                // On nettoie l'état pour ne pas rouvrir la modale au refresh, 
+                // MAIS on ne doit pas écraser les filtres s'ils sont présents.
+                const newState = { ...locationState };
+                delete newState.openProject;
+                navigate(location.pathname, { replace: true, state: newState });
             }
         }
-    }, [location.state, projects, navigate, isFormModalOpen, handleOpenFormModal]);
+    }, [locationState, projects, navigate, isFormModalOpen, handleOpenFormModal]);
+
+    // Effet pour mettre à jour les filtres si la navigation change (ex: clic depuis dashboard)
+    useEffect(() => {
+        if (locationState?.statusFilter !== undefined) {
+            setStatusFilter(locationState.statusFilter);
+        }
+        if (locationState?.top30Filter !== undefined) {
+            setTop30Filter(locationState.top30Filter);
+        }
+    }, [locationState]);
 
     useEffect(() => {
         const { projectDataToEdit } = location.state || {};
         if (projectDataToEdit) {
             handleOpenFormModal(projectDataToEdit);
-            navigate(location.pathname, { replace: true, state: {} });
+             // On nettoie l'état
+             const newState = { ...locationState };
+             delete newState.projectDataToEdit;
+             navigate(location.pathname, { replace: true, state: newState });
         }
-    }, [location.state, navigate, handleOpenFormModal]);
+    }, [location.state, navigate, handleOpenFormModal, locationState]);
 
     const resourceMap = useMemo(() => new Map(resources.map(r => [r.id, r.name])), [resources]);
     const initiativeMap = useMemo(() => new Map(initiatives.map(i => [i.id, i.label])), [initiatives]);
@@ -186,6 +286,7 @@ const Projects: React.FC = () => {
             return (
                 (statusFilter === '' || project.status === statusFilter) &&
                 (top30Filter === '' || String(project.isTop30) === top30Filter) &&
+                (categoriesFilter.length === 0 || categoriesFilter.includes(project.category)) &&
                 (searchTerm === '' || 
                     project.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
                     project.projectId.toLowerCase().includes(searchTerm.toLowerCase()))
@@ -237,7 +338,7 @@ const Projects: React.FC = () => {
           });
         }
         return sortableItems;
-    }, [projects, statusFilter, top30Filter, searchTerm, sortConfig, resourceMap, initiativeMap]);
+    }, [projects, statusFilter, top30Filter, categoriesFilter, searchTerm, sortConfig, resourceMap, initiativeMap]);
 
     const renderSortArrow = (key: SortKey) => {
         if (sortConfig?.key === key) {
@@ -250,17 +351,20 @@ const Projects: React.FC = () => {
         const filters: { [key: string]: string } = {};
         if (statusFilter) filters['Statut'] = statusFilter;
         if (top30Filter) filters['Top 30'] = top30Filter === 'true' ? 'Oui' : 'Non';
+        if (categoriesFilter.length > 0) filters['Catégorie'] = categoriesFilter.length === 1 ? categoriesFilter[0] : `${categoriesFilter.length} sélectionnées`;
         return filters;
-    }, [statusFilter, top30Filter]);
+    }, [statusFilter, top30Filter, categoriesFilter]);
 
     const handleRemoveFilter = (key: string) => {
         if (key === 'Statut') setStatusFilter('');
         if (key === 'Top 30') setTop30Filter('');
+        if (key === 'Catégorie') setCategoriesFilter([]);
     };
 
     const handleClearAll = () => {
         setStatusFilter('');
         setTop30Filter('');
+        setCategoriesFilter([]);
         setSearchTerm('');
     };
 
@@ -291,6 +395,10 @@ const Projects: React.FC = () => {
                                     onChange={(e) => setSearchTerm(e.target.value)}
                                     />
                                 </div>
+                                <CategoryFilterDropdown 
+                                    selectedCategories={categoriesFilter}
+                                    onChange={setCategoriesFilter}
+                                />
                                 <select 
                                     value={statusFilter}
                                     onChange={(e) => setStatusFilter(e.target.value)}
@@ -309,7 +417,14 @@ const Projects: React.FC = () => {
                                     <option value="false">Hors Top 30</option>
                                 </select>
                             </div>
-                            <ActiveFiltersDisplay filters={activeFiltersForDisplay} onRemoveFilter={handleRemoveFilter} onClearAll={handleClearAll} />
+                            <div className="flex justify-between items-center">
+                                <ActiveFiltersDisplay filters={activeFiltersForDisplay} onRemoveFilter={handleRemoveFilter} onClearAll={handleClearAll} />
+                                {searchTerm && (
+                                    <div className="text-sm text-slate-500">
+                                        {sortedProjects.length} résultat(s)
+                                    </div>
+                                )}
+                            </div>
                         </CardHeader>
                         <CardContent className="flex-grow overflow-y-auto">
                             <div className="overflow-x-auto">
@@ -547,7 +662,7 @@ const FormBody: React.FC<{
             <div className="flex flex-col md:flex-row gap-4 items-start">
                 <div className="flex-grow grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
                     <div>
-                        <label htmlFor="projectId" className="block text-sm font-medium text-slate-700 mb-1">ID Projet</label>
+                        <label htmlFor="projectId" className="block text-sm font-medium text-slate-700 mb-1">ID projet</label>
                         <input type="text" name="projectId" value={currentProject.projectId || ''} onChange={handleChange} required readOnly={isReadOnly} className={inputClassName} />
                     </div>
                     <div>
@@ -589,12 +704,21 @@ const FormBody: React.FC<{
                 <label htmlFor="description" className="block text-sm font-medium text-slate-700 mb-1">Description</label>
                 <textarea name="description" value={currentProject.description || ''} onChange={handleChange} rows={2} readOnly={isReadOnly} className={textareaClassName} />
             </div>
+            
+            <div className="flex items-center gap-2">
+              <h3 className="text-lg font-semibold text-slate-800">Score de priorité & arbitrage <BetaBadge /></h3>
+               <Tooltip text="Guide d'évaluation (Échelle 1 à 5) :&#10;• Impact : Alignement stratégique et valeur métier (1: Faible - 5: Critique)&#10;• Risque : Efficacité de réduction des risques (1: Faible - 5: Forte)&#10;• Effort : Complexité et coût de mise en œuvre (1: Trivial - 5: Considérable)">
+                  <Info size={18} className="text-slate-500 cursor-help" />
+               </Tooltip>
+            </div>
 
             {/* SCORING & ARBITRAGE */}
             <div className="bg-indigo-50 border border-indigo-100 rounded-lg p-4">
                 <div className="flex justify-between items-center mb-4">
                     <h3 className="text-lg font-semibold text-indigo-900 flex items-center gap-2">
-                        <Calculator size={20} /> Score de Priorité & Arbitrage
+                        <Calculator size={20} />
+                        Score de priorité & arbitrage
+                        <BetaBadge />
                     </h3>
                     <div className="text-2xl font-bold text-indigo-600 bg-white px-4 py-1 rounded shadow-sm border border-indigo-100">
                         Score: {currentProject.priorityScore}
@@ -602,12 +726,12 @@ const FormBody: React.FC<{
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
-                        <label className="flex justify-between text-sm font-medium text-indigo-900 mb-1">Impact Stratégique <span className="font-bold">{currentProject.strategicImpact}</span></label>
+                        <label className="flex justify-between text-sm font-medium text-indigo-900 mb-1">Impact stratégique <span className="font-bold">{currentProject.strategicImpact}</span></label>
                         <input type="range" name="strategicImpact" min="1" max="5" step="0.5" value={currentProject.strategicImpact || 3} onChange={handleChange} disabled={isReadOnly} className="w-full accent-indigo-600 cursor-pointer"/>
                         <div className="flex justify-between text-xs text-indigo-500 mt-1"><span>Faible</span><span>Fort</span></div>
                     </div>
                     <div>
-                        <label className="flex justify-between text-sm font-medium text-indigo-900 mb-1">Couverture Risque <span className="font-bold">{currentProject.riskCoverage}</span></label>
+                        <label className="flex justify-between text-sm font-medium text-indigo-900 mb-1">Couverture du risque <span className="font-bold">{currentProject.riskCoverage}</span></label>
                         <input type="range" name="riskCoverage" min="1" max="5" step="0.5" value={currentProject.riskCoverage || 3} onChange={handleChange} disabled={isReadOnly} className="w-full accent-indigo-600 cursor-pointer"/>
                          <div className="flex justify-between text-xs text-indigo-500 mt-1"><span>Faible</span><span>Forte</span></div>
                     </div>
@@ -697,15 +821,20 @@ const FormBody: React.FC<{
             </div>
             
             <div>
-                 <CustomMultiSelect
-                    label="Couverture des Risques Majeurs"
-                    name="majorRiskIds"
-                    options={majorRisks.map(r => ({ value: r.id, label: r.label, tooltip: r.description }))}
-                    selectedValues={currentProject.majorRiskIds || []}
-                    onChange={handleCustomMultiSelectChange}
-                    disabled={isReadOnly}
-                    heightClass="h-32"
-                />
+                <div className="mb-1">
+                    <label className="block text-sm font-medium text-slate-700 mb-1">
+                        Couverture des risques majeurs <BetaBadge />
+                    </label>
+                     <CustomMultiSelect
+                        label=""
+                        name="majorRiskIds"
+                        options={majorRisks.map(r => ({ value: r.id, label: r.label, tooltip: r.description }))}
+                        selectedValues={currentProject.majorRiskIds || []}
+                        onChange={handleCustomMultiSelectChange}
+                        disabled={isReadOnly}
+                        heightClass="h-32"
+                    />
+                </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -727,18 +856,18 @@ const FormBody: React.FC<{
             
             {/* DATES */}
             <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg">
-                <h4 className="font-semibold text-slate-700 mb-3">Planning Général</h4>
+                <h4 className="font-semibold text-slate-700 mb-3">Planning général</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label htmlFor="projectStartDate" className="block text-sm font-medium text-slate-700 mb-1">Début Projet</label>
+                        <label htmlFor="projectStartDate" className="block text-sm font-medium text-slate-700 mb-1">Début projet</label>
                         <CalendarDatePicker id="projectStartDate" name="projectStartDate" value={currentProject.projectStartDate?.split('T')[0] || ''} onChange={handleChange} readOnly={isReadOnly} />
                     </div>
                     <div>
-                        <label htmlFor="projectEndDate" className="block text-sm font-medium text-slate-700 mb-1">Fin Projet</label>
+                        <label htmlFor="projectEndDate" className="block text-sm font-medium text-slate-700 mb-1">Fin projet</label>
                         <CalendarDatePicker id="projectEndDate" name="projectEndDate" value={currentProject.projectEndDate?.split('T')[0] || ''} onChange={handleChange} readOnly={isReadOnly} />
                     </div>
                     <div>
-                        <label htmlFor="goLiveDate" className="block text-sm font-medium text-slate-700 mb-1">Mise en Service (NO)</label>
+                        <label htmlFor="goLiveDate" className="block text-sm font-medium text-slate-700 mb-1">Mise en service (NO)</label>
                         <CalendarDatePicker id="goLiveDate" name="goLiveDate" value={currentProject.goLiveDate?.split('T')[0] || ''} onChange={handleChange} readOnly={isReadOnly} />
                     </div>
                     <div>
@@ -751,7 +880,7 @@ const FormBody: React.FC<{
             {/* JALONS CLES */}
             <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg">
                 <div className="flex justify-between items-center mb-3">
-                    <h4 className="font-semibold text-slate-700 flex items-center gap-2"><Flag size={16} /> Jalons Clés</h4>
+                    <h4 className="font-semibold text-slate-700 flex items-center gap-2"><Flag size={16} /> Jalons clés <BetaBadge /></h4>
                     {!isReadOnly && (
                         <button type="button" onClick={handleMilestoneAdd} className="text-xs flex items-center gap-1 bg-white border border-slate-300 px-2 py-1 rounded hover:bg-slate-100 text-blue-600 shadow-sm transition-colors">
                             <PlusCircle size={14} /> Ajouter un jalon
@@ -762,13 +891,26 @@ const FormBody: React.FC<{
                     <div className="space-y-2">
                         {currentProject.milestones.map((ms, idx) => (
                             <div key={ms.id} className="flex items-center gap-2 bg-white p-2 rounded border border-slate-200 shadow-sm">
-                                <input 
-                                    type="checkbox" 
-                                    checked={ms.completed} 
-                                    onChange={(e) => handleMilestoneChange(ms.id, 'completed', e.target.checked)}
-                                    disabled={isReadOnly}
-                                    className="w-4 h-4 accent-green-600 cursor-pointer"
-                                />
+                                <label className="flex items-center cursor-pointer">
+                                    <input 
+                                        type="checkbox" 
+                                        checked={ms.completed} 
+                                        onChange={(e) => handleMilestoneChange(ms.id, 'completed', e.target.checked)}
+                                        disabled={isReadOnly}
+                                        className="sr-only"
+                                    />
+                                    <div className={`w-4 h-4 border rounded flex-shrink-0 flex items-center justify-center transition-colors bg-white ${
+                                        ms.completed 
+                                        ? 'bg-green-600 border-green-600' 
+                                        : 'border-slate-300 hover:border-green-500'
+                                    } ${isReadOnly ? 'cursor-not-allowed opacity-60' : ''}`}>
+                                        {ms.completed && (
+                                            <svg className="w-3 h-3 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor">
+                                                <path d="M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z" />
+                                            </svg>
+                                        )}
+                                    </div>
+                                </label>
                                 <div className="flex-grow grid grid-cols-1 sm:grid-cols-2 gap-2">
                                     <input 
                                         type="text" 
@@ -849,12 +991,12 @@ const FormBody: React.FC<{
                 </div>
                  
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 items-end p-4 border border-blue-100 rounded-lg bg-blue-50/50">
-                    <div className="col-span-full font-semibold text-blue-800 border-b border-blue-100 pb-1 mb-1">Total Charges Projet</div>
-                    <div><label className="block text-xs text-slate-500 mb-1">Total Demandé</label><input type="text" value={workloadTotals.totalRequested} readOnly className={readOnlyInputClassName} /></div>
-                    <div><label className="block text-xs text-slate-500 mb-1">Total Engagé</label><input type="text" value={workloadTotals.totalEngaged} readOnly className={readOnlyInputClassName} /></div>
-                    <div><label className="block text-xs text-slate-500 mb-1">Total Consommé</label><input type="text" value={workloadTotals.totalConsumed} readOnly className={readOnlyInputClassName} /></div>
+                    <div className="col-span-full font-semibold text-blue-800 border-b border-blue-100 pb-1 mb-1">Total charges projet</div>
+                    <div><label className="block text-xs text-slate-500 mb-1">Total demandé</label><input type="text" value={workloadTotals.totalRequested} readOnly className={readOnlyInputClassName} /></div>
+                    <div><label className="block text-xs text-slate-500 mb-1">Total engagé</label><input type="text" value={workloadTotals.totalEngaged} readOnly className={readOnlyInputClassName} /></div>
+                    <div><label className="block text-xs text-slate-500 mb-1">Total consommé</label><input type="text" value={workloadTotals.totalConsumed} readOnly className={readOnlyInputClassName} /></div>
                     <div>
-                         <label className="block text-xs text-slate-500 mb-1">Avancement Global</label>
+                         <label className="block text-xs text-slate-500 mb-1">Avancement global</label>
                          <div className="w-full bg-white border border-slate-200 rounded-full h-8 flex items-center px-2">
                             <div className="bg-blue-600 h-3 rounded-full" style={{ width: `${Math.min(workloadTotals.totalProgress, 100)}%` }}></div>
                             <span className="ml-2 text-xs font-bold text-slate-700">{workloadTotals.totalProgress}%</span>
@@ -872,13 +1014,13 @@ const FormBody: React.FC<{
                     <div><label htmlFor="budgetCommitted" className="block text-sm font-medium text-slate-700 mb-1">Engagé</label><input type="number" name="budgetCommitted" value={currentProject.budgetCommitted || ''} onChange={handleChange} readOnly={isReadOnly} min="0" step="any" className={numberInputClassName}/></div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div><label htmlFor="validatedPurchaseOrders" className="block text-sm font-medium text-slate-700 mb-1">DA Validées</label><input type="number" name="validatedPurchaseOrders" value={currentProject.validatedPurchaseOrders || ''} onChange={handleChange} readOnly={isReadOnly} min="0" step="any" className={numberInputClassName}/></div>
+                    <div><label htmlFor="validatedPurchaseOrders" className="block text-sm font-medium text-slate-700 mb-1">DA validées</label><input type="number" name="validatedPurchaseOrders" value={currentProject.validatedPurchaseOrders || ''} onChange={handleChange} readOnly={isReadOnly} min="0" step="any" className={numberInputClassName}/></div>
                     <div><label htmlFor="completedPV" className="block text-sm font-medium text-slate-700 mb-1">Réalisé (PV)</label><input type="number" name="completedPV" value={currentProject.completedPV || ''} onChange={handleChange} readOnly={isReadOnly} min="0" step="any" className={numberInputClassName}/></div>
-                    <div><label htmlFor="forecastedPurchaseOrders" className="block text-sm font-medium text-slate-700 mb-1">DA Prévues</label><input type="number" name="forecastedPurchaseOrders" value={currentProject.forecastedPurchaseOrders || ''} onChange={handleChange} readOnly={isReadOnly} min="0" step="any" className={numberInputClassName}/></div>
+                    <div><label htmlFor="forecastedPurchaseOrders" className="block text-sm font-medium text-slate-700 mb-1">DA prévues</label><input type="number" name="forecastedPurchaseOrders" value={currentProject.forecastedPurchaseOrders || ''} onChange={handleChange} readOnly={isReadOnly} min="0" step="any" className={numberInputClassName}/></div>
                 </div>
                 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 border border-purple-100 rounded-lg bg-purple-50/50">
-                     <div className="col-span-full font-semibold text-purple-800 border-b border-purple-100 pb-1 mb-1">Indicateurs Budgétaires</div>
+                     <div className="col-span-full font-semibold text-purple-800 border-b border-purple-100 pb-1 mb-1">Indicateurs budgétaires</div>
                      <div><label className="block text-xs text-slate-500 mb-1">Disponible (Accordé - Engagé)</label><input type="text" value={budgetCalculations.availableBudget.toLocaleString('fr-FR', { style: 'currency', currency: 'EUR' })} readOnly className={readOnlyInputClassName} /></div>
                      <div><label className="block text-xs text-slate-500 mb-1">Taux d'engagement</label><input type="text" value={budgetCalculations.budgetCommitmentRate + '%'} readOnly className={readOnlyInputClassName} /></div>
                      <div><label className="block text-xs text-slate-500 mb-1">Taux de réalisation (PV/Engagé)</label><input type="text" value={budgetCalculations.budgetCompletionRate + '%'} readOnly className={readOnlyInputClassName} /></div>

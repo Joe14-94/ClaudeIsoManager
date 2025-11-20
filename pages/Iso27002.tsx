@@ -19,19 +19,30 @@ const MeasureDetails: React.FC<{ measure: IsoMeasure }> = ({ measure }) => {
 
     const { details } = measure;
 
-    const renderTags = (title: string, tags: string[] | string) => {
+    const renderTags = (title: string, tags: string[] | string | undefined) => {
+        if (!tags) return null;
         const tagArray = Array.isArray(tags) ? tags : [tags];
+        if (tagArray.length === 0) return null;
+
         return (
             <div className="mb-2">
                 <h4 className="font-semibold text-sm text-slate-600">{title}</h4>
                 <div className="flex flex-wrap gap-2 mt-1">
-                    {tagArray.map(tag => (
-                        <span key={tag} className="px-2 py-1 text-xs bg-slate-100 text-slate-700 rounded-md">{tag.replace(/_/g, ' ')}</span>
+                    {tagArray.map((tag, index) => (
+                         tag ? <span key={`${tag}-${index}`} className="px-2 py-1 text-xs bg-slate-100 text-slate-700 rounded-md">{String(tag).replace(/_/g, ' ')}</span> : null
                     ))}
                 </div>
             </div>
         );
     }
+
+    const safeSanitize = (content: string) => {
+        if (typeof DOMPurify !== 'undefined' && DOMPurify.sanitize) {
+            return DOMPurify.sanitize(content);
+        }
+        // Fallback si DOMPurify n'est pas chargé (le contenu vient de fichiers statiques de confiance)
+        return content;
+    };
 
     return (
         <div className="space-y-4 text-slate-700">
@@ -54,12 +65,12 @@ const MeasureDetails: React.FC<{ measure: IsoMeasure }> = ({ measure }) => {
             </div>
             <div>
                 <h3 className="text-lg font-bold text-slate-800 mb-2">Recommandations</h3>
-                <div className="iso-details-content" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(details.recommendations) }} />
+                <div className="iso-details-content" dangerouslySetInnerHTML={{ __html: safeSanitize(details.recommendations) }} />
             </div>
             {details.extraInfo && (
                  <div>
                     <h3 className="text-lg font-bold text-slate-800 mb-2">Informations supplémentaires</h3>
-                    <div className="iso-details-content" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(details.extraInfo) }} />
+                    <div className="iso-details-content" dangerouslySetInnerHTML={{ __html: safeSanitize(details.extraInfo) }} />
                 </div>
             )}
         </div>
