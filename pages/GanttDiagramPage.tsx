@@ -6,7 +6,7 @@ import AdvancedGanttChart from '../components/gantt/AdvancedGanttChart';
 import Card, { CardContent } from '../components/ui/Card';
 
 const GanttDiagramPage: React.FC = () => {
-  const { projects, resources } = useData();
+  const { projects, resources, setProjects } = useData();
   const navigate = useNavigate();
   
   // Filtrer uniquement les projets qui ont des dates et qui ne sont pas des projets techniques
@@ -38,6 +38,7 @@ const GanttDiagramPage: React.FC = () => {
                 projects={validProjects} 
                 resources={resources} 
                 onProjectClick={handleProjectClick}
+                onDataChange={setProjects}
              />
           ) : (
              <div className="flex items-center justify-center h-full text-slate-500">

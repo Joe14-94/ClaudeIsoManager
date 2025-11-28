@@ -1,9 +1,10 @@
 
 import React, { useMemo, useState, useEffect } from 'react';
-import { Project, ProjectStatus, TShirtSize, ProjectCategory, ProjectWeather, ProjectMilestone, MilestoneHistoryEntry } from '../../types';
+import { Project, ProjectStatus, TShirtSize, ProjectCategory, ProjectWeather, ProjectMilestone, MilestoneHistoryEntry, ProjectTask } from '../../types';
 import { ISO_MEASURES_DATA } from '../../constants';
 import { useData } from '../../contexts/DataContext';
-import { Search, PlusCircle, Trash2, Flag, Calculator, Info, Link } from 'lucide-react';
+import { Search, PlusCircle, Trash2, Flag, Calculator, Info, Link, ListTree, Calendar, ChevronRight, ChevronDown, Plus } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import CalendarDatePicker from '../ui/CalendarDatePicker';
 import CustomMultiSelect from '../ui/CustomMultiSelect';
 import Tooltip from '../ui/Tooltip';
@@ -28,9 +29,216 @@ const BetaBadge = () => (
   <span className="ml-2 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-indigo-600 bg-indigo-50 border border-indigo-200 rounded-full align-middle">BETA</span>
 );
 
+// --- Composant Éditeur WBS (Work Breakdown Structure) ---
+
+interface WbsEditorProps {
+    tasks: ProjectTask[];
+    onChange: (newTasks: ProjectTask[]) => void;
+    isReadOnly: boolean;
+    resources: any[];
+}
+
+const WbsEditor: React.FC<WbsEditorProps> = ({ tasks, onChange, isReadOnly, resources }) => {
+    const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+
+    const toggleExpand = (id: string) => {
+        setExpanded(prev => ({ ...prev, [id]: !prev[id] }));
+    };
+
+    const updateTaskRecursive = (list: ProjectTask[], id: string, updates: Partial<ProjectTask>): ProjectTask[] => {
+        return list.map(t => {
+            if (t.id === id) return { ...t, ...updates };
+            if (t.children) return { ...t, children: updateTaskRecursive(t.children, id, updates) };
+            return t;
+        });
+    };
+
+    const addTaskRecursive = (list: ProjectTask[], parentId: string | null, newTask: ProjectTask): ProjectTask[] => {
+        if (parentId === null) {
+            return [...list, newTask];
+        }
+        return list.map(t => {
+            if (t.id === parentId) {
+                return { ...t, children: [...(t.children || []), newTask] };
+            }
+            if (t.children) {
+                return { ...t, children: addTaskRecursive(t.children, parentId, newTask) };
+            }
+            return t;
+        });
+    };
+
+    const deleteTaskRecursive = (list: ProjectTask[], id: string): ProjectTask[] => {
+        return list.filter(t => t.id !== id).map(t => ({
+            ...t,
+            children: t.children ? deleteTaskRecursive(t.children, id) : undefined
+        }));
+    };
+
+    const handleUpdate = (id: string, field: keyof ProjectTask, value: any) => {
+        const newTasks = updateTaskRecursive(tasks, id, { [field]: value });
+        onChange(newTasks);
+    };
+
+    const handleDelete = (id: string) => {
+        if (confirm("Supprimer cette tâche et ses sous-tâches ?")) {
+            const newTasks = deleteTaskRecursive(tasks, id);
+            onChange(newTasks);
+        }
+    };
+
+    const handleAdd = (parentId: string | null) => {
+        const newTask: ProjectTask = {
+            id: `t-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+            name: parentId ? "Nouvelle tâche" : "Nouvelle phase",
+            startDate: new Date().toISOString(),
+            endDate: new Date().toISOString(),
+            progress: 0,
+            status: 'A faire' as any, // Casting simple pour éviter d'importer l'enum ici si non nécessaire
+            children: []
+        };
+        const newTasks = addTaskRecursive(tasks, parentId, newTask);
+        if (parentId) setExpanded(prev => ({ ...prev, [parentId]: true }));
+        onChange(newTasks);
+    };
+
+    const renderRow = (task: ProjectTask, level: number, parentIndexString: string) => {
+        const hasChildren = task.children && task.children.length > 0;
+        const isExpanded = expanded[task.id] ?? true; // Par défaut étendu
+
+        return (
+            <React.Fragment key={task.id}>
+                <div className={`flex items-center gap-2 py-1 border-b border-slate-100 hover:bg-slate-50 ${level === 0 ? 'bg-slate-50/50' : ''}`}>
+                    {/* Indentation & Expand */}
+                    <div className="flex items-center w-48 pl-2 flex-shrink-0">
+                         <div style={{ width: level * 16 }}></div>
+                         <button 
+                            type="button"
+                            onClick={() => toggleExpand(task.id)} 
+                            className={`p-1 mr-1 rounded hover:bg-slate-200 ${!hasChildren ? 'invisible' : ''}`}
+                         >
+                             {isExpanded ? <ChevronDown size={12}/> : <ChevronRight size={12}/>}
+                         </button>
+                         <input 
+                            type="text" 
+                            value={task.name} 
+                            onChange={(e) => handleUpdate(task.id, 'name', e.target.value)}
+                            className={`w-full bg-transparent border border-transparent hover:border-slate-300 focus:border-blue-500 rounded px-1 py-0.5 text-sm ${level === 0 ? 'font-semibold text-slate-800' : 'text-slate-600'}`}
+                            readOnly={isReadOnly}
+                         />
+                    </div>
+
+                    {/* Dates */}
+                    <div className="w-32 flex-shrink-0">
+                        <input 
+                            type="date" 
+                            value={task.startDate ? task.startDate.split('T')[0] : ''}
+                            onChange={(e) => handleUpdate(task.id, 'startDate', e.target.value + 'T00:00:00Z')}
+                            className="w-full text-xs border border-transparent hover:border-slate-300 rounded px-1 bg-transparent text-slate-600"
+                            readOnly={isReadOnly}
+                        />
+                    </div>
+                    <div className="w-32 flex-shrink-0">
+                        <input 
+                            type="date" 
+                            value={task.endDate ? task.endDate.split('T')[0] : ''}
+                            onChange={(e) => handleUpdate(task.id, 'endDate', e.target.value + 'T00:00:00Z')}
+                            className="w-full text-xs border border-transparent hover:border-slate-300 rounded px-1 bg-transparent text-slate-600"
+                            readOnly={isReadOnly}
+                        />
+                    </div>
+
+                    {/* Progress */}
+                    <div className="w-20 flex-shrink-0 flex items-center">
+                        <input 
+                            type="number" 
+                            min="0" max="100"
+                            value={task.progress}
+                            onChange={(e) => handleUpdate(task.id, 'progress', parseInt(e.target.value))}
+                            className="w-12 text-xs border border-transparent hover:border-slate-300 rounded px-1 bg-transparent text-right text-slate-600"
+                            readOnly={isReadOnly}
+                        />
+                        <span className="text-xs text-slate-400 ml-1">%</span>
+                    </div>
+                    
+                    {/* Assignee */}
+                    <div className="w-32 flex-shrink-0">
+                        <select 
+                            value={task.assigneeId || ''} 
+                            onChange={(e) => handleUpdate(task.id, 'assigneeId', e.target.value)}
+                            className="w-full text-xs border border-transparent hover:border-slate-300 rounded px-1 bg-transparent text-slate-600 truncate"
+                            disabled={isReadOnly}
+                        >
+                            <option value="">Non assigné</option>
+                            {resources.map(r => <option key={r.id} value={r.id}>{r.name}</option>)}
+                        </select>
+                    </div>
+
+                    {/* Actions */}
+                    {!isReadOnly && (
+                        <div className="flex items-center gap-1 ml-auto pr-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                             <Tooltip text="Ajouter une sous-tâche">
+                                <button type="button" onClick={() => handleAdd(task.id)} className="p-1 text-blue-600 hover:bg-blue-100 rounded"><Plus size={14}/></button>
+                             </Tooltip>
+                             <Tooltip text="Supprimer">
+                                <button type="button" onClick={() => handleDelete(task.id)} className="p-1 text-red-600 hover:bg-red-100 rounded"><Trash2 size={14}/></button>
+                             </Tooltip>
+                        </div>
+                    )}
+                </div>
+                {hasChildren && isExpanded && (
+                    <div>
+                        {task.children!.map((child, idx) => renderRow(child, level + 1, `${parentIndexString}.${idx + 1}`))}
+                    </div>
+                )}
+            </React.Fragment>
+        );
+    };
+
+    return (
+        <div className="border border-slate-200 rounded-md overflow-hidden flex flex-col">
+             <div className="flex items-center bg-slate-100 py-2 px-2 text-xs font-semibold text-slate-600 border-b border-slate-200">
+                <div className="w-48 pl-2">Nom</div>
+                <div className="w-32">Début</div>
+                <div className="w-32">Fin</div>
+                <div className="w-20">Avanc.</div>
+                <div className="w-32">Responsable</div>
+                <div className="ml-auto"></div>
+            </div>
+            <div className="bg-white max-h-80 overflow-y-auto">
+                {tasks.length === 0 ? (
+                    <div className="p-8 text-center text-slate-400 text-sm italic">
+                        Aucune tâche définie. Commencez par ajouter une phase.
+                    </div>
+                ) : (
+                    tasks.map((task, idx) => (
+                        <div key={task.id} className="group">
+                            {renderRow(task, 0, `${idx + 1}`)}
+                        </div>
+                    ))
+                )}
+            </div>
+            {!isReadOnly && (
+                <div className="p-2 bg-slate-50 border-t border-slate-200">
+                    <button 
+                        type="button" 
+                        onClick={() => handleAdd(null)}
+                        className="flex items-center gap-2 text-sm text-blue-600 font-medium hover:bg-blue-100 px-3 py-1.5 rounded transition-colors w-fit"
+                    >
+                        <PlusCircle size={16} />
+                        Ajouter une phase principale
+                    </button>
+                </div>
+            )}
+        </div>
+    );
+};
+
+
 const ProjectForm: React.FC<ProjectFormProps> = ({ currentProject, setCurrentProject, isReadOnly, handleSave, handleCloseModal }) => {
     const { resources, initiatives, majorRisks, projects } = useData();
     const [isoSearchTerm, setIsoSearchTerm] = useState('');
+    const navigate = useNavigate();
 
     const inputClassName = "w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-slate-50 disabled:text-slate-500 transition-colors";
     const textareaClassName = "w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-slate-50 disabled:text-slate-500 transition-colors resize-none";
@@ -96,6 +304,40 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ currentProject, setCurrentPro
         });
     };
     
+    const handleTasksChange = (newTasks: ProjectTask[]) => {
+        setCurrentProject(prev => {
+            if (!prev) return null;
+            
+            // Calcul automatique des dates du projet basées sur les tâches
+            // Trouver la date min et max parmi toutes les tâches
+            let minStart = prev.projectStartDate ? new Date(prev.projectStartDate).getTime() : Infinity;
+            let maxEnd = prev.projectEndDate ? new Date(prev.projectEndDate).getTime() : 0;
+            let hasTasks = false;
+
+            const traverse = (list: ProjectTask[]) => {
+                list.forEach(t => {
+                    hasTasks = true;
+                    const s = new Date(t.startDate).getTime();
+                    const e = new Date(t.endDate).getTime();
+                    if (s < minStart) minStart = s;
+                    if (e > maxEnd) maxEnd = e;
+                    if (t.children) traverse(t.children);
+                });
+            };
+            traverse(newTasks);
+            
+            let updates: Partial<Project> = { tasks: newTasks };
+            
+            if (hasTasks && minStart !== Infinity && maxEnd !== 0) {
+                // Optionnel : Mise à jour auto des dates du projet si on veut que le projet s'adapte aux tâches
+                // updates.projectStartDate = new Date(minStart).toISOString();
+                // updates.projectEndDate = new Date(maxEnd).toISOString();
+            }
+
+            return { ...prev, ...updates };
+        });
+    };
+
     const handleMilestoneAdd = () => {
         setCurrentProject(prev => {
             if (!prev) return null;
@@ -278,6 +520,26 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ currentProject, setCurrentPro
                     </div>
                 </div>
             </div>
+            
+            {/* Structure du Projet (Tasks / WBS) */}
+            <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg">
+                <div className="flex justify-between items-center mb-3">
+                    <h4 className="font-semibold text-slate-700 flex items-center gap-2"><ListTree size={16} /> Structure du projet (Phases & Tâches)</h4>
+                     {!isReadOnly && currentProject.id && (
+                        <button type="button" onClick={() => { handleCloseModal(); navigate('/projects-gantt'); }} className="text-xs flex items-center gap-1 bg-white border border-slate-300 px-2 py-1 rounded hover:bg-slate-100 text-blue-600 shadow-sm transition-colors">
+                            <Calendar size={14} /> Vue Gantt complète
+                        </button>
+                     )}
+                </div>
+                
+                <WbsEditor 
+                    tasks={currentProject.tasks || []} 
+                    onChange={handleTasksChange} 
+                    isReadOnly={isReadOnly}
+                    resources={resources}
+                />
+            </div>
+
             
             <div className="p-4 bg-slate-50 border border-slate-200 rounded-lg">
                 <div className="flex justify-between items-center mb-3">

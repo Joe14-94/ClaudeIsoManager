@@ -26,6 +26,7 @@ interface AdvancedGanttChartProps {
   projects: Project[];
   resources: Resource[];
   onProjectClick?: (projectId: string) => void;
+  onDataChange?: (updatedProjects: Project[]) => void;
 }
 
 interface GanttRow {
@@ -79,12 +80,14 @@ const formatDateInput = (date: Date): string => {
 
 // --- Composant Principal ---
 
-const AdvancedGanttChart: React.FC<AdvancedGanttChartProps> = ({ projects, resources, onProjectClick }) => {
-  // État local pour permettre l'édition "in-place" sans backend pour la démo
-  const [localProjects, setLocalProjects] = useState<Project[]>(projects);
+const AdvancedGanttChart: React.FC<AdvancedGanttChartProps> = ({ projects, resources, onProjectClick, onDataChange }) => {
+  // État local pour permettre l'édition "in-place"
+  const [localProjects, setLocalProjects] = useState<Project[]>([]);
+  // Snapshot des projets initiaux pour la baseline (ne change jamais après le chargement initial)
+  const [initialProjectsSnapshot, setInitialProjectsSnapshot] = useState<Project[]>([]);
 
   const [zoomIndex, setZoomIndex] = useState(2); // Vue Mois par défaut pour voir large
-  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set(projects.map(p => p.id))); 
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set()); 
   const [tooltip, setTooltip] = useState<{ visible: boolean; x: number; y: number; content: React.ReactNode } | null>(null);
   const [showBaseline, setShowBaseline] = useState(false); // Mode comparaison
   const [showDependencies, setShowDependencies] = useState(true);
@@ -103,10 +106,52 @@ const AdvancedGanttChart: React.FC<AdvancedGanttChartProps> = ({ projects, resou
   const currentZoom = ZOOM_LEVELS[zoomIndex];
   const dayWidth = currentZoom.dayWidth;
 
-  // Synchronisation initiale
+  // Initialisation des données locales et du snapshot
   useEffect(() => {
-      setLocalProjects(projects);
+      if (projects && projects.length > 0) {
+          // Deep copy pour briser les références et permettre l'édition locale sans affecter la baseline
+          const projectsCopy = JSON.parse(JSON.stringify(projects));
+          setLocalProjects(projectsCopy);
+          
+          // Initialisation du snapshot seulement s'il est vide (au premier chargement)
+          // Cela garantit que la baseline reste fixe même si on reçoit des updates
+          setInitialProjectsSnapshot((prev) => prev.length === 0 ? JSON.parse(JSON.stringify(projects)) : prev);
+          
+          // Par défaut, on étend tous les projets
+          setExpandedIds(prev => {
+             if (prev.size === 0) {
+                 return new Set(projects.map(p => p.id));
+             }
+             return prev;
+          });
+      }
   }, [projects]);
+
+  // Mémorisation des dates initiales (Baseline) à partir du SNAPSHOT
+  const initialDatesMap = useMemo(() => {
+      const map = new Map<string, { start: Date, end: Date }>();
+      
+      const traverse = (items: any[]) => {
+          items.forEach(item => {
+              // On gère à la fois les projets (projectStartDate) et les tâches (startDate)
+              const startStr = item.startDate || item.projectStartDate;
+              const endStr = item.endDate || item.projectEndDate;
+
+              if (startStr && endStr) {
+                  map.set(item.id, { 
+                      start: new Date(startStr), 
+                      end: new Date(endStr) 
+                  });
+              }
+              
+              if (item.tasks) traverse(item.tasks);
+              if (item.children) traverse(item.children);
+          });
+      };
+      
+      traverse(initialProjectsSnapshot);
+      return map;
+  }, [initialProjectsSnapshot]);
 
   // Gestion du clic extérieur pour le menu options
   useEffect(() => {
@@ -140,26 +185,10 @@ const AdvancedGanttChart: React.FC<AdvancedGanttChartProps> = ({ projects, resou
 
         const colorClass = getPhaseColor(rootIndex, type);
 
-        // SIMULATION DE DONNÉES DE RÉFÉRENCE (BASELINE) POUR LA DÉMO
-        let baselineStartDate: Date | undefined = undefined;
-        let baselineEndDate: Date | undefined = undefined;
-
-        if (task.name.includes("Phase 3")) {
-            baselineStartDate = new Date(start);
-            baselineStartDate.setDate(start.getDate() - 30);
-            baselineEndDate = new Date(end);
-            baselineEndDate.setDate(end.getDate() - 30);
-        }
-        else if (task.name.includes("Phase 4")) {
-            baselineStartDate = new Date(start);
-            baselineStartDate.setDate(start.getDate() - 45);
-            baselineEndDate = new Date(end);
-            baselineEndDate.setDate(end.getDate() - 45);
-        }
-        else {
-            baselineStartDate = new Date(start);
-            baselineEndDate = new Date(end);
-        }
+        // Récupération de la baseline depuis la map immuable
+        const initialDates = initialDatesMap.get(task.id);
+        const baselineStartDate = initialDates ? initialDates.start : start;
+        const baselineEndDate = initialDates ? initialDates.end : end;
 
         taskRows.push({
             id: task.id,
@@ -206,6 +235,11 @@ const AdvancedGanttChart: React.FC<AdvancedGanttChartProps> = ({ projects, resou
              progress = Math.min(100, Math.round((totalConsumed / totalEngaged) * 100));
         }
 
+        // Récupération de la baseline projet
+        const initialDates = initialDatesMap.get(project.id);
+        const baselineStartDate = initialDates ? initialDates.start : startDate;
+        const baselineEndDate = initialDates ? initialDates.end : endDate;
+
         result.push({
             id: project.id,
             type: 'project',
@@ -213,8 +247,8 @@ const AdvancedGanttChart: React.FC<AdvancedGanttChartProps> = ({ projects, resou
             wbs: wbs,
             startDate,
             endDate,
-            baselineStartDate: new Date(startDate),
-            baselineEndDate: new Date(endDate),
+            baselineStartDate,
+            baselineEndDate,
             duration: Math.round(duration),
             progress,
             level: 0,
@@ -233,7 +267,7 @@ const AdvancedGanttChart: React.FC<AdvancedGanttChartProps> = ({ projects, resou
         }
     });
     return result;
-  }, [localProjects, expandedIds, resources]);
+  }, [localProjects, expandedIds, resources, initialDatesMap]);
 
   const visibleRows = useMemo(() => {
     const visible: GanttRow[] = [];
@@ -306,11 +340,8 @@ const AdvancedGanttChart: React.FC<AdvancedGanttChartProps> = ({ projects, resou
                ticks.push({ x, label: `Q${q} ${current.getFullYear()}`, type: 'major' });
           }
           else if ((currentZoom.mode === 'Month' || currentZoom.mode === 'Week') && current.getDate() === 1) {
-               // Changement ici : Affichage complet du mois
                const label = current.toLocaleString('fr-FR', { month: 'long', year: 'numeric' });
-               // Capitalize first letter
                const formattedLabel = label.charAt(0).toUpperCase() + label.slice(1);
-               
               ticks.push({ x, label: formattedLabel, type: 'major' });
           } 
           else if (currentZoom.mode === 'Week' && current.getDay() === 1) { 
@@ -375,7 +406,6 @@ const AdvancedGanttChart: React.FC<AdvancedGanttChartProps> = ({ projects, resou
     });
   };
   
-  // Sélection de l'élément pour édition
   const handleRowClick = (e: React.MouseEvent, row: GanttRow) => {
       e.stopPropagation();
       setSelectedItem(row);
@@ -387,13 +417,12 @@ const AdvancedGanttChart: React.FC<AdvancedGanttChartProps> = ({ projects, resou
       });
   };
   
-  // Sauvegarde des modifications locales
   const handleSaveEdit = () => {
       if (!selectedItem || !editFormData) return;
 
-      const updatedProjects = [...localProjects];
+      // Créer une copie profonde pour éviter la mutation directe
+      const updatedProjects = JSON.parse(JSON.stringify(localProjects));
       
-      // Fonction récursive pour mettre à jour l'arbre des tâches
       const updateTree = (items: ProjectTask[] | undefined): boolean => {
           if (!items) return false;
           for (let i = 0; i < items.length; i++) {
@@ -412,26 +441,50 @@ const AdvancedGanttChart: React.FC<AdvancedGanttChartProps> = ({ projects, resou
           return false;
       };
 
+      const getMaxEndDate = (tasks: ProjectTask[]): number => {
+        let max = 0;
+        tasks.forEach(t => {
+            const end = new Date(t.endDate).getTime();
+            if (end > max) max = end;
+            if (t.children) {
+                const childMax = getMaxEndDate(t.children);
+                if (childMax > max) max = childMax;
+            }
+        });
+        return max;
+      };
+
       if (selectedItem.type === 'project') {
-          const idx = updatedProjects.findIndex(p => p.id === selectedItem.id);
+          const idx = updatedProjects.findIndex((p: Project) => p.id === selectedItem.id);
           if (idx !== -1) {
               updatedProjects[idx] = {
                   ...updatedProjects[idx],
                   title: editFormData.name,
                   projectStartDate: editFormData.start + 'T00:00:00Z',
                   projectEndDate: editFormData.end + 'T00:00:00Z',
-                  // On ne met pas à jour la progression projet car elle est calculée
               };
           }
       } else {
-          // Recherche dans les tâches de chaque projet
-          updatedProjects.forEach(p => {
-              if (p.tasks) updateTree(p.tasks);
+          updatedProjects.forEach((p: Project) => {
+              if (p.tasks && updateTree(p.tasks)) {
+                  // Si une tâche a été mise à jour, on vérifie si la fin du projet doit être repoussée
+                  const tasksMaxEnd = getMaxEndDate(p.tasks);
+                  const currentProjectEnd = new Date(p.projectEndDate || 0).getTime();
+                  
+                  if (tasksMaxEnd > currentProjectEnd) {
+                      p.projectEndDate = new Date(tasksMaxEnd).toISOString();
+                  }
+              }
           });
       }
       
       setLocalProjects(updatedProjects);
       setSelectedItem(null);
+      
+      // Synchroniser avec le contexte global si le callback est fourni
+      if (onDataChange) {
+          onDataChange(updatedProjects);
+      }
   };
 
   // --- 4. Rendu Graphique ---
@@ -485,18 +538,29 @@ const AdvancedGanttChart: React.FC<AdvancedGanttChartProps> = ({ projects, resou
                   const startY = sourceAnchor.y;
                   const endY = targetAnchor.y;
 
+                  // Détection de conflit : La fin de la source est après le début de la cible
+                  const isConflict = sourceAnchor.row.endDate.getTime() > targetAnchor.row.startDate.getTime();
+                  
                   const midX = (startX + endX) / 2;
-                  const path = `M ${startX} ${startY} C ${midX} ${startY}, ${midX} ${endY}, ${endX} ${endY}`;
+                  // Si conflit (recul), on ajuste la courbe pour qu'elle soit lisible
+                  const controlX = isConflict ? startX + 20 : midX; 
+
+                  const path = `M ${startX} ${startY} C ${controlX} ${startY}, ${controlX} ${endY}, ${endX} ${endY}`;
+
+                  const strokeColor = isConflict ? "#ef4444" : "#94a3b8"; // Rouge si conflit, Gris sinon
+                  const strokeWidth = isConflict ? "2.5" : "1.5";
+                  const opacity = isConflict ? "1" : "0.4";
 
                   paths.push(
                       <path 
                         key={key} 
                         d={path} 
                         fill="none" 
-                        stroke="#94a3b8" 
-                        strokeWidth="1.5" 
-                        markerEnd="url(#arrowhead)"
-                        className="opacity-40 hover:opacity-100 hover:stroke-blue-600 transition-all duration-200"
+                        stroke={strokeColor} 
+                        strokeWidth={strokeWidth} 
+                        markerEnd={isConflict ? "url(#arrowhead-red)" : "url(#arrowhead)"}
+                        className={`transition-all duration-200 hover:stroke-blue-600 hover:opacity-100 hover:stroke-[2.5px] z-10`}
+                        style={{ opacity }}
                       />
                   );
               });
@@ -572,27 +636,50 @@ const AdvancedGanttChart: React.FC<AdvancedGanttChartProps> = ({ projects, resou
                 {visibleRows.map((row) => (
                     <div 
                         key={row.id} 
-                        className={`flex items-center border-b border-slate-100 hover:bg-slate-50 transition-colors group ${row.type === 'project' ? 'bg-slate-50/50' : ''} ${selectedItem?.id === row.id ? 'bg-blue-50' : ''}`} 
+                        className={`flex items-center border-b border-slate-100 hover:bg-slate-50 transition-colors group relative ${row.type === 'project' ? 'bg-slate-50/50' : ''} ${selectedItem?.id === row.id ? 'bg-blue-50' : ''}`} 
                         style={{ height: ROW_HEIGHT }}
                         onClick={(e) => handleRowClick(e, row)}
                     >
-                        <div className="w-16 px-2 text-center text-slate-400 font-mono text-[10px] truncate">{row.wbs}</div>
+                        {/* WBS Column */}
+                        <div className="w-16 px-2 text-center text-slate-400 font-mono text-[10px] truncate flex-shrink-0">{row.wbs}</div>
                         
-                        <div className="flex-grow px-2 flex items-center border-r border-transparent overflow-hidden">
-                             <div style={{ paddingLeft: row.level * 16 }} className="flex items-center overflow-hidden w-full">
-                                 {row.hasChildren ? (
-                                     <button onClick={(e) => { e.stopPropagation(); toggleExpand(row.id); }} className="mr-1.5 p-0.5 hover:bg-slate-200 rounded text-slate-500 transition-colors">
-                                         {row.expanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-                                     </button>
-                                 ) : <div className="w-5 mr-1.5 flex justify-center"><GitCommitVertical size={10} className="text-slate-300"/></div>}
-                                 <span className={`truncate cursor-pointer ${row.type === 'project' ? 'font-bold text-slate-800' : 'text-slate-600'}`} title={row.name}>{row.name}</span>
+                        {/* Name Column with Indentation and Expand Button */}
+                        <div className="flex-grow px-2 flex items-center border-r border-transparent overflow-hidden relative">
+                             <div className="flex items-center flex-1 min-w-0">
+                                 {/* Indentation Spacer */}
+                                 <div style={{ width: row.level * 16, flexShrink: 0 }}></div>
+
+                                 {/* Expand/Collapse Button Container */}
+                                 <div className="w-6 h-6 flex items-center justify-center flex-shrink-0 mr-1 z-50 relative">
+                                     {row.hasChildren ? (
+                                         <button 
+                                            onClick={(e) => { 
+                                                e.preventDefault();
+                                                e.stopPropagation(); 
+                                                toggleExpand(row.id); 
+                                            }} 
+                                            className="w-5 h-5 flex items-center justify-center bg-white hover:bg-blue-50 border border-slate-300 rounded text-slate-600 hover:text-blue-600 transition-colors shadow-sm focus:outline-none cursor-pointer"
+                                            aria-label={row.expanded ? "Replier" : "Déplier"}
+                                         >
+                                             {row.expanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+                                         </button>
+                                     ) : (
+                                        <GitCommitVertical size={14} className="text-slate-300 opacity-50"/>
+                                     )}
+                                 </div>
+                                 
+                                 {/* Project/Task Name */}
+                                 <span className={`truncate cursor-pointer pl-1 ${row.type === 'project' ? 'font-bold text-slate-800' : 'text-slate-600'}`} title={row.name}>
+                                     {row.name}
+                                 </span>
                              </div>
                         </div>
 
-                        <div className="w-20 px-2 text-center text-slate-500 text-[10px] font-mono">
+                        {/* Date Columns */}
+                        <div className="w-20 px-2 text-center text-slate-500 text-[10px] font-mono flex-shrink-0">
                             {formatDateFR(row.startDate)}
                         </div>
-                        <div className="w-20 px-2 text-center text-slate-500 text-[10px] font-mono">
+                        <div className="w-20 px-2 text-center text-slate-500 text-[10px] font-mono flex-shrink-0">
                             {formatDateFR(row.endDate)}
                         </div>
                     </div>
@@ -607,7 +694,7 @@ const AdvancedGanttChart: React.FC<AdvancedGanttChartProps> = ({ projects, resou
                 <div className="relative h-full" style={{ width: totalWidth }}>
                     {headerTicks.filter(t => t.type === 'major').map((tick, i) => (
                         <div key={`maj-${i}`} className="absolute bottom-0 top-0 border-l border-slate-200 flex items-center justify-center px-2" style={{ left: tick.x }}>
-                            <span className="font-bold text-slate-400 text-[10px] uppercase tracking-wider">{tick.label}</span>
+                            <span className="font-bold text-slate-400 text-[10px] uppercase tracking-wider whitespace-nowrap">{tick.label}</span>
                         </div>
                     ))}
                     {/* Today Indicator in Header */}
@@ -649,6 +736,9 @@ const AdvancedGanttChart: React.FC<AdvancedGanttChartProps> = ({ projects, resou
                             <marker id="arrowhead" markerWidth="5" markerHeight="5" refX="5" refY="2.5" orient="auto">
                                 <path d="M0,0 L5,2.5 L0,5" fill="#94a3b8" />
                             </marker>
+                            <marker id="arrowhead-red" markerWidth="5" markerHeight="5" refX="5" refY="2.5" orient="auto">
+                                <path d="M0,0 L5,2.5 L0,5" fill="#ef4444" />
+                            </marker>
                         </defs>
                         {renderDependencies()}
                     </svg>
@@ -666,7 +756,8 @@ const AdvancedGanttChart: React.FC<AdvancedGanttChartProps> = ({ projects, resou
                         if (showBaseline && row.baselineStartDate && row.baselineEndDate) {
                             baselineX = getXPosition(row.baselineStartDate);
                             baselineWidth = Math.max(getXPosition(row.baselineEndDate) - baselineX, Math.max(2, dayWidth));
-                            isDelayed = row.endDate > row.baselineEndDate;
+                            // On considère qu'il y a retard si la date de fin réelle dépasse la date de fin initiale
+                            isDelayed = row.endDate.getTime() > row.baselineEndDate.getTime();
                         }
 
                         return (
