@@ -32,7 +32,6 @@ export interface WidgetConfig {
 }
 
 export const WIDGET_REGISTRY: WidgetConfig[] = [
-  // Stat cards
   {
     id: 'totalActivities',
     name: 'Stat : Activités totales',
@@ -57,11 +56,10 @@ export const WIDGET_REGISTRY: WidgetConfig[] = [
     defaultLayout: { w: 3, h: 2, minW: 2, minH: 2 },
     props: { type: 'coveredMeasures' },
   },
-   // Nouveaux indicateurs KPI
   {
     id: 'scheduleSlippage',
     name: 'KPI : Dérive calendrier',
-    description: "Calcule l'écart moyen en jours entre la date de fin planifiée et la date de fin réelle/prévisionnelle des projets. Données utilisées : `projectEndDate`, `goLiveDate`.",
+    description: "Calcule l'écart moyen en jours entre la date de fin planifiée et la date de fin réelle/prévisionnelle des projets.",
     component: KpiCardWidget,
     defaultLayout: { w: 3, h: 2, minW: 2, minH: 2 },
     props: { type: 'scheduleSlippage' },
@@ -69,24 +67,23 @@ export const WIDGET_REGISTRY: WidgetConfig[] = [
   {
     id: 'budgetForecast',
     name: 'KPI : Atterrissage budgétaire',
-    description: "Estime le coût final moyen des projets en se basant sur la performance actuelle (rapport réalisé/engagé). Données utilisées : `budgetApproved`, `completedPV`, `budgetCommitted`.",
+    description: "Estime le coût final moyen des projets en se basant sur la performance actuelle.",
     component: KpiCardWidget,
     defaultLayout: { w: 3, h: 2, minW: 2, minH: 2 },
     props: { type: 'budgetForecast' },
   },
   {
     id: 'avgActivityAge',
-    name: 'KPI : Âge moyen des activités "en cours"',
-    description: "Calcule la durée moyenne en jours depuis laquelle les activités sont au statut 'En cours', pour identifier les points de blocage. Données utilisées : `activities.status`, `activities.startDate`.",
+    name: 'KPI : Âge moyen activités "en cours"',
+    description: "Calcule la durée moyenne en jours depuis laquelle les activités sont au statut 'En cours'.",
     component: KpiCardWidget,
     defaultLayout: { w: 3, h: 2, minW: 2, minH: 2 },
     props: { type: 'avgActivityAge' },
   },
-  // Charts & complex widgets
   {
     id: 'projectSCurve',
     name: 'Courbe en S (Finance)',
-    description: "Graphique comparant le budget planifié (linéaire) au budget engagé et réalisé au fil du temps pour un projet donné.",
+    description: "Graphique comparant le budget planifié (linéaire) au budget engagé et réalisé au fil du temps.",
     component: ProjectSCurveWidget,
     defaultLayout: { w: 6, h: 5, minW: 4, minH: 4 },
   },
@@ -114,27 +111,27 @@ export const WIDGET_REGISTRY: WidgetConfig[] = [
   {
     id: 'consolidatedWorkload',
     name: 'Synthèse des Charges (J/H)',
-    description: 'Affiche un tableau consolidé des charges MOA, MOE et Totales (demandées et consommées) avec gestion de la ligne Totale.',
+    description: 'Affiche un tableau consolidé des charges MOA, MOE et Totales avec gestion de la ligne Totale.',
     component: ConsolidatedWorkloadWidget,
     defaultLayout: { w: 12, h: 4, minW: 6, minH: 4 },
   },
   {
     id: 'consolidatedBudget',
     name: 'Synthèse Budgétaire (€)',
-    description: 'Affiche un tableau consolidé complet des budgets (Demandé, Accordé, Engagé, Réalisé) avec gestion de la ligne Totale.',
+    description: 'Affiche un tableau consolidé complet des budgets avec gestion de la ligne Totale.',
     component: ConsolidatedBudgetWidget,
     defaultLayout: { w: 12, h: 4, minW: 6, minH: 4 },
   },
   {
     id: 'strategicAlignment',
-    name: 'Graphique : Alignement Activités par Orientation',
-    description: "Répartit la charge de travail (J/H) et le budget estimé (€) des activités par orientation stratégique.",
+    name: 'Graphique : Alignement Activités/Orientation',
+    description: "Répartit la charge de travail (J/H) des activités par orientation stratégique.",
     component: StrategicAlignmentWidget,
     defaultLayout: { w: 6, h: 5, minW: 5, minH: 4 },
   },
   {
     id: 'projectInitiativeAlignment',
-    name: 'Graphique : Alignement Projets par Initiative',
+    name: 'Graphique : Alignement Projets/Initiative',
     description: "Répartit la charge de travail engagée (J/H) des projets par initiative.",
     component: ProjectInitiativeAlignmentWidget,
     defaultLayout: { w: 6, h: 5, minW: 5, minH: 4 },
@@ -171,7 +168,7 @@ export const WIDGET_REGISTRY: WidgetConfig[] = [
     defaultLayout: { w: 12, h: 5, minW: 6, minH: 4 },
     props: {},
   },
-    {
+  {
     id: 'projectBudgetSummary',
     name: 'Résumé budgétaire (Simple)',
     description: 'Synthèse simplifiée des budgets demandés, accordés et engagés.',

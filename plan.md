@@ -1,31 +1,39 @@
+
 # Plan d'évolution de l'application ISO Manager
 
 ## 1. Pilotage Opérationnel & Suivi
 
-*   **Météo des Projets (Flash Report) :** [PRIORITÉ 1]
+*   **Météo des Projets (Flash Report) :** [FAIT]
     *   Permettre la saisie d'une météo (Soleil, Nuageux, Pluie, Orage) et d'un commentaire flash.
-    *   Intérêt : Reporting qualitatif pour les CoPil.
-*   **Gestion des Jalons Clés (Milestones) :** [PRIORITÉ 2]
+*   **Gestion des Jalons Clés (Milestones) :** [FAIT]
     *   Ajout de dates clés intermédiaires au sein d'un projet.
     *   Visualisation sur la Timeline.
-*   **Gestion des Dépendances :**
+*   **Gestion des Dépendances :** [FAIT]
     *   Lier les projets entre eux (Fin-Début).
     *   Identification du chemin critique.
+*   **Diagramme de Gantt Avancé :** [EN COURS]
+    *   **Objectif :** Visualisation granulaire des tâches et sous-tâches au sein des projets.
+    *   **Fonctionnalités :**
+        *   Vue hiérarchique (Projet > Phase > Tâche).
+        *   Visualisation des dépendances (liens entre tâches).
+        *   Zoom temporel (Mois / Semaine / Jour).
+        *   Indicateurs de progression visuels.
+        *   Chemin critique intra-projet.
+    *   **UX/Design :** Interface fluide "Split View" (Liste à gauche, Graphique à droite), connecteurs courbes (Bézier), palette de couleurs moderne et apaisante.
 
 ## 2. Gestion Financière Avancée
 
-*   **Courbe en S (S-Curve) :**
+*   **Courbe en S (S-Curve) :** [FAIT]
     *   Graphique comparatif Budget Planifié vs Réalisé cumulé.
-    *   Détection des dérives budgétaires.
+*   **Jauges Budgétaires :** [FAIT]
+    *   Suivi consommation MOA/MOE.
 
 ## 3. Gestion des Risques & Conformité
 
-*   **Score de Criticité Projet (Scoring) :** [PRIORITÉ 3]
+*   **Score de Criticité Projet (Scoring) :** [FAIT]
     *   Calcul automatique d'un score (ex: Impact * Urgence / Effort).
-    *   Aide à l'arbitrage budgétaire.
-*   **Matrice de Couverture des Risques :**
+*   **Matrice de Couverture des Risques :** [FAIT]
     *   Croisement Risques Majeurs vs Projets.
-    *   Identification des zones de risque non couvertes.
 
 ## 4. Collaboration & Gestion des Ressources
 

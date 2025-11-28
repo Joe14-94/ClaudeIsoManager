@@ -1,5 +1,6 @@
 
-import React, { useMemo, useRef, useEffect, useCallback } from 'react';
+import React, { useMemo, useRef, useEffect, useCallback, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Project } from '../../types';
 import { PROJECT_STATUS_HEX_COLORS } from '../../constants';
 // FIX: Replace monolithic d3 import with specific named imports to resolve type errors.
@@ -16,6 +17,7 @@ const BASE_MONTH_WIDTH = 120; // px
 
 const ProjectTimeline: React.FC<ProjectTimelineProps> = ({ projects, zoomLevel = 1, onProjectClick, scrollContainerRef }) => {
   const initialScrollDone = useRef(false);
+  const [tooltip, setTooltip] = useState<{ visible: boolean; x: number; y: number; content: React.ReactNode } | null>(null);
   
   const monthWidth = useMemo(() => BASE_MONTH_WIDTH * zoomLevel, [zoomLevel]);
 
@@ -86,6 +88,54 @@ const ProjectTimeline: React.FC<ProjectTimelineProps> = ({ projects, zoomLevel =
     }
   }, [months, monthWidth, getPositionForDate, scrollContainerRef]);
 
+  const handleMouseMove = (e: React.MouseEvent, project: any) => {
+    const sortedMilestones = (project.milestones || []).sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    
+    const tooltipContent = (
+        <div className="p-2 text-xs text-slate-800 bg-white border border-slate-200 rounded-md shadow-xl max-w-xs">
+            <div className="font-bold text-sm mb-1">{project.title} <span className="font-normal text-slate-500">({project.status})</span></div>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-1 mb-2">
+                <div>Début: <span className="font-mono">{project.projectStartDate.toLocaleDateString('fr-FR')}</span></div>
+                <div>Fin: <span className="font-mono">{project.projectEndDate.toLocaleDateString('fr-FR')}</span></div>
+            </div>
+            {sortedMilestones.length > 0 && (
+                <div className="border-t border-slate-100 pt-2 mt-1">
+                    <div className="font-semibold mb-1 text-slate-600">Jalons :</div>
+                    <ul className="space-y-1">
+                        {sortedMilestones.map((ms: any) => {
+                            const isDelayed = ms.initialDate && new Date(ms.date).getTime() > new Date(ms.initialDate).getTime();
+                            return (
+                                <li key={ms.id} className="flex items-start gap-1">
+                                    <span>{ms.completed ? '✅' : isDelayed ? '⚠️' : '📅'}</span>
+                                    <div>
+                                        <span className="font-mono">{new Date(ms.date).toLocaleDateString('fr-FR')}</span>: {ms.label}
+                                        {ms.history && ms.history.length > 0 && (
+                                            <div className="text-[10px] text-slate-400 pl-1 border-l-2 border-slate-200 ml-1">
+                                                ↪️ Modifié {ms.history.length} fois
+                                            </div>
+                                        )}
+                                    </div>
+                                </li>
+                            );
+                        })}
+                    </ul>
+                </div>
+            )}
+        </div>
+    );
+
+    setTooltip({
+        visible: true,
+        x: e.clientX + 15,
+        y: e.clientY + 15,
+        content: tooltipContent
+    });
+  };
+
+  const handleMouseLeave = () => {
+    setTooltip(null);
+  };
+
 
   if (timedProjects.length === 0) {
     return <div className="flex items-center justify-center h-full text-slate-500">Aucun projet avec des dates planifiées à afficher.</div>;
@@ -126,22 +176,6 @@ const ProjectTimeline: React.FC<ProjectTimelineProps> = ({ projects, zoomLevel =
                 const right = getPositionForDate(project.projectEndDate, true);
                 const width = Math.max(right - left, 2);
                 
-                // Préparation du texte de l'infobulle avec les jalons
-                const sortedMilestones = (project.milestones || []).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-                
-                let tooltipText = `
-                    ${project.title} (${project.status})
-                    Début: ${project.projectStartDate.toLocaleDateString('fr-FR')}
-                    Fin: ${project.projectEndDate.toLocaleDateString('fr-FR')}
-                `;
-
-                if (sortedMilestones.length > 0) {
-                    tooltipText += `\n\n--- Jalons ---`;
-                    sortedMilestones.forEach(ms => {
-                        tooltipText += `\n${new Date(ms.date).toLocaleDateString('fr-FR')}: ${ms.label} ${ms.completed ? '✅' : ''}`;
-                    });
-                }
-
                 return (
                     <div
                         key={project.id}
@@ -152,6 +186,8 @@ const ProjectTimeline: React.FC<ProjectTimelineProps> = ({ projects, zoomLevel =
                             width: `${width}px`,
                         }}
                         onClick={() => onProjectClick && onProjectClick(project.id)}
+                        onMouseMove={(e) => handleMouseMove(e, project)}
+                        onMouseLeave={handleMouseLeave}
                     >
                         <div 
                             className="w-full h-full rounded-md px-2 overflow-hidden whitespace-nowrap text-sm flex items-center transition-all duration-200 group-hover:ring-2 group-hover:ring-blue-500 group-hover:z-10 relative"
@@ -161,28 +197,69 @@ const ProjectTimeline: React.FC<ProjectTimelineProps> = ({ projects, zoomLevel =
                             {/* Milestones indicators on the bar */}
                             {project.milestones?.map(ms => {
                                 const msDate = new Date(ms.date);
+                                const msInitialDate = ms.initialDate ? new Date(ms.initialDate) : msDate;
+                                
+                                // Vérifier si le jalon est dans la plage de temps visible
                                 if (msDate >= project.projectStartDate! && msDate <= project.projectEndDate!) {
                                     const msPos = getPositionForDate(msDate, false) - left;
+                                    const msInitialPos = getPositionForDate(msInitialDate, false) - left;
+                                    
+                                    const isDelayed = msDate.getTime() > msInitialDate.getTime();
+                                    const isAdvance = msDate.getTime() < msInitialDate.getTime();
+                                    const hasShift = isDelayed || isAdvance;
+
                                     return (
-                                        <div 
-                                            key={ms.id}
-                                            className={`absolute top-1/2 -translate-y-1/2 w-3 h-3 rotate-45 border-2 z-20 transition-transform hover:scale-150 ${ms.completed ? 'bg-green-500 border-white' : 'bg-white border-slate-600'}`}
-                                            style={{ left: `${msPos}px` }}
-                                            title={`${ms.label} (${msDate.toLocaleDateString()})`}
-                                        />
+                                        <React.Fragment key={ms.id}>
+                                            {/* Connecteur si décalage */}
+                                            {hasShift && (
+                                                <>
+                                                    <div 
+                                                        className="absolute top-1/2 h-[1px] bg-slate-500 border-t-2 border-dotted z-10 opacity-60"
+                                                        style={{ 
+                                                            left: `${Math.min(msPos, msInitialPos)}px`, 
+                                                            width: `${Math.abs(msPos - msInitialPos)}px`
+                                                        }}
+                                                    />
+                                                    {/* Jalon Fantôme (Initial) */}
+                                                    <div 
+                                                        className="absolute top-1/2 -translate-y-1/2 w-2 h-2 rotate-45 border border-slate-500 bg-slate-300 z-10 opacity-60"
+                                                        style={{ left: `${msInitialPos}px` }}
+                                                    />
+                                                </>
+                                            )}
+                                            
+                                            {/* Jalon Actuel */}
+                                            <div 
+                                                className={`absolute top-1/2 -translate-y-1/2 w-3 h-3 rotate-45 border-2 z-20 transition-transform group-hover:scale-125 ${ms.completed ? 'bg-green-500 border-white' : isDelayed ? 'bg-red-500 border-white' : 'bg-blue-500 border-white'}`}
+                                                style={{ left: `${msPos}px` }}
+                                            />
+                                        </React.Fragment>
                                     );
                                 }
                                 return null;
                             })}
-                        </div>
-                        <div className="absolute bottom-full mb-2 w-max max-w-xs p-2 text-xs text-slate-800 bg-white border border-slate-200 rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-30 whitespace-pre-wrap">
-                            {tooltipText.trim()}
                         </div>
                     </div>
                 );
             })}
         </div>
       </div>
+      
+      {/* Portal for Tooltip to escape overflow:hidden contexts */}
+      {tooltip && tooltip.visible && createPortal(
+          <div 
+            style={{ 
+                position: 'fixed', 
+                top: tooltip.y, 
+                left: tooltip.x, 
+                pointerEvents: 'none',
+                zIndex: 9999 // Ensure tooltip is on top of everything
+            }}
+          >
+            {tooltip.content}
+          </div>,
+          document.body
+      )}
     </div>
   );
 };

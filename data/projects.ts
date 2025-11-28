@@ -1,5 +1,5 @@
 
-import { Project, ProjectStatus, TShirtSize, ProjectCategory, ProjectWeather } from '../types';
+import { Project, ProjectStatus, TShirtSize, ProjectCategory, ProjectWeather, TaskStatus } from '../types';
 
 export const projects: Project[] = [
   {
@@ -20,7 +20,7 @@ export const projects: Project[] = [
     updatedAt: '2025-11-01T00:00:00Z',
     initiativeId: 'init-demo-A',
     isoMeasures: ['8.7', '8.16'],
-    predecessorIds: ['proj-demo-6'], // Dépend du durcissement AD
+    predecessorIds: [], 
     
     // Données financières
     budgetRequested: 150000,
@@ -30,10 +30,10 @@ export const projects: Project[] = [
     forecastedPurchaseOrders: 40000,
 
     // Charges (Simplifiées Int/Ext)
-    internalWorkloadRequested: 100, // (Anciennement MOA Int + MOE Int)
+    internalWorkloadRequested: 100, 
     internalWorkloadEngaged: 80,
     internalWorkloadConsumed: 57,
-    externalWorkloadRequested: 50, // (Anciennement MOA Ext + MOE Ext)
+    externalWorkloadRequested: 50, 
     externalWorkloadEngaged: 50,
     externalWorkloadConsumed: 30,
 
@@ -46,10 +46,46 @@ export const projects: Project[] = [
     priorityScore: 8.3, // (5*5)/3
     majorRiskIds: ['risk-ransomware', 'risk-insider', 'risk-availability'],
     milestones: [
-        { id: 'm1', label: 'Kick-off', date: '2025-06-01T00:00:00Z', completed: true },
-        { id: 'm2', label: 'Validation Architecture', date: '2025-07-15T00:00:00Z', completed: true },
-        { id: 'm3', label: 'Fin du Pilote (500 postes)', date: '2025-10-30T00:00:00Z', completed: true },
-        { id: 'm4', label: 'Déploiement Général', date: '2026-03-01T00:00:00Z', completed: false },
+        { id: 'm1', label: 'Kick-off', date: '2025-06-01T00:00:00Z', initialDate: '2025-06-01T00:00:00Z', completed: true, history: [] },
+        { id: 'm2', label: 'Validation Architecture', date: '2025-07-15T00:00:00Z', initialDate: '2025-07-01T00:00:00Z', completed: true, history: [{ updatedAt: '2025-06-20T10:00:00Z', previousDate: '2025-07-01T00:00:00Z', newDate: '2025-07-15T00:00:00Z'}] },
+        { id: 'm3', label: 'Fin du Pilote (500 postes)', date: '2025-10-30T00:00:00Z', initialDate: '2025-10-30T00:00:00Z', completed: true, history: [] },
+        { id: 'm4', label: 'Déploiement Général', date: '2026-03-01T00:00:00Z', initialDate: '2026-01-01T00:00:00Z', completed: false, history: [{ updatedAt: '2025-09-15T14:00:00Z', previousDate: '2026-01-01T00:00:00Z', newDate: '2026-03-01T00:00:00Z'}] },
+    ],
+    // Structure détaillée pour le Gantt
+    tasks: [
+      {
+        id: 't1', name: 'Phase 1 : Cadrage & Architecture', startDate: '2025-06-01T00:00:00Z', endDate: '2025-07-15T00:00:00Z', progress: 100, status: TaskStatus.DONE,
+        children: [
+          { id: 't1-1', name: 'Ateliers de cadrage', startDate: '2025-06-01T00:00:00Z', endDate: '2025-06-15T00:00:00Z', progress: 100, status: TaskStatus.DONE, assigneeId: 'res-demo-1' },
+          { id: 't1-2', name: 'Définition architecture technique', startDate: '2025-06-16T00:00:00Z', endDate: '2025-06-30T00:00:00Z', progress: 100, status: TaskStatus.DONE, assigneeId: 'res-demo-4', dependencyIds: ['t1-1'] },
+          { id: 't1-3', name: 'Validation DAT', startDate: '2025-07-01T00:00:00Z', endDate: '2025-07-15T00:00:00Z', progress: 100, status: TaskStatus.DONE, assigneeId: 'res-demo-3', dependencyIds: ['t1-2'] },
+          { id: 't1-m', name: 'Jalon : Architecture Validée', startDate: '2025-07-15T00:00:00Z', endDate: '2025-07-15T00:00:00Z', progress: 100, status: TaskStatus.DONE, dependencyIds: ['t1-3'] },
+        ]
+      },
+      {
+        id: 't2', name: 'Phase 2 : Pilote', startDate: '2025-07-16T00:00:00Z', endDate: '2025-10-30T00:00:00Z', progress: 100, status: TaskStatus.DONE, dependencyIds: ['t1'],
+        children: [
+          { id: 't2-1', name: 'Configuration Tenant', startDate: '2025-07-16T00:00:00Z', endDate: '2025-07-30T00:00:00Z', progress: 100, status: TaskStatus.DONE, assigneeId: 'res-demo-1' },
+          { id: 't2-2', name: 'Déploiement groupe IT', startDate: '2025-08-01T00:00:00Z', endDate: '2025-08-30T00:00:00Z', progress: 100, status: TaskStatus.DONE, assigneeId: 'res-demo-4', dependencyIds: ['t2-1'] },
+          { id: 't2-3', name: 'Déploiement périmètre Pilote (500)', startDate: '2025-09-01T00:00:00Z', endDate: '2025-10-30T00:00:00Z', progress: 100, status: TaskStatus.DONE, assigneeId: 'res-demo-6', dependencyIds: ['t2-2'] },
+          { id: 't2-m', name: 'Jalon : Go / NoGo Généralisation', startDate: '2025-10-30T00:00:00Z', endDate: '2025-10-30T00:00:00Z', progress: 100, status: TaskStatus.DONE, dependencyIds: ['t2-3'] },
+        ]
+      },
+      {
+        id: 't3', name: 'Phase 3 : Déploiement Général', startDate: '2025-11-01T00:00:00Z', endDate: '2026-03-01T00:00:00Z', progress: 15, status: TaskStatus.IN_PROGRESS, dependencyIds: ['t2'],
+        children: [
+          { id: 't3-1', name: 'Vague 1 : Siège (1500)', startDate: '2025-11-01T00:00:00Z', endDate: '2025-12-31T00:00:00Z', progress: 40, status: TaskStatus.IN_PROGRESS, assigneeId: 'res-demo-6' },
+          { id: 't3-2', name: 'Vague 2 : Filiales France', startDate: '2026-01-01T00:00:00Z', endDate: '2026-02-15T00:00:00Z', progress: 0, status: TaskStatus.TODO, assigneeId: 'res-demo-6', dependencyIds: ['t3-1'] },
+          { id: 't3-3', name: 'Vague 3 : International', startDate: '2026-02-01T00:00:00Z', endDate: '2026-03-01T00:00:00Z', progress: 0, status: TaskStatus.TODO, assigneeId: 'res-demo-4', dependencyIds: ['t3-2'] },
+        ]
+      },
+      {
+        id: 't4', name: 'Phase 4 : RUN & MCO', startDate: '2026-03-01T00:00:00Z', endDate: '2026-06-30T00:00:00Z', progress: 0, status: TaskStatus.TODO, dependencyIds: ['t3'],
+        children: [
+          { id: 't4-1', name: 'Formation équipe N1', startDate: '2026-03-01T00:00:00Z', endDate: '2026-03-15T00:00:00Z', progress: 0, status: TaskStatus.TODO, assigneeId: 'res-demo-1' },
+          { id: 't4-2', name: 'Transfert de compétences', startDate: '2026-03-15T00:00:00Z', endDate: '2026-04-15T00:00:00Z', progress: 0, status: TaskStatus.TODO, assigneeId: 'res-demo-1', dependencyIds: ['t4-1'] },
+        ]
+      }
     ],
     // Simulation d'historique pour la Courbe en S
     fdrHistory: [
@@ -95,6 +131,7 @@ export const projects: Project[] = [
     riskCoverage: 3,
     effort: 5,
     priorityScore: 3.0,
+    milestones: [],
   },
    {
     id: 'proj-demo-3',
@@ -115,7 +152,7 @@ export const projects: Project[] = [
     isoMeasures: ['5.12', '5.13', '8.11'],
     budgetRequested: 80000,
     budgetApproved: 60000,
-    predecessorIds: ['proj-demo-2'], // Dépend de la migration cloud
+    predecessorIds: [], // Dépendance supprimée
     
     weather: ProjectWeather.CLOUDY,
     weatherDescription: "Retard sur la livraison de l'éditeur. POC décalé de 2 semaines.",
@@ -125,8 +162,8 @@ export const projects: Project[] = [
     effort: 3,
     priorityScore: 5.3,
     milestones: [
-        { id: 'm3-1', label: 'Choix de la solution', date: '2025-09-15T00:00:00Z', completed: true },
-        { id: 'm3-2', label: 'Lancement POC', date: '2025-11-15T00:00:00Z', completed: false },
+        { id: 'm3-1', label: 'Choix de la solution', date: '2025-09-15T00:00:00Z', initialDate: '2025-09-15T00:00:00Z', completed: true },
+        { id: 'm3-2', label: 'Lancement POC', date: '2025-11-15T00:00:00Z', initialDate: '2025-11-01T00:00:00Z', completed: false, dependencyIds: ['m3-1'] },
     ]
   },
   {
@@ -144,13 +181,14 @@ export const projects: Project[] = [
     updatedAt: '2025-10-01T00:00:00Z',
     initiativeId: 'init-demo-D',
     isoMeasures: ['5.16', '5.17', '5.18', '8.5'],
-    predecessorIds: ['proj-demo-6', 'proj-demo-3'], // Dépend du durcissement AD et de la classification
+    predecessorIds: [], // Dépendances supprimées
     
     strategicImpact: 5,
     riskCoverage: 5,
     effort: 5,
     priorityScore: 5.0,
-    majorRiskIds: ['risk-insider', 'risk-fraud']
+    majorRiskIds: ['risk-insider', 'risk-fraud'],
+    milestones: [],
   },
   {
     id: 'proj-demo-5',
@@ -181,7 +219,8 @@ export const projects: Project[] = [
     strategicImpact: 3,
     riskCoverage: 2,
     effort: 1,
-    priorityScore: 30.0, // Score aberrant car effort très faible mais impact fort (formule simple)
+    priorityScore: 30.0,
+    milestones: [],
   },
   {
     id: 'proj-demo-6',
@@ -209,6 +248,7 @@ export const projects: Project[] = [
     riskCoverage: 5,
     effort: 4,
     priorityScore: 6.3,
+    milestones: [],
   },
   {
     id: 'proj-demo-7',
@@ -228,7 +268,7 @@ export const projects: Project[] = [
     isoMeasures: ['8.16', '5.26'],
     budgetApproved: 300000,
     budgetCommitted: 280000,
-    predecessorIds: ['proj-demo-2'], // Dépend de la migration cloud
+    predecessorIds: [], // Dépendance supprimée
     
     weather: ProjectWeather.SUNNY,
     weatherDescription: "Contrat signé avec le MSSP. Phase de transition en cours.",
@@ -237,6 +277,7 @@ export const projects: Project[] = [
     riskCoverage: 5,
     effort: 3,
     priorityScore: 8.3,
+    milestones: [],
   },
    {
     id: 'proj-demo-8',
@@ -264,5 +305,6 @@ export const projects: Project[] = [
     riskCoverage: 3,
     effort: 1,
     priorityScore: 45.0, // Petit effort, bon impact
+    milestones: [],
   }
 ];

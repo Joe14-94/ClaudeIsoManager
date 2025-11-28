@@ -19,8 +19,8 @@ export interface IsoMeasureDetails {
     type: string[];
     properties: string[];
     concepts: string[];
-    processes: string[]; // Capacités Opérationnelles
-    functionalProcess: string; // Processus Fonctionnels (12)
+    processes: string[];
+    functionalProcess: string;
     domains: string[];
     measure: string;
     objective: string;
@@ -58,7 +58,7 @@ export interface Initiative {
   code: string;
   label: string;
   description?: string;
-  isoMeasureIds: string[]; // Array of ISO measure codes
+  isoMeasureIds: string[];
   createdAt: DateTime;
 }
 
@@ -111,11 +111,10 @@ export interface Objective {
   label: string;
   description?: string;
   targetDate?: DateTime;
-  chantierId: string; // Lien direct vers le chantier parent
-  strategicOrientations: string[]; // Array of IDs
+  chantierId: string;
+  strategicOrientations: string[];
   createdAt: DateTime;
   
-  // Enriched fields
   type?: string;
   priorite?: string;
   complexite?: string;
@@ -163,10 +162,10 @@ export interface Activity {
   priority: Priority;
   activityType: ActivityType;
   securityDomain: SecurityDomain;
-  isoMeasures: string[]; // Array of codes
-  strategicOrientations: string[]; // Array of IDs
-  objectives: string[]; // Array of IDs
-  owner?: string; // Resource ID
+  isoMeasures: string[];
+  strategicOrientations: string[];
+  objectives: string[];
+  owner?: string;
   startDate?: DateTime;
   endDatePlanned?: DateTime;
   workloadInPersonDays?: number;
@@ -175,7 +174,6 @@ export interface Activity {
   functionalProcessId: string;
   isExternalService?: boolean;
   
-  // Budget fields
   budgetRequested?: number;
   budgetApproved?: number;
   budgetCommitted?: number;
@@ -221,11 +219,20 @@ export enum ProjectWeather {
   STORM = "Orage"
 }
 
+export interface MilestoneHistoryEntry {
+    updatedAt: DateTime;
+    previousDate: DateTime;
+    newDate: DateTime;
+}
+
 export interface ProjectMilestone {
   id: string;
   label: string;
   date: DateTime;
+  initialDate: DateTime;
   completed: boolean;
+  dependencyIds?: string[];
+  history?: MilestoneHistoryEntry[];
 }
 
 export interface FdrHistoryEntry {
@@ -236,20 +243,40 @@ export interface FdrHistoryEntry {
   data: Partial<Project>;
 }
 
+// Nouvelles interfaces pour le Gantt détaillé
+export enum TaskStatus {
+  TODO = "A faire",
+  IN_PROGRESS = "En cours",
+  DONE = "Terminé",
+  BLOCKED = "Bloqué"
+}
+
+export interface ProjectTask {
+  id: string;
+  name: string;
+  startDate: DateTime;
+  endDate: DateTime;
+  progress: number; // 0-100
+  status: TaskStatus;
+  assigneeId?: string;
+  dependencyIds?: string[]; // IDs des tâches dont celle-ci dépend (Fin-Début)
+  children?: ProjectTask[]; // Pour les sous-tâches
+}
+
 export interface Project {
   id: string;
-  projectId: string; // e.g., P25-123
+  projectId: string;
   title: string;
   description?: string;
   status: ProjectStatus;
   tShirtSize: TShirtSize;
   category: ProjectCategory;
-  projectManagerMOA?: string; // Resource ID
-  projectManagerMOE?: string; // Resource ID
+  projectManagerMOA?: string;
+  projectManagerMOE?: string;
   projectStartDate?: DateTime;
   projectEndDate?: DateTime;
-  goLiveDate?: DateTime; // Date de passage en NO
-  endDate?: DateTime; // Date de passage en NF
+  goLiveDate?: DateTime;
+  endDate?: DateTime;
   isTop30: boolean;
   createdAt: DateTime;
   updatedAt: DateTime;
@@ -264,32 +291,33 @@ export interface Project {
   milestones?: ProjectMilestone[];
   
   // Risques Majeurs
-  majorRiskIds?: string[]; // IDs of MajorRisk
+  majorRiskIds?: string[];
 
   // Gestion des dépendances
-  predecessorIds?: string[]; // IDs of projects this project depends on (End-to-Start)
+  predecessorIds?: string[];
+
+  // Tâches détaillées pour le Gantt
+  tasks?: ProjectTask[];
 
   // Scoring d'arbitrage
   strategicImpact?: number; // 1-5
   riskCoverage?: number; // 1-5
   effort?: number; // 1-5
-  priorityScore?: number; // Calculé
+  priorityScore?: number;
 
-  // History of FDR imports
+  // Historique FDR
   fdrHistory?: FdrHistoryEntry[];
 
-  // Workload fields (Simplified: Internal vs External)
-  // Internal (derived from history)
+  // Charges (Interne/Externe)
   internalWorkloadRequested?: number;
   internalWorkloadEngaged?: number;
   internalWorkloadConsumed?: number;
   
-  // External (derived from history)
   externalWorkloadRequested?: number;
   externalWorkloadEngaged?: number;
   externalWorkloadConsumed?: number;
 
-  // Budget fields (Derived from latest history)
+  // Budget
   budgetRequested?: number;
   budgetApproved?: number;
   budgetCommitted?: number;
@@ -325,5 +353,5 @@ export interface Notification {
     state: any;
   };
   createdAt: DateTime;
-  entityId: string; // ID of the activity or project
+  entityId: string;
 }

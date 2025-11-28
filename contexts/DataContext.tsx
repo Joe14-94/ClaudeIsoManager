@@ -42,18 +42,17 @@ interface DataContextType {
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
 
-// Version pour les données de référence. Incrémenter cette version forcera le rechargement.
 const REFERENCE_DATA_VERSION = '2.4';
 const VERSION_KEY = 'reference_data_version';
 
 const initialLayouts = {
     lg: [
         { i: 'consolidatedWorkload', x: 0, y: 0, w: 12, h: 4, minW: 6, minH: 4 },
-        { i: 'strategicAlignment', x: 0, y: 4, w: 6, h: 5, minW: 5, minH: 4 },
-        { i: 'projectInitiativeAlignment', x: 6, y: 4, w: 6, h: 5, minW: 5, minH: 4 },
+        { i: 'consolidatedBudget', x: 0, y: 4, w: 12, h: 4, minW: 6, minH: 4 },
+        { i: 'projectSCurve', x: 0, y: 8, w: 6, h: 5, minW: 4, minH: 4 },
+        { i: 'riskMatrix', x: 6, y: 8, w: 6, h: 6, minW: 6, minH: 4 },
     ]
 };
-
 
 export const DataProvider = ({ children }: PropsWithChildren) => {
     const [activities, setActivities] = useState<Activity[]>([]);
@@ -73,7 +72,6 @@ export const DataProvider = ({ children }: PropsWithChildren) => {
 
     useEffect(() => {
         const initializeData = async () => {
-            // Charger les données transactionnelles depuis le localStorage
             setActivities(loadFromLocalStorage('activities', initialActivities));
             setProjects(loadFromLocalStorage('projects', initialProjects));
             setMajorRisks(loadFromLocalStorage('majorRisks', initialMajorRisks));
@@ -82,16 +80,11 @@ export const DataProvider = ({ children }: PropsWithChildren) => {
             setLastImportWeek(loadFromLocalStorage('lastImportWeek', null));
             setLastImportYear(loadFromLocalStorage('lastImportYear', null));
 
-            // Gérer les données de référence avec versionnement
             const storedVersion = loadFromLocalStorage<string>(VERSION_KEY, '1.0');
 
             if (storedVersion !== REFERENCE_DATA_VERSION) {
-                // Version différente : le cache est invalide. On force le rechargement de TOUTES les données de référence.
                 try {
-                    console.log(`Mise à jour des données de référence de la version ${storedVersion} à ${REFERENCE_DATA_VERSION}...`);
                     const data = await loadReferenceData();
-                    
-                    // Mise à jour des états
                     setOrientations(data.orientations);
                     setChantiers(data.chantiers);
                     setObjectives(data.objectives);
@@ -99,7 +92,6 @@ export const DataProvider = ({ children }: PropsWithChildren) => {
                     setResources(data.resources);
                     setSecurityProcesses(data.securityProcesses);
                     
-                    // Sauvegarde explicite pour éviter d'attendre le cycle useEffect
                     saveToLocalStorage('orientations', data.orientations);
                     saveToLocalStorage('chantiers', data.chantiers);
                     saveToLocalStorage('objectives', data.objectives);
@@ -109,8 +101,6 @@ export const DataProvider = ({ children }: PropsWithChildren) => {
                     
                     saveToLocalStorage(VERSION_KEY, REFERENCE_DATA_VERSION);
                 } catch (error) {
-                    console.error("Échec du chargement des nouvelles données de référence:", error);
-                    // Fallback : on charge les anciennes données du LS
                     setOrientations(loadFromLocalStorage('orientations', []));
                     setChantiers(loadFromLocalStorage('chantiers', []));
                     setObjectives(loadFromLocalStorage('objectives', []));
@@ -119,7 +109,6 @@ export const DataProvider = ({ children }: PropsWithChildren) => {
                     setSecurityProcesses(loadFromLocalStorage('securityProcesses', []));
                 }
             } else {
-                // La version est correcte, on charge depuis le localStorage.
                 setOrientations(loadFromLocalStorage('orientations', []));
                 setChantiers(loadFromLocalStorage('chantiers', []));
                 setObjectives(loadFromLocalStorage('objectives', []));
@@ -127,13 +116,11 @@ export const DataProvider = ({ children }: PropsWithChildren) => {
                 setResources(loadFromLocalStorage('resources', initialResources));
                 setSecurityProcesses(loadFromLocalStorage('securityProcesses', initialSecurityProcesses));
             }
-
             setIsLoading(false);
         };
         initializeData();
     }, []);
 
-    // Persist all data to localStorage on change
     useEffect(() => { if (!isLoading) saveToLocalStorage('activities', activities); }, [activities, isLoading]);
     useEffect(() => { if (!isLoading) saveToLocalStorage('resources', resources); }, [resources, isLoading]);
     useEffect(() => { if (!isLoading) saveToLocalStorage('securityProcesses', securityProcesses); }, [securityProcesses, isLoading]);
@@ -144,9 +131,6 @@ export const DataProvider = ({ children }: PropsWithChildren) => {
     useEffect(() => { if (!isLoading) saveToLocalStorage('lastCsvImportDate', lastCsvImportDate); }, [lastCsvImportDate, isLoading]);
     useEffect(() => { if (!isLoading) saveToLocalStorage('lastImportWeek', lastImportWeek); }, [lastImportWeek, isLoading]);
     useEffect(() => { if (!isLoading) saveToLocalStorage('lastImportYear', lastImportYear); }, [lastImportYear, isLoading]);
-    
-    // Les données de référence sont chargées depuis un fichier, mais peuvent être modifiées
-    // par import, donc nous devons les persister.
     useEffect(() => { if (!isLoading) saveToLocalStorage('orientations', orientations); }, [orientations, isLoading]);
     useEffect(() => { if (!isLoading) saveToLocalStorage('chantiers', chantiers); }, [chantiers, isLoading]);
     useEffect(() => { if (!isLoading) saveToLocalStorage('objectives', objectives); }, [objectives, isLoading]);
@@ -167,24 +151,13 @@ export const DataProvider = ({ children }: PropsWithChildren) => {
         lastImportYear, setLastImportYear,
     };
 
-    if (isLoading) {
-        return (
-            <div className="flex h-screen w-full items-center justify-center bg-slate-100">
-                <div className="text-center">
-                    <p className="text-lg font-semibold text-slate-700">Chargement des données...</p>
-                    <p className="text-sm text-slate-500">Veuillez patienter.</p>
-                </div>
-            </div>
-        );
-    }
+    if (isLoading) return <div className="flex h-screen w-full items-center justify-center bg-slate-100"><p>Chargement...</p></div>;
 
     return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
 };
 
 export const useData = () => {
     const context = useContext(DataContext);
-    if (context === undefined) {
-        throw new Error('useData must be used within a DataProvider');
-    }
+    if (context === undefined) throw new Error('useData must be used within a DataProvider');
     return context;
 };

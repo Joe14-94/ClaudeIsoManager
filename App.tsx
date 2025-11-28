@@ -36,6 +36,7 @@ import Header from './components/layout/Header';
 import { NotificationProvider } from './contexts/NotificationContext';
 import HelpPage from './pages/HelpPage';
 import GraphCreatorPage from './pages/GraphCreatorPage';
+import GanttDiagramPage from './pages/GanttDiagramPage';
 
 const AppLayout: React.FC = () => {
   return (
@@ -55,6 +56,7 @@ const AppLayout: React.FC = () => {
             <Route path="/projects-explorer" element={<ProjectsExplorer />} />
             <Route path="/projets/createur-graphiques" element={<GraphCreatorPage />} />
             <Route path="/projects-timeline" element={<ProjectsTimelinePage />} />
+            <Route path="/projects-gantt" element={<GanttDiagramPage />} />
             <Route path="/projects-budget" element={<ProjectsBudget />} />
             <Route path="/projects-workload" element={<ProjectsWorkload />} />
             <Route path="/activities-dashboard" element={<ActivitiesDashboard />} />

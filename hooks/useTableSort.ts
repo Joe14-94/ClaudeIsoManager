@@ -28,10 +28,6 @@ export function useTableSort<T>(
     }
     setSortConfig({ key, direction });
   };
-
-  // Note: Le tri réel des données est souvent dépendant de logiques métier spécifiques (champs calculés).
-  // Ce hook fournit l'état et la fonction de gestion, mais le tri lui-même est souvent fait via un useMemo dans le composant parent
-  // ou via une fonction de comparaison passée en argument si on voulait aller plus loin dans l'abstraction.
   
   return {
     sortConfig,
