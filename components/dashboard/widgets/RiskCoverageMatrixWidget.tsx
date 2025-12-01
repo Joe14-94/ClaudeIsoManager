@@ -51,7 +51,7 @@ const RiskCoverageMatrixWidget: React.FC = () => {
                             <th className="p-2 border-b border-r font-bold text-slate-700 min-w-[150px]">Risque Majeur</th>
                             <th className="p-2 border-b border-r text-center w-20 font-semibold text-slate-600 bg-slate-100">Couverture</th>
                             {filteredProjects.map(p => (
-                                <th key={p.id} className="p-2 border-b text-center font-medium text-slate-600 min-w-[40px] max-w-[100px] truncate" title={p.title}><span className="writing-mode-vertical transform rotate-180 block h-24 whitespace-nowrap overflow-hidden text-ellipsis">{p.projectId}</span></th>
+                                <th key={p.id} className="p-2 border-b text-center font-medium text-slate-600 min-w-[40px] max-w-[100px] truncate" title={p.title}><span className="[writing-mode:vertical-rl] transform rotate-180 block h-24 whitespace-nowrap overflow-hidden text-ellipsis">{p.projectId}</span></th>
                             ))}
                         </tr>
                     </thead>

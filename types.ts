@@ -1,4 +1,5 @@
 
+
 export type DateTime = string;
 
 export enum IsoChapter {
@@ -168,7 +169,8 @@ export interface Activity {
   owner?: string;
   startDate?: DateTime;
   endDatePlanned?: DateTime;
-  workloadInPersonDays?: number;
+  workloadInPersonDays?: number; // Charge prévue
+  consumedWorkload?: number; // Charge consommée (via import calendrier par ex)
   createdAt: DateTime;
   updatedAt: DateTime;
   functionalProcessId: string;

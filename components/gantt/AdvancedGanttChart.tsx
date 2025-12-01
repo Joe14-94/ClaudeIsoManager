@@ -16,7 +16,7 @@ interface ZoomLevel {
 
 const ZOOM_LEVELS: ZoomLevel[] = [
     { mode: 'Year', dayWidth: 1, label: 'Année (Ultra Compact)' },
-    { mode: 'Quarter', dayWidth: 2.5, label: 'Trimestre' },
+    { mode: 'Quarter', dayWidth: 4, label: 'Trimestre' }, // Augmenté pour afficher les semaines
     { mode: 'Month', dayWidth: 5, label: 'Mois (Compact)' }, 
     { mode: 'Week', dayWidth: 20, label: 'Semaine' },
     { mode: 'Day', dayWidth: 50, label: 'Jour' },
@@ -78,6 +78,15 @@ const formatDateInput = (date: Date): string => {
     return date.toISOString().split('T')[0];
 };
 
+// Helper pour obtenir le numéro de semaine ISO
+const getWeekNumber = (d: Date) => {
+    const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+    const dayNum = date.getUTCDay() || 7;
+    date.setUTCDate(date.getUTCDate() + 4 - dayNum);
+    const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+    return Math.ceil((((date.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+};
+
 // --- Composant Principal ---
 
 const AdvancedGanttChart: React.FC<AdvancedGanttChartProps> = ({ projects, resources, onProjectClick, onDataChange }) => {
@@ -93,6 +102,7 @@ const AdvancedGanttChart: React.FC<AdvancedGanttChartProps> = ({ projects, resou
   const [showDependencies, setShowDependencies] = useState(true);
   const [showWeekends, setShowWeekends] = useState(true);
   const [isOptionsOpen, setIsOptionsOpen] = useState(false);
+  const [scrollbarWidth, setScrollbarWidth] = useState(0);
   
   // État pour le volet d'édition
   const [selectedItem, setSelectedItem] = useState<GanttRow | null>(null);
@@ -287,6 +297,26 @@ const AdvancedGanttChart: React.FC<AdvancedGanttChartProps> = ({ projects, resou
     return visible;
   }, [allRows, expandedIds]);
 
+  // Calcul de la largeur de la scrollbar pour aligner le header
+  useLayoutEffect(() => {
+      const container = verticalScrollContainerRef.current;
+      if (!container) return;
+
+      const updateScrollbarWidth = () => {
+          const width = container.offsetWidth - container.clientWidth;
+          setScrollbarWidth(width);
+      };
+
+      // Observer les changements de taille du conteneur
+      const resizeObserver = new ResizeObserver(updateScrollbarWidth);
+      resizeObserver.observe(container);
+      
+      // Calcul initial
+      updateScrollbarWidth();
+
+      return () => resizeObserver.disconnect();
+  }, [visibleRows.length]); // Dépendance ajoutée pour recalculer si le contenu change
+
   // --- 2. Calculs de temps et dimensions ---
   const { minDate, maxDate } = useMemo(() => {
     if (localProjects.length === 0) return { minDate: new Date(), maxDate: new Date() };
@@ -347,18 +377,16 @@ const AdvancedGanttChart: React.FC<AdvancedGanttChartProps> = ({ projects, resou
                }
           }
           else if (currentZoom.mode === 'Quarter') {
-               // Top row: Quarter (Q1 2025)
-               if ((current.getMonth() % 3 === 0) && current.getDate() === 1) {
-                   const q = Math.floor(current.getMonth() / 3) + 1;
-                   ticks.push({ x, label: `Q${q} ${current.getFullYear()}`, type: 'major' });
-               }
-               // Bottom row: Condensed Month (Janv., Févr.)
+               // Top row: Month Name + Year (Janv. 25)
                if (current.getDate() === 1) {
-                   let monthLabel = current.toLocaleDateString('fr-FR', { month: 'short' });
-                   // Capitalize first letter
-                   monthLabel = monthLabel.charAt(0).toUpperCase() + monthLabel.slice(1);
-                   if (!monthLabel.endsWith('.')) monthLabel += '.'; // Ensure dot for abbreviation
-                   ticks.push({ x, label: monthLabel, type: 'minor', isMonth: true });
+                   const label = current.toLocaleDateString('fr-FR', { month: 'short', year: '2-digit' });
+                   const formattedLabel = label.charAt(0).toUpperCase() + label.slice(1);
+                   ticks.push({ x, label: formattedLabel, type: 'major' });
+               }
+               // Bottom row: Week number (S46)
+               if (current.getDay() === 1) { // Monday
+                   const weekNum = getWeekNumber(current);
+                   ticks.push({ x, label: `S${weekNum}`, type: 'minor', isMonth: false });
                }
           }
           else if ((currentZoom.mode === 'Month' || currentZoom.mode === 'Week') && current.getDate() === 1) {
@@ -646,6 +674,7 @@ const AdvancedGanttChart: React.FC<AdvancedGanttChartProps> = ({ projects, resou
       {/* Main Content with Fixed Header + Scrollable Body */}
       <div className="flex flex-col flex-grow overflow-hidden">
           {/* Header Area */}
+          {/* Remove paddingRight from container, using spacer instead for perfect sync */}
           <div className="flex flex-shrink-0 border-b border-slate-200 bg-slate-50 h-[50px]">
                {/* Fixed Sidebar Header */}
                <div className="flex items-center font-semibold text-slate-600 border-r border-slate-200 flex-shrink-0" style={{ width: SIDEBAR_WIDTH }}>
@@ -656,9 +685,15 @@ const AdvancedGanttChart: React.FC<AdvancedGanttChartProps> = ({ projects, resou
                </div>
                {/* Scrollable Timeline Header */}
                <div ref={headerRef} className="overflow-hidden flex-grow relative">
-                   <div className="relative h-full" style={{ width: totalWidth }}>
+                   <div className="relative h-full" style={{ width: totalWidth + scrollbarWidth }}>
                         {headerTicks.map((tick, i) => (
-                            <div key={`tick-${i}`} className={`absolute bottom-0 top-0 border-l flex items-center justify-center px-2 ${tick.type === 'major' ? 'border-slate-300 bg-slate-100/50 z-10' : 'border-slate-100 z-0'}`} style={{ left: tick.x, height: tick.type === 'major' ? '50%' : '100%', top: tick.type === 'major' ? 0 : '50%' }}>
+                            <div key={`tick-${i}`} 
+                                 className={`absolute border-l flex items-center justify-center px-1 ${tick.type === 'major' ? 'border-slate-300 bg-slate-100/50 z-10' : 'border-slate-200 z-0'}`} 
+                                 style={{ 
+                                     left: tick.x, 
+                                     height: '50%', // Toujours 50% de hauteur
+                                     top: tick.type === 'major' ? 0 : '50%' // Soit en haut, soit en bas
+                                 }}>
                                 {tick.type === 'major' && (
                                     <span className="font-bold text-slate-500 text-[10px] uppercase tracking-wider whitespace-nowrap absolute top-1">{tick.label}</span>
                                 )}
@@ -666,7 +701,7 @@ const AdvancedGanttChart: React.FC<AdvancedGanttChartProps> = ({ projects, resou
                                     <span className="text-[10px] text-slate-400 font-semibold absolute top-1">{tick.label}</span>
                                 )}
                                 {tick.type === 'minor' && !tick.isMonth && (
-                                    <span className="text-[9px] text-slate-300">{tick.label}</span>
+                                    <span className="text-[10px] text-slate-500 font-medium">{tick.label}</span>
                                 )}
                             </div>
                         ))}
@@ -676,6 +711,8 @@ const AdvancedGanttChart: React.FC<AdvancedGanttChartProps> = ({ projects, resou
                         </div>
                    </div>
                </div>
+               {/* Spacer to align with vertical scrollbar */}
+               <div style={{ width: scrollbarWidth }} className="flex-shrink-0 bg-slate-50 border-b border-slate-200"></div>
           </div>
 
           {/* Scrollable Body Area (Sidebar + Timeline synchronized) */}
@@ -739,7 +776,8 @@ const AdvancedGanttChart: React.FC<AdvancedGanttChartProps> = ({ projects, resou
                    </div>
 
                    {/* Timeline Body */}
-                   <div ref={scrollContainerRef} onScroll={handleHorizontalScroll} className="flex-grow overflow-x-auto bg-slate-50/30">
+                   {/* Added overflow-y-hidden to prevent double vertical scrollbar */}
+                   <div ref={scrollContainerRef} onScroll={handleHorizontalScroll} className="flex-grow overflow-x-auto overflow-y-hidden bg-slate-50/30">
                         <div className="relative" style={{ width: totalWidth, height: visibleRows.length * ROW_HEIGHT }}>
                             
                             {/* Vertical Grid Lines */}

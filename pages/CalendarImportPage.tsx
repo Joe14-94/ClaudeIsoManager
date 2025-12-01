@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect, useMemo } from 'react';
 import { useData } from '../contexts/DataContext';
 import Card, { CardContent, CardHeader, CardTitle } from '../components/ui/Card';
@@ -18,7 +19,7 @@ interface DisplayEvent extends CalendarEvent {
 }
 
 const CalendarImportPage: React.FC = () => {
-  const { projects, activities, setProjects } = useData();
+  const { projects, activities, setProjects, setActivities } = useData();
   const [events, setEvents] = useState<DisplayEvent[]>([]);
   const [selectedEventIds, setSelectedEventIds] = useState<Set<string>>(new Set());
   const [importHistory, setImportHistory] = useState<Record<string, ImportHistoryItem>>({});
@@ -132,7 +133,9 @@ const CalendarImportPage: React.FC = () => {
 
     const project = projects.find(p => p.id === targetId);
     const activity = activities.find(a => a.id === targetId);
+    
     const targetName = project ? project.title : activity ? activity.title : 'Inconnu';
+    let imputationSuccess = false;
 
     if (project) {
       // Mise à jour du projet
@@ -141,9 +144,20 @@ const CalendarImportPage: React.FC = () => {
         internalWorkloadConsumed: (project.internalWorkloadConsumed || 0) + totalDays,
         updatedAt: new Date().toISOString()
       };
-      
       setProjects(prev => prev.map(p => p.id === project.id ? updatedProject : p));
+      imputationSuccess = true;
+    } else if (activity) {
+      // Mise à jour de l'activité
+      const updatedActivity = {
+          ...activity,
+          consumedWorkload: (activity.consumedWorkload || 0) + totalDays,
+          updatedAt: new Date().toISOString()
+      };
+      setActivities(prev => prev.map(a => a.id === activity.id ? updatedActivity : a));
+      imputationSuccess = true;
+    }
 
+    if (imputationSuccess) {
       // Mise à jour de l'historique local
       const newHistory = { ...importHistory };
       const now = new Date().toISOString();
@@ -172,7 +186,7 @@ const CalendarImportPage: React.FC = () => {
       setSelectedEventIds(new Set()); // Vider la sélection
       alert(`${totalDays} J/H imputés avec succès sur "${targetName}".`);
     } else {
-        alert("L'imputation sur les activités n'est pas encore supportée dans cette version (uniquement Projets).");
+        alert("Erreur : Cible d'imputation non trouvée.");
     }
   };
 
@@ -190,7 +204,7 @@ const CalendarImportPage: React.FC = () => {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold text-slate-800">Import Calendrier</h1>
-          <p className="text-slate-600">Transformez vos réunions Outlook en temps consommé sur vos projets.</p>
+          <p className="text-slate-600">Transformez vos réunions Outlook en temps consommé sur vos projets ou activités.</p>
         </div>
         <div className="flex items-center gap-2">
             <button onClick={clearHistory} className="text-slate-400 hover:text-red-500 text-sm flex items-center gap-1 px-3 py-2 rounded hover:bg-red-50 transition-colors">
@@ -339,16 +353,27 @@ const CalendarImportPage: React.FC = () => {
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-slate-700 mb-1">Imputer sur le projet</label>
+                            <label className="block text-sm font-medium text-slate-700 mb-1">Imputer sur...</label>
                             <select 
                                 value={targetId} 
                                 onChange={e => setTargetId(e.target.value)}
                                 className="w-full px-3 py-2 bg-white border border-slate-300 rounded-md text-sm focus:ring-2 focus:ring-blue-500 outline-none"
                             >
-                                <option value="">Sélectionner un projet...</option>
-                                {projects.filter(p => p.projectId !== 'TOTAL_GENERAL').map(p => (
-                                    <option key={p.id} value={p.id}>{p.projectId} - {p.title}</option>
-                                ))}
+                                <option value="">Sélectionner une cible...</option>
+                                {projects.length > 0 && (
+                                    <optgroup label="Projets">
+                                        {projects.filter(p => p.projectId !== 'TOTAL_GENERAL').map(p => (
+                                            <option key={p.id} value={p.id}>{p.projectId} - {p.title}</option>
+                                        ))}
+                                    </optgroup>
+                                )}
+                                {activities.length > 0 && (
+                                    <optgroup label="Activités">
+                                        {activities.map(a => (
+                                            <option key={a.id} value={a.id}>{a.activityId} - {a.title}</option>
+                                        ))}
+                                    </optgroup>
+                                )}
                             </select>
                         </div>
                         
@@ -376,7 +401,7 @@ const CalendarImportPage: React.FC = () => {
                         
                         {selectedEventsList.length > 0 && !targetId && (
                             <p className="text-xs text-amber-600 text-center">
-                                Veuillez sélectionner un projet cible.
+                                Veuillez sélectionner une cible (projet ou activité).
                             </p>
                         )}
                     </CardContent>
