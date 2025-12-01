@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, ListChecks, Network, ShieldCheck, Target, TrendingUp, Users, Database, FileUp, FileDown, Workflow, GitMerge, ClipboardCheck, LogOut, KeyRound, DatabaseZap, GanttChart, LayoutGrid, Flag, ClipboardList, ChevronUp, ChevronDown, Coins, Timer, GitBranch, ChevronsLeft, ChevronsRight, UserCog, HelpCircle, BarChart3, Table, CalendarDays } from 'lucide-react';
+import { LayoutDashboard, ListChecks, Network, ShieldCheck, Target, TrendingUp, Users, Database, FileUp, FileDown, Workflow, GitMerge, ClipboardCheck, LogOut, KeyRound, DatabaseZap, GanttChart, LayoutGrid, Flag, ClipboardList, ChevronUp, ChevronDown, Coins, Timer, GitBranch, ChevronsLeft, ChevronsRight, UserCog, HelpCircle, BarChart3, Table, CalendarDays, Calendar } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import ChangePasswordModal from '../auth/ChangePasswordModal';
 import { APP_VERSION } from '../../config';
@@ -139,7 +139,13 @@ const Sidebar: React.FC = () => {
                   </div>
               <div className={`${!isCollapsed && !isDonneesOpen ? 'hidden' : 'block'}`}>
                 <div className='space-y-1'>
-                    {(userRole === 'admin' || userRole === 'pmo') && (<><NavItem to="/data-management" icon={<Database />} label="Gestion des données" isCollapsed={isCollapsed} end={true} /><NavItem to={{ pathname: "/data-management/fdr", state: { openFdrChoice: true } }} icon={<Table />} label="Mise à jour FDR" isCollapsed={isCollapsed} /></>)}
+                    {(userRole === 'admin' || userRole === 'pmo') && (
+                      <>
+                        <NavItem to="/data-management" icon={<Database />} label="Gestion des données" isCollapsed={isCollapsed} end={true} />
+                        <NavItem to={{ pathname: "/data-management/fdr", state: { openFdrChoice: true } }} icon={<Table />} label="Mise à jour FDR" isCollapsed={isCollapsed} />
+                        <NavItem to="/data-management/calendar-import" icon={<Calendar />} label="Import Calendrier" isCollapsed={isCollapsed} />
+                      </>
+                    )}
                     {userRole === 'admin' && (<><NavItem to="/data-model" icon={<DatabaseZap />} label="Modèle de données" isCollapsed={isCollapsed} /><NavItem to="/data-model-2" icon={<GitBranch />} label="Modèle de données 2" isCollapsed={isCollapsed} /></>)}
                 </div>
               </div>

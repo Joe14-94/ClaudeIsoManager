@@ -2,7 +2,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Card, { CardContent, CardHeader, CardTitle } from '../components/ui/Card';
-import { Upload, HelpCircle, DatabaseBackup, Info, AlertTriangle, Trash2, Workflow, FileDown, Database, ClipboardPaste, CheckCircle, XCircle, Table, Play, Calendar, Coins, Timer } from 'lucide-react';
+import { Upload, HelpCircle, DatabaseBackup, Info, AlertTriangle, Trash2, Workflow, FileDown, Database, ClipboardPaste, CheckCircle, XCircle, Table, Play, Calendar, Coins, Timer, Sparkles } from 'lucide-react';
 import { useData } from '../contexts/DataContext';
 import { useAuth } from '../contexts/AuthContext';
 import Tooltip from '../components/ui/Tooltip';
@@ -11,6 +11,7 @@ import Modal from '../components/ui/Modal';
 import { loadReferenceData } from '../utils/referenceData';
 import { ISO_MEASURES_DATA } from '../constants';
 import { majorRisks as defaultMajorRisks } from '../data/majorRisks';
+import { demoData } from '../utils/demoData';
 
 type AnalysisType = 'workload' | 'budget';
 
@@ -667,6 +668,7 @@ const DataManagement: React.FC = () => {
   const [showResetProjectsModal, setShowResetProjectsModal] = useState(false);
   const [showAppInitModal, setShowAppInitModal] = useState(false);
   const [showDeleteAllDataModal, setShowDeleteAllDataModal] = useState(false);
+  const [showGenerateDemoDataModal, setShowGenerateDemoDataModal] = useState(false);
 
   // FDR Choice & Import Modal States
   const [isFdrChoiceModalOpen, setIsFdrChoiceModalOpen] = useState(false);
@@ -1038,6 +1040,33 @@ const DataManagement: React.FC = () => {
     setShowDeleteAllDataModal(false);
     showFeedback('success', 'Toutes les données de l\'application ont été supprimées.');
   };
+  
+  const handleGenerateDemoData = () => {
+      if (isReadOnly) return;
+      
+      setActivities(demoData.activities);
+      setProjects(demoData.projects);
+      setMajorRisks(demoData.majorRisks);
+      setResources(demoData.resources);
+      setSecurityProcesses(demoData.securityProcesses);
+      setOrientations(demoData.orientations);
+      setChantiers(demoData.chantiers);
+      setObjectives(demoData.objectives);
+      setInitiatives(demoData.initiatives);
+      
+      // Reset dashboard to default layout for a good first impression
+      setDashboardLayouts({
+            lg: [
+                { i: 'consolidatedWorkload', x: 0, y: 0, w: 12, h: 4, minW: 6, minH: 4 },
+                { i: 'consolidatedBudget', x: 0, y: 4, w: 12, h: 4, minW: 6, minH: 4 },
+                { i: 'projectSCurve', x: 0, y: 8, w: 6, h: 5, minW: 4, minH: 4 },
+                { i: 'riskMatrix', x: 6, y: 8, w: 6, h: 6, minW: 6, minH: 4 },
+            ]
+      });
+      
+      setShowGenerateDemoDataModal(false);
+      showFeedback('success', 'Les données de démonstration ont été générées avec succès.');
+  };
 
     // Callback pour la nouvelle modale FDR
     const handleFdrUpdate = (updatedProjects: Project[], week: string, year: string) => {
@@ -1145,6 +1174,28 @@ const DataManagement: React.FC = () => {
         )}
       </div>
       
+      {(userRole === 'admin' || userRole === 'pmo') && (
+          <Card className="bg-indigo-50 border-indigo-200">
+              <CardHeader>
+                  <CardTitle className="flex items-center text-indigo-900">
+                      <Sparkles className="mr-2" /> Démonstration
+                  </CardTitle>
+                  <p className="text-sm text-slate-600 mt-1">Peupler l'application avec un jeu de données complet pour tester les fonctionnalités.</p>
+              </CardHeader>
+              <CardContent>
+                  <div className="p-4 border border-indigo-200 rounded-lg bg-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                        <div>
+                            <h3 className="font-semibold text-slate-800">Générer les données de démonstration</h3>
+                            <p className="text-sm text-slate-600 mt-1">Remplace ou complète les données actuelles par un jeu de test (Projets, Activités, Référentiels...). Utile pour découvrir l'outil.</p>
+                        </div>
+                        <button onClick={() => setShowGenerateDemoDataModal(true)} disabled={isReadOnly} className={`${buttonClasses} ${isReadOnly ? disabledClasses : 'bg-indigo-600 text-white hover:bg-indigo-700'}`}>
+                            <Sparkles className="mr-2" size={18} /> Générer la démo
+                        </button>
+                  </div>
+              </CardContent>
+          </Card>
+      )}
+
 
       <Card>
         <CardHeader>
@@ -1351,6 +1402,24 @@ const DataManagement: React.FC = () => {
             <div className="flex justify-end gap-2 pt-4 mt-6 border-t">
                 <button onClick={() => setShowDeleteAllDataModal(false)} className="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-200 rounded-md hover:bg-slate-300">Annuler</button>
                 <button onClick={confirmDeleteAllData} className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700">Oui, tout supprimer</button>
+            </div>
+        </Modal>
+      )}
+
+      {showGenerateDemoDataModal && (
+        <Modal isOpen={true} onClose={() => setShowGenerateDemoDataModal(false)} title="Confirmer la génération de données de démo">
+            <div className="space-y-4">
+                <p className="text-lg font-medium text-slate-800">Voulez-vous charger le jeu de données de démonstration ?</p>
+                <p className="text-sm text-slate-600">
+                    <strong className="text-amber-600">Attention :</strong> Cela remplacera ou complétera vos données actuelles. Si vous avez des données importantes, pensez à faire une sauvegarde avant.
+                </p>
+                <p className="text-sm text-slate-600">
+                    Les tableaux de bord seront également réinitialisés à leur configuration par défaut.
+                </p>
+            </div>
+            <div className="flex justify-end gap-2 pt-4 mt-6 border-t">
+                <button onClick={() => setShowGenerateDemoDataModal(false)} className="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-200 rounded-md hover:bg-slate-300">Annuler</button>
+                <button onClick={handleGenerateDemoData} className="px-4 py-2 text-sm font-medium text-white bg-indigo-600 rounded-md hover:bg-indigo-700">Générer les données</button>
             </div>
         </Modal>
       )}

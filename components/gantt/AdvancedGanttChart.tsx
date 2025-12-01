@@ -53,7 +53,7 @@ interface GanttRow {
 }
 
 const HEADER_HEIGHT = 50; 
-const ROW_HEIGHT = 45; // Augmenté pour laisser place à la baseline   
+const ROW_HEIGHT = 40; // Réduit légèrement pour plus de densité et éviter les décalages de calcul
 const SIDEBAR_WIDTH = 450; 
 
 // --- Fonctions Utilitaires ---
@@ -98,9 +98,10 @@ const AdvancedGanttChart: React.FC<AdvancedGanttChartProps> = ({ projects, resou
   const [selectedItem, setSelectedItem] = useState<GanttRow | null>(null);
   const [editFormData, setEditFormData] = useState<{ name: string; start: string; end: string; progress: number } | null>(null);
 
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const headerRef = useRef<HTMLDivElement>(null);
-  const sidebarRef = useRef<HTMLDivElement>(null);
+  // Refs pour la synchro du scroll
+  const scrollContainerRef = useRef<HTMLDivElement>(null); // Le conteneur principal de la timeline (scroll X)
+  const headerRef = useRef<HTMLDivElement>(null); // Le header de la timeline (scroll X sync avec container)
+  const verticalScrollContainerRef = useRef<HTMLDivElement>(null); // Conteneur global scrollable Y (sidebar + timeline)
   const optionsRef = useRef<HTMLDivElement>(null);
 
   const currentZoom = ZOOM_LEVELS[zoomIndex];
@@ -321,6 +322,8 @@ const AdvancedGanttChart: React.FC<AdvancedGanttChartProps> = ({ projects, resou
          const todayX = getXPosition(new Date());
          const containerWidth = scrollContainerRef.current.clientWidth;
          scrollContainerRef.current.scrollLeft = todayX - (containerWidth / 2);
+         // Sync header initial
+         if(headerRef.current) headerRef.current.scrollLeft = todayX - (containerWidth / 2);
      }
   }, [zoomIndex, getXPosition]);
 
@@ -332,12 +335,31 @@ const AdvancedGanttChart: React.FC<AdvancedGanttChartProps> = ({ projects, resou
       while (current <= maxDate) {
           const x = getXPosition(current);
           
-          if (currentZoom.mode === 'Year' && current.getMonth() === 0 && current.getDate() === 1) {
-               ticks.push({ x, label: current.getFullYear().toString(), type: 'major' });
+          if (currentZoom.mode === 'Year') {
+               // Top row: Year
+               if (current.getMonth() === 0 && current.getDate() === 1) {
+                   ticks.push({ x, label: current.getFullYear().toString(), type: 'major' });
+               }
+               // Bottom row: First letter of month
+               if (current.getDate() === 1) {
+                   const monthLabel = current.toLocaleDateString('fr-FR', { month: 'narrow' }).toUpperCase();
+                   ticks.push({ x, label: monthLabel, type: 'minor', isMonth: true });
+               }
           }
-          else if (currentZoom.mode === 'Quarter' && (current.getMonth() % 3 === 0) && current.getDate() === 1) {
-               const q = Math.floor(current.getMonth() / 3) + 1;
-               ticks.push({ x, label: `Q${q} ${current.getFullYear()}`, type: 'major' });
+          else if (currentZoom.mode === 'Quarter') {
+               // Top row: Quarter (Q1 2025)
+               if ((current.getMonth() % 3 === 0) && current.getDate() === 1) {
+                   const q = Math.floor(current.getMonth() / 3) + 1;
+                   ticks.push({ x, label: `Q${q} ${current.getFullYear()}`, type: 'major' });
+               }
+               // Bottom row: Condensed Month (Janv., Févr.)
+               if (current.getDate() === 1) {
+                   let monthLabel = current.toLocaleDateString('fr-FR', { month: 'short' });
+                   // Capitalize first letter
+                   monthLabel = monthLabel.charAt(0).toUpperCase() + monthLabel.slice(1);
+                   if (!monthLabel.endsWith('.')) monthLabel += '.'; // Ensure dot for abbreviation
+                   ticks.push({ x, label: monthLabel, type: 'minor', isMonth: true });
+               }
           }
           else if ((currentZoom.mode === 'Month' || currentZoom.mode === 'Week') && current.getDate() === 1) {
                const label = current.toLocaleString('fr-FR', { month: 'long', year: 'numeric' });
@@ -367,9 +389,9 @@ const AdvancedGanttChart: React.FC<AdvancedGanttChartProps> = ({ projects, resou
     setExpandedIds(newSet);
   };
 
-  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-      if (headerRef.current) headerRef.current.scrollLeft = e.currentTarget.scrollLeft;
-      if (sidebarRef.current) sidebarRef.current.scrollTop = e.currentTarget.scrollTop;
+  const handleHorizontalScroll = (e: React.UIEvent<HTMLDivElement>) => {
+      const left = e.currentTarget.scrollLeft;
+      if (headerRef.current) headerRef.current.scrollLeft = left;
   };
 
   const handleMouseMove = (e: React.MouseEvent, row: GanttRow) => {
@@ -621,285 +643,296 @@ const AdvancedGanttChart: React.FC<AdvancedGanttChartProps> = ({ projects, resou
           </div>
       </div>
 
-      <div className="flex flex-grow overflow-hidden relative">
-        
-        {/* Sidebar (Grid) */}
-        <div className="flex flex-col border-r border-slate-200 bg-white flex-shrink-0 z-20 shadow-[4px_0_24px_rgba(0,0,0,0.02)]" style={{ width: SIDEBAR_WIDTH }}>
-             <div className="flex items-center bg-slate-50 border-b border-slate-200 font-semibold text-slate-600" style={{ height: HEADER_HEIGHT }}>
-                 <div className="w-16 px-3 text-center border-r border-slate-200">#</div>
-                 <div className="flex-grow px-3 border-r border-slate-200">Projets et Tâches</div>
-                 <div className="w-20 px-2 text-center border-r border-slate-200">Début</div>
-                 <div className="w-20 px-2 text-center">Fin</div>
-             </div>
-             
-             <div ref={sidebarRef} className="overflow-hidden flex-grow bg-white">
-                {visibleRows.map((row) => (
-                    <div 
-                        key={row.id} 
-                        className={`flex items-center border-b border-slate-100 hover:bg-slate-50 transition-colors group relative ${row.type === 'project' ? 'bg-slate-50/50' : ''} ${selectedItem?.id === row.id ? 'bg-blue-50' : ''}`} 
-                        style={{ height: ROW_HEIGHT }}
-                        onClick={(e) => handleRowClick(e, row)}
-                    >
-                        {/* WBS Column */}
-                        <div className="w-16 px-2 text-center text-slate-400 font-mono text-[10px] truncate flex-shrink-0">{row.wbs}</div>
-                        
-                        {/* Name Column with Indentation and Expand Button */}
-                        <div className="flex-grow px-2 flex items-center border-r border-transparent overflow-hidden relative">
-                             <div className="flex items-center flex-1 min-w-0">
-                                 {/* Indentation Spacer */}
-                                 <div style={{ width: row.level * 16, flexShrink: 0 }}></div>
-
-                                 {/* Expand/Collapse Button Container */}
-                                 <div className="w-6 h-6 flex items-center justify-center flex-shrink-0 mr-1 z-50 relative">
-                                     {row.hasChildren ? (
-                                         <button 
-                                            onClick={(e) => { 
-                                                e.preventDefault();
-                                                e.stopPropagation(); 
-                                                toggleExpand(row.id); 
-                                            }} 
-                                            className="w-5 h-5 flex items-center justify-center bg-white hover:bg-blue-50 border border-slate-300 rounded text-slate-600 hover:text-blue-600 transition-colors shadow-sm focus:outline-none cursor-pointer"
-                                            aria-label={row.expanded ? "Replier" : "Déplier"}
-                                         >
-                                             {row.expanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
-                                         </button>
-                                     ) : (
-                                        <GitCommitVertical size={14} className="text-slate-300 opacity-50"/>
-                                     )}
-                                 </div>
-                                 
-                                 {/* Project/Task Name */}
-                                 <span className={`truncate cursor-pointer pl-1 ${row.type === 'project' ? 'font-bold text-slate-800' : 'text-slate-600'}`} title={row.name}>
-                                     {row.name}
-                                 </span>
-                             </div>
-                        </div>
-
-                        {/* Date Columns */}
-                        <div className="w-20 px-2 text-center text-slate-500 text-[10px] font-mono flex-shrink-0">
-                            {formatDateFR(row.startDate)}
-                        </div>
-                        <div className="w-20 px-2 text-center text-slate-500 text-[10px] font-mono flex-shrink-0">
-                            {formatDateFR(row.endDate)}
-                        </div>
-                    </div>
-                ))}
-             </div>
-        </div>
-
-        {/* Chart Area */}
-        <div className="flex flex-col flex-grow overflow-hidden relative bg-white">
-            {/* Chart Header (Dates) */}
-            <div ref={headerRef} className="overflow-hidden border-b border-slate-200 bg-slate-50 flex-shrink-0" style={{ height: HEADER_HEIGHT }}>
-                <div className="relative h-full" style={{ width: totalWidth }}>
-                    {headerTicks.filter(t => t.type === 'major').map((tick, i) => (
-                        <div key={`maj-${i}`} className="absolute bottom-0 top-0 border-l border-slate-200 flex items-center justify-center px-2" style={{ left: tick.x }}>
-                            <span className="font-bold text-slate-400 text-[10px] uppercase tracking-wider whitespace-nowrap">{tick.label}</span>
-                        </div>
-                    ))}
-                    {/* Today Indicator in Header */}
-                     <div className="absolute top-0 bottom-0 border-l border-red-400 z-30 pointer-events-none" style={{ left: getXPosition(new Date()) }}>
-                        <div className="bg-red-500 text-white text-[9px] px-1.5 py-0.5 rounded-b-sm absolute top-0 transform -translate-x-1/2 shadow-sm font-bold">Aujourd'hui</div>
-                    </div>
-                </div>
-            </div>
-
-            {/* Chart Grid & Bars */}
-            <div ref={scrollContainerRef} onScroll={handleScroll} className="overflow-auto flex-grow relative bg-slate-50/30">
-                <div className="relative" style={{ width: totalWidth, height: visibleRows.length * ROW_HEIGHT }}>
-                    
-                    {/* Vertical Grid Lines */}
-                    <div className="absolute inset-0 pointer-events-none">
+      {/* Main Content with Fixed Header + Scrollable Body */}
+      <div className="flex flex-col flex-grow overflow-hidden">
+          {/* Header Area */}
+          <div className="flex flex-shrink-0 border-b border-slate-200 bg-slate-50 h-[50px]">
+               {/* Fixed Sidebar Header */}
+               <div className="flex items-center font-semibold text-slate-600 border-r border-slate-200 flex-shrink-0" style={{ width: SIDEBAR_WIDTH }}>
+                    <div className="w-16 px-3 text-center border-r border-slate-200">#</div>
+                    <div className="flex-grow px-3 border-r border-slate-200">Projets et Tâches</div>
+                    <div className="w-20 px-2 text-center border-r border-slate-200">Début</div>
+                    <div className="w-20 px-2 text-center">Fin</div>
+               </div>
+               {/* Scrollable Timeline Header */}
+               <div ref={headerRef} className="overflow-hidden flex-grow relative">
+                   <div className="relative h-full" style={{ width: totalWidth }}>
                         {headerTicks.map((tick, i) => (
-                            <div key={`grid-${i}`} className={`absolute top-0 bottom-0 border-l ${tick.type === 'major' ? 'border-slate-200' : 'border-slate-100'}`} style={{ left: tick.x }}></div>
-                        ))}
-                         {/* Weekend highlighting */}
-                         {showWeekends && Array.from({ length: Math.ceil((maxDate.getTime() - minDate.getTime()) / (1000 * 60 * 60 * 24)) }).map((_, i) => {
-                            const date = new Date(minDate);
-                            date.setDate(date.getDate() + i);
-                            const day = date.getDay();
-                            if (day === 0 || day === 6) {
-                                const left = getXPosition(date);
-                                return (
-                                    <div key={`weekend-${i}`} className="absolute top-0 bottom-0 bg-slate-100/50" style={{ left, width: dayWidth }}></div>
-                                )
-                            }
-                            return null;
-                         })}
-                        {/* Today Line Body */}
-                        <div className="absolute top-0 bottom-0 border-l border-red-400 z-30 pointer-events-none" style={{ left: getXPosition(new Date()) }}></div>
-                    </div>
-
-                    {/* Dependencies SVG Layer */}
-                    <svg className="absolute inset-0 w-full h-full pointer-events-none z-10 overflow-visible">
-                        <defs>
-                            <marker id="arrowhead" markerWidth="5" markerHeight="5" refX="5" refY="2.5" orient="auto">
-                                <path d="M0,0 L5,2.5 L0,5" fill="#94a3b8" />
-                            </marker>
-                            <marker id="arrowhead-red" markerWidth="5" markerHeight="5" refX="5" refY="2.5" orient="auto">
-                                <path d="M0,0 L5,2.5 L0,5" fill="#ef4444" />
-                            </marker>
-                        </defs>
-                        {renderDependencies()}
-                    </svg>
-
-                    {/* Rows */}
-                    {visibleRows.map((row, index) => {
-                        const xStart = getXPosition(row.startDate);
-                        const width = Math.max(getXPosition(row.endDate) - xStart, Math.max(2, dayWidth));
-                        
-                        // Baseline Calculations
-                        let baselineX = 0;
-                        let baselineWidth = 0;
-                        let isDelayed = false;
-                        
-                        if (showBaseline && row.baselineStartDate && row.baselineEndDate) {
-                            baselineX = getXPosition(row.baselineStartDate);
-                            baselineWidth = Math.max(getXPosition(row.baselineEndDate) - baselineX, Math.max(2, dayWidth));
-                            // On considère qu'il y a retard si la date de fin réelle dépasse la date de fin initiale
-                            isDelayed = row.endDate.getTime() > row.baselineEndDate.getTime();
-                        }
-
-                        return (
-                            <div key={row.id} className={`absolute w-full border-b border-slate-100/50 hover:bg-blue-50/20 transition-colors ${selectedItem?.id === row.id ? 'bg-blue-50/30' : ''}`} style={{ top: index * ROW_HEIGHT, height: ROW_HEIGHT }}>
-                                
-                                {/* Baseline Ghost Bar (Mode Suivi) */}
-                                {showBaseline && row.baselineStartDate && (
-                                    <>
-                                        <div 
-                                            className="absolute h-2 top-1/2 mt-2 bg-slate-300/50 rounded-sm border border-slate-300 z-0"
-                                            style={{ left: baselineX, width: baselineWidth }}
-                                        ></div>
-                                        {/* Delay Connector */}
-                                        {isDelayed && (
-                                            <div 
-                                                className="absolute h-2 top-1/2 mt-2 border-t border-b border-red-200 z-0 opacity-60"
-                                                style={{ 
-                                                    left: baselineX + baselineWidth, 
-                                                    width: (xStart + width) - (baselineX + baselineWidth),
-                                                    backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 2px, #fecaca 2px, #fecaca 4px)'
-                                                }}
-                                            ></div>
-                                        )}
-                                    </>
+                            <div key={`tick-${i}`} className={`absolute bottom-0 top-0 border-l flex items-center justify-center px-2 ${tick.type === 'major' ? 'border-slate-300 bg-slate-100/50 z-10' : 'border-slate-100 z-0'}`} style={{ left: tick.x, height: tick.type === 'major' ? '50%' : '100%', top: tick.type === 'major' ? 0 : '50%' }}>
+                                {tick.type === 'major' && (
+                                    <span className="font-bold text-slate-500 text-[10px] uppercase tracking-wider whitespace-nowrap absolute top-1">{tick.label}</span>
                                 )}
+                                {tick.type === 'minor' && tick.isMonth && (
+                                    <span className="text-[10px] text-slate-400 font-semibold absolute top-1">{tick.label}</span>
+                                )}
+                                {tick.type === 'minor' && !tick.isMonth && (
+                                    <span className="text-[9px] text-slate-300">{tick.label}</span>
+                                )}
+                            </div>
+                        ))}
+                        {/* Today Indicator in Header */}
+                        <div className="absolute top-0 bottom-0 border-l border-red-400 z-30 pointer-events-none" style={{ left: getXPosition(new Date()) }}>
+                            <div className="bg-red-500 text-white text-[9px] px-1.5 py-0.5 rounded-b-sm absolute top-0 transform -translate-x-1/2 shadow-sm font-bold">Aujourd'hui</div>
+                        </div>
+                   </div>
+               </div>
+          </div>
 
-                                {/* Milestone (Diamond) */}
-                                {row.type === 'milestone' ? (
-                                     <div 
-                                        className="absolute top-1/2 transform -translate-y-1/2 -translate-x-1/2 w-4 h-4 bg-amber-400 rotate-45 border-2 border-white shadow-sm z-20 cursor-pointer hover:scale-125 transition-transform"
-                                        style={{ left: xStart }}
-                                        onMouseMove={(e) => handleMouseMove(e, row)}
-                                        onMouseLeave={() => setTooltip(null)}
-                                        onClick={(e) => handleRowClick(e, row)}
-                                     ></div>
-                                ) : (
-                                    /* Task/Phase Bar */
-                                    <div 
-                                        className={`absolute top-1/2 transform -translate-y-1/2 h-5 rounded-sm shadow-sm z-20 cursor-pointer hover:ring-2 hover:ring-white/50 transition-all flex items-center overflow-hidden ${row.colorClass} ${showBaseline ? '-mt-2' : ''}`}
-                                        style={{ 
-                                            left: xStart, 
-                                            width,
-                                            height: row.hasChildren ? 10 : 20,
-                                            borderRadius: row.hasChildren ? '2px' : '4px',
-                                        }}
-                                        onMouseMove={(e) => handleMouseMove(e, row)}
-                                        onMouseLeave={() => setTooltip(null)}
-                                        onClick={(e) => handleRowClick(e, row)}
-                                    >
-                                        {/* Progress bar inside */}
-                                        {row.progress > 0 && (
-                                            <div className="h-full bg-white/20" style={{ width: `${row.progress}%` }}></div>
+          {/* Scrollable Body Area (Sidebar + Timeline synchronized) */}
+          <div className="flex flex-grow overflow-hidden relative">
+               <div ref={verticalScrollContainerRef} className="flex-grow overflow-y-auto overflow-x-hidden flex">
+                   {/* Sidebar Body */}
+                   <div className="flex-shrink-0 border-r border-slate-200 bg-white" style={{ width: SIDEBAR_WIDTH }}>
+                        {visibleRows.map((row) => (
+                            <div 
+                                key={row.id} 
+                                className={`flex items-center border-b border-slate-100 hover:bg-slate-50 transition-colors group relative ${row.type === 'project' ? 'bg-slate-50/50' : ''} ${selectedItem?.id === row.id ? 'bg-blue-50' : ''}`} 
+                                style={{ height: ROW_HEIGHT }}
+                                onClick={(e) => handleRowClick(e, row)}
+                            >
+                                {/* WBS Column */}
+                                <div className="w-16 px-2 text-center text-slate-400 font-mono text-[10px] truncate flex-shrink-0">{row.wbs}</div>
+                                
+                                {/* Name Column with Indentation and Expand Button */}
+                                <div className="flex-grow px-2 flex items-center border-r border-transparent overflow-hidden relative">
+                                    <div className="flex items-center flex-1 min-w-0">
+                                        {/* Indentation Spacer */}
+                                        <div style={{ width: row.level * 16, flexShrink: 0 }}></div>
+
+                                        {/* Expand/Collapse Button Container */}
+                                        <div className="w-6 h-6 flex items-center justify-center flex-shrink-0 mr-1 z-50 relative">
+                                            {row.hasChildren ? (
+                                                <button 
+                                                    onClick={(e) => { 
+                                                        e.preventDefault();
+                                                        e.stopPropagation(); 
+                                                        toggleExpand(row.id); 
+                                                    }} 
+                                                    className="w-5 h-5 flex items-center justify-center bg-white hover:bg-blue-50 border border-slate-300 rounded text-slate-600 hover:text-blue-600 transition-colors shadow-sm focus:outline-none cursor-pointer"
+                                                    aria-label={row.expanded ? "Replier" : "Déplier"}
+                                                >
+                                                    {row.expanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+                                                </button>
+                                            ) : (
+                                                <GitCommitVertical size={14} className="text-slate-300 opacity-50"/>
+                                            )}
+                                        </div>
+                                        
+                                        {/* Project/Task Name */}
+                                        <span className={`truncate cursor-pointer pl-1 ${row.type === 'project' ? 'font-bold text-slate-800' : 'text-slate-600'}`} title={row.name}>
+                                            {row.name}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                {/* Date Columns */}
+                                <div className="w-20 px-2 text-center text-slate-500 text-[10px] font-mono flex-shrink-0">
+                                    {formatDateFR(row.startDate)}
+                                </div>
+                                <div className="w-20 px-2 text-center text-slate-500 text-[10px] font-mono flex-shrink-0">
+                                    {formatDateFR(row.endDate)}
+                                </div>
+                            </div>
+                        ))}
+                        {/* Spacer to match height with timeline */}
+                        <div style={{ height: 20 }}></div>
+                   </div>
+
+                   {/* Timeline Body */}
+                   <div ref={scrollContainerRef} onScroll={handleHorizontalScroll} className="flex-grow overflow-x-auto bg-slate-50/30">
+                        <div className="relative" style={{ width: totalWidth, height: visibleRows.length * ROW_HEIGHT }}>
+                            
+                            {/* Vertical Grid Lines */}
+                            <div className="absolute inset-0 pointer-events-none">
+                                {headerTicks.map((tick, i) => (
+                                    <div key={`grid-${i}`} className={`absolute top-0 bottom-0 border-l ${tick.type === 'major' ? 'border-slate-200' : 'border-slate-100'}`} style={{ left: tick.x }}></div>
+                                ))}
+                                {/* Weekend highlighting */}
+                                {showWeekends && currentZoom.mode !== 'Year' && currentZoom.mode !== 'Quarter' && Array.from({ length: Math.ceil((maxDate.getTime() - minDate.getTime()) / (1000 * 60 * 60 * 24)) }).map((_, i) => {
+                                    const date = new Date(minDate);
+                                    date.setDate(date.getDate() + i);
+                                    const day = date.getDay();
+                                    if (day === 0 || day === 6) {
+                                        const left = getXPosition(date);
+                                        return (
+                                            <div key={`weekend-${i}`} className="absolute top-0 bottom-0 bg-slate-100/50" style={{ left, width: dayWidth }}></div>
+                                        )
+                                    }
+                                    return null;
+                                })}
+                                {/* Today Line Body */}
+                                <div className="absolute top-0 bottom-0 border-l border-red-400 z-30 pointer-events-none" style={{ left: getXPosition(new Date()) }}></div>
+                            </div>
+
+                            {/* Dependencies SVG Layer */}
+                            <svg className="absolute inset-0 w-full h-full pointer-events-none z-10 overflow-visible">
+                                <defs>
+                                    <marker id="arrowhead" markerWidth="5" markerHeight="5" refX="5" refY="2.5" orient="auto">
+                                        <path d="M0,0 L5,2.5 L0,5" fill="#94a3b8" />
+                                    </marker>
+                                    <marker id="arrowhead-red" markerWidth="5" markerHeight="5" refX="5" refY="2.5" orient="auto">
+                                        <path d="M0,0 L5,2.5 L0,5" fill="#ef4444" />
+                                    </marker>
+                                </defs>
+                                {renderDependencies()}
+                            </svg>
+
+                            {/* Rows */}
+                            {visibleRows.map((row, index) => {
+                                const xStart = getXPosition(row.startDate);
+                                const width = Math.max(getXPosition(row.endDate) - xStart, Math.max(2, dayWidth));
+                                
+                                // Baseline Calculations
+                                let baselineX = 0;
+                                let baselineWidth = 0;
+                                let isDelayed = false;
+                                
+                                if (showBaseline && row.baselineStartDate && row.baselineEndDate) {
+                                    baselineX = getXPosition(row.baselineStartDate);
+                                    baselineWidth = Math.max(getXPosition(row.baselineEndDate) - baselineX, Math.max(2, dayWidth));
+                                    isDelayed = row.endDate.getTime() > row.baselineEndDate.getTime();
+                                }
+
+                                return (
+                                    <div key={row.id} className={`absolute w-full border-b border-slate-100/50 hover:bg-blue-50/20 transition-colors ${selectedItem?.id === row.id ? 'bg-blue-50/30' : ''}`} style={{ top: index * ROW_HEIGHT, height: ROW_HEIGHT }}>
+                                        
+                                        {/* Baseline Ghost Bar (Mode Suivi) */}
+                                        {showBaseline && row.baselineStartDate && (
+                                            <>
+                                                <div 
+                                                    className="absolute h-2 top-1/2 mt-2 bg-slate-300/50 rounded-sm border border-slate-300 z-0"
+                                                    style={{ left: baselineX, width: baselineWidth }}
+                                                ></div>
+                                                {/* Delay Connector */}
+                                                {isDelayed && (
+                                                    <div 
+                                                        className="absolute h-2 top-1/2 mt-2 border-t border-b border-red-200 z-0 opacity-60"
+                                                        style={{ 
+                                                            left: baselineX + baselineWidth, 
+                                                            width: (xStart + width) - (baselineX + baselineWidth),
+                                                            backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 2px, #fecaca 2px, #fecaca 4px)'
+                                                        }}
+                                                    ></div>
+                                                )}
+                                            </>
                                         )}
+
+                                        {/* Milestone (Diamond) */}
+                                        {row.type === 'milestone' ? (
+                                            <div 
+                                                className="absolute top-1/2 transform -translate-y-1/2 -translate-x-1/2 w-4 h-4 bg-amber-400 rotate-45 border-2 border-white shadow-sm z-20 cursor-pointer hover:scale-125 transition-transform"
+                                                style={{ left: xStart }}
+                                                onMouseMove={(e) => handleMouseMove(e, row)}
+                                                onMouseLeave={() => setTooltip(null)}
+                                                onClick={(e) => handleRowClick(e, row)}
+                                            ></div>
+                                        ) : (
+                                            /* Task/Phase Bar */
+                                            <div 
+                                                className={`absolute top-1/2 transform -translate-y-1/2 h-5 rounded-sm shadow-sm z-20 cursor-pointer hover:ring-2 hover:ring-white/50 transition-all flex items-center overflow-hidden ${row.colorClass} ${showBaseline ? '-mt-2' : ''}`}
+                                                style={{ 
+                                                    left: xStart, 
+                                                    width,
+                                                    height: row.hasChildren ? 10 : 20,
+                                                    borderRadius: row.hasChildren ? '2px' : '4px',
+                                                }}
+                                                onMouseMove={(e) => handleMouseMove(e, row)}
+                                                onMouseLeave={() => setTooltip(null)}
+                                                onClick={(e) => handleRowClick(e, row)}
+                                            >
+                                                {/* Progress bar inside */}
+                                                {row.progress > 0 && (
+                                                    <div className="h-full bg-white/20" style={{ width: `${row.progress}%` }}></div>
+                                                )}
+                                            </div>
+                                        )}
+
+                                        {/* Label next to bar */}
+                                        <div 
+                                            className="absolute top-1/2 transform -translate-y-1/2 text-[10px] font-medium text-slate-500 ml-2 whitespace-nowrap z-10 pointer-events-none flex items-center gap-1"
+                                            style={{ left: xStart + (row.type === 'milestone' ? 10 : width) }}
+                                        >
+                                            {row.type !== 'milestone' ? (
+                                                <>
+                                                    <span className={showBaseline ? '-mt-3 block' : ''}>{row.name}</span>
+                                                </>
+                                            ) : (
+                                                <span>{row.name}</span>
+                                            )}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                   </div>
+               </div>
+
+               {/* Side Edit Panel (Drawer) */}
+               <div className={`absolute top-0 right-0 h-full w-80 bg-white shadow-2xl border-l border-slate-200 z-40 transform transition-transform duration-300 ease-in-out flex flex-col ${selectedItem ? 'translate-x-0' : 'translate-x-full'}`}>
+                    {selectedItem && editFormData && (
+                        <>
+                            <div className="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+                                <h3 className="font-bold text-slate-800 truncate pr-2" title={selectedItem.name}>Édition</h3>
+                                <button onClick={() => setSelectedItem(null)} className="text-slate-400 hover:text-slate-600 transition-colors"><X size={20} /></button>
+                            </div>
+                            <div className="p-4 space-y-4 flex-grow overflow-y-auto">
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Nom</label>
+                                    <input 
+                                        type="text" 
+                                        className="w-full border border-slate-300 rounded p-2 text-sm bg-white text-slate-900 focus:ring-2 focus:ring-blue-500 focus:outline-none" 
+                                        value={editFormData.name}
+                                        onChange={e => setEditFormData({...editFormData, name: e.target.value})}
+                                    />
+                                </div>
+                                <div className="grid grid-cols-2 gap-2">
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Début</label>
+                                        <input 
+                                            type="date" 
+                                            className="w-full border border-slate-300 rounded p-2 text-sm bg-white text-slate-900 focus:ring-2 focus:ring-blue-500 focus:outline-none" 
+                                            value={editFormData.start}
+                                            onChange={e => setEditFormData({...editFormData, start: e.target.value})}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Fin</label>
+                                        <input 
+                                            type="date" 
+                                            className="w-full border border-slate-300 rounded p-2 text-sm bg-white text-slate-900 focus:ring-2 focus:ring-blue-500 focus:outline-none" 
+                                            value={editFormData.end}
+                                            onChange={e => setEditFormData({...editFormData, end: e.target.value})}
+                                        />
+                                    </div>
+                                </div>
+                                {selectedItem.type !== 'milestone' && (
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Progression ({editFormData.progress}%)</label>
+                                        <input 
+                                            type="range" 
+                                            min="0" max="100" 
+                                            className="w-full accent-blue-600"
+                                            value={editFormData.progress}
+                                            onChange={e => setEditFormData({...editFormData, progress: parseInt(e.target.value)})}
+                                        />
                                     </div>
                                 )}
-
-                                {/* Label next to bar */}
-                                <div 
-                                    className="absolute top-1/2 transform -translate-y-1/2 text-[10px] font-medium text-slate-500 ml-2 whitespace-nowrap z-10 pointer-events-none flex items-center gap-1"
-                                    style={{ left: xStart + (row.type === 'milestone' ? 10 : width) }}
-                                >
-                                    {row.type !== 'milestone' ? (
-                                        <>
-                                            <span className={showBaseline ? '-mt-3 block' : ''}>{row.name}</span>
-                                        </>
-                                    ) : (
-                                        <span>{row.name}</span>
-                                    )}
+                                
+                                <div className="bg-blue-50 p-3 rounded border border-blue-100 text-xs text-blue-800">
+                                    <p className="font-semibold mb-1">Informations</p>
+                                    <p>Type: {selectedItem.type}</p>
+                                    <p>Durée: {selectedItem.duration} jours</p>
+                                    {selectedItem.assignee && <p>Responsable: {selectedItem.assignee}</p>}
                                 </div>
                             </div>
-                        );
-                    })}
-                </div>
-            </div>
-
-             {/* Side Edit Panel (Drawer) */}
-             <div className={`absolute top-0 right-0 h-full w-80 bg-white shadow-2xl border-l border-slate-200 z-40 transform transition-transform duration-300 ease-in-out flex flex-col ${selectedItem ? 'translate-x-0' : 'translate-x-full'}`}>
-                {selectedItem && editFormData && (
-                    <>
-                        <div className="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
-                            <h3 className="font-bold text-slate-800 truncate pr-2" title={selectedItem.name}>Édition</h3>
-                            <button onClick={() => setSelectedItem(null)} className="text-slate-400 hover:text-slate-600 transition-colors"><X size={20} /></button>
-                        </div>
-                        <div className="p-4 space-y-4 flex-grow overflow-y-auto">
-                            <div>
-                                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Nom</label>
-                                <input 
-                                    type="text" 
-                                    className="w-full border border-slate-300 rounded p-2 text-sm bg-white text-slate-900 focus:ring-2 focus:ring-blue-500 focus:outline-none" 
-                                    value={editFormData.name}
-                                    onChange={e => setEditFormData({...editFormData, name: e.target.value})}
-                                />
+                            <div className="p-4 border-t border-slate-200 bg-slate-50 flex justify-end gap-2">
+                                <button onClick={() => setSelectedItem(null)} className="px-4 py-2 text-sm text-slate-600 hover:bg-slate-200 rounded transition-colors">Annuler</button>
+                                <button onClick={handleSaveEdit} className="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-2 shadow-sm transition-colors"><Save size={16}/> Enregistrer</button>
                             </div>
-                            <div className="grid grid-cols-2 gap-2">
-                                <div>
-                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Début</label>
-                                    <input 
-                                        type="date" 
-                                        className="w-full border border-slate-300 rounded p-2 text-sm bg-white text-slate-900 focus:ring-2 focus:ring-blue-500 focus:outline-none" 
-                                        value={editFormData.start}
-                                        onChange={e => setEditFormData({...editFormData, start: e.target.value})}
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Fin</label>
-                                    <input 
-                                        type="date" 
-                                        className="w-full border border-slate-300 rounded p-2 text-sm bg-white text-slate-900 focus:ring-2 focus:ring-blue-500 focus:outline-none" 
-                                        value={editFormData.end}
-                                        onChange={e => setEditFormData({...editFormData, end: e.target.value})}
-                                    />
-                                </div>
-                            </div>
-                            {selectedItem.type !== 'milestone' && (
-                                <div>
-                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Progression ({editFormData.progress}%)</label>
-                                    <input 
-                                        type="range" 
-                                        min="0" max="100" 
-                                        className="w-full accent-blue-600"
-                                        value={editFormData.progress}
-                                        onChange={e => setEditFormData({...editFormData, progress: parseInt(e.target.value)})}
-                                    />
-                                </div>
-                            )}
-                            
-                            <div className="bg-blue-50 p-3 rounded border border-blue-100 text-xs text-blue-800">
-                                <p className="font-semibold mb-1">Informations</p>
-                                <p>Type: {selectedItem.type}</p>
-                                <p>Durée: {selectedItem.duration} jours</p>
-                                {selectedItem.assignee && <p>Responsable: {selectedItem.assignee}</p>}
-                            </div>
-                        </div>
-                        <div className="p-4 border-t border-slate-200 bg-slate-50 flex justify-end gap-2">
-                            <button onClick={() => setSelectedItem(null)} className="px-4 py-2 text-sm text-slate-600 hover:bg-slate-200 rounded transition-colors">Annuler</button>
-                            <button onClick={handleSaveEdit} className="px-4 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-2 shadow-sm transition-colors"><Save size={16}/> Enregistrer</button>
-                        </div>
-                    </>
-                )}
-             </div>
-
-        </div>
+                        </>
+                    )}
+               </div>
+          </div>
       </div>
 
       {tooltip && tooltip.visible && createPortal(

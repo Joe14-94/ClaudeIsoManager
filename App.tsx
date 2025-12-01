@@ -37,6 +37,7 @@ import { NotificationProvider } from './contexts/NotificationContext';
 import HelpPage from './pages/HelpPage';
 import GraphCreatorPage from './pages/GraphCreatorPage';
 import GanttDiagramPage from './pages/GanttDiagramPage';
+import CalendarImportPage from './pages/CalendarImportPage';
 
 const AppLayout: React.FC = () => {
   return (
@@ -74,6 +75,7 @@ const AppLayout: React.FC = () => {
             <Route path="/resources" element={<Resources />} />
             <Route path="/data-management" element={<DataManagement />} />
             <Route path="/data-management/fdr" element={<DataManagement />} />
+            <Route path="/data-management/calendar-import" element={<CalendarImportPage />} />
             <Route path="/data-model" element={<DataModelView />} />
             <Route path="/data-model-2" element={<DataModelView2 />} />
             <Route path="/droits-acces" element={<AccessRightsPage />} />
