@@ -37,7 +37,7 @@ const NavItem: React.FC<NavItemProps> = ({ to, icon, label, isCollapsed, end }) 
 
 const Sidebar: React.FC = () => {
   const { logout, userRole } = useAuth();
-  const { activities, objectives, orientations, resources, chantiers, securityProcesses, projects, initiatives, dashboardLayouts } = useData();
+  const { activities, objectives, orientations, resources, chantiers, securityProcesses, projects, initiatives, dashboardLayouts, majorRisks } = useData();
   const navigate = useNavigate();
   const { isCollapsed, toggleSidebar, isMobileOpen, closeMobileSidebar } = useSidebar();
   const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false);
@@ -52,7 +52,26 @@ const Sidebar: React.FC = () => {
   const handleLogout = () => { logout(); navigate('/login'); closeMobileSidebar(); };
   
   const handleExport = () => {
-    const allData = { activities, objectives, orientations, resources, chantiers, securityProcesses, projects, initiatives, dashboardLayouts };
+    // Récupération des données locales du calendrier
+    const calendarHistory = localStorage.getItem('calendar_import_history');
+    const calendarHidden = localStorage.getItem('calendar_hidden_summaries');
+
+    const allData = { 
+        activities, 
+        objectives, 
+        orientations, 
+        resources, 
+        chantiers, 
+        securityProcesses, 
+        projects, 
+        initiatives, 
+        dashboardLayouts,
+        majorRisks,
+        // Inclusion des données du module calendrier
+        calendar_import_history: calendarHistory ? JSON.parse(calendarHistory) : {},
+        calendar_hidden_summaries: calendarHidden ? JSON.parse(calendarHidden) : []
+    };
+
     const blob = new Blob([JSON.stringify(allData, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');

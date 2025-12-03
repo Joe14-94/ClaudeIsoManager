@@ -655,7 +655,7 @@ const DataManagement: React.FC = () => {
     setLastCsvImportDate,
     setLastImportWeek,
     setLastImportYear,
-    setMajorRisks
+    majorRisks, setMajorRisks
   } = useData();
   const { userRole } = useAuth();
   const navigate = useNavigate();
@@ -693,7 +693,7 @@ const DataManagement: React.FC = () => {
   const storageUsage = useMemo(() => {
     const dataToMeasure = {
         activities, objectives, orientations, resources, chantiers,
-        securityProcesses, projects, initiatives, dashboardLayouts
+        securityProcesses, projects, initiatives, dashboardLayouts, majorRisks
     };
 
     let totalBytes = 0;
@@ -722,7 +722,7 @@ const DataManagement: React.FC = () => {
     }
 
     return { usedBytes: totalBytes, percentage, color };
-  }, [activities, objectives, orientations, resources, chantiers, securityProcesses, projects, initiatives, dashboardLayouts]);
+  }, [activities, objectives, orientations, resources, chantiers, securityProcesses, projects, initiatives, dashboardLayouts, majorRisks]);
 
   const formatBytes = (bytes: number) => {
     if (bytes === 0) return '0 Octets';
@@ -739,6 +739,11 @@ const DataManagement: React.FC = () => {
   
   const handleExport = () => {
     if (isReadOnly) return;
+    
+    // Récupérer les données du calendrier depuis le localStorage pour l'export
+    const calendarHistory = localStorage.getItem('calendar_import_history');
+    const calendarHidden = localStorage.getItem('calendar_hidden_summaries');
+
     const allData = {
       activities,
       objectives,
@@ -748,7 +753,10 @@ const DataManagement: React.FC = () => {
       securityProcesses,
       projects,
       initiatives,
-      dashboardLayouts
+      dashboardLayouts,
+      majorRisks,
+      calendar_import_history: calendarHistory ? JSON.parse(calendarHistory) : {},
+      calendar_hidden_summaries: calendarHidden ? JSON.parse(calendarHidden) : []
     };
     const blob = new Blob([JSON.stringify(allData, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -769,7 +777,8 @@ const DataManagement: React.FC = () => {
       chantiers,
       objectives,
       securityProcesses,
-      resources
+      resources,
+      majorRisks
     };
     const blob = new Blob([JSON.stringify(referentielData, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -841,6 +850,16 @@ const DataManagement: React.FC = () => {
                 if (Array.isArray(content.initiatives)) { setInitiatives(content.initiatives); importedCount++; }
                 if (content.dashboardLayouts) { setDashboardLayouts(content.dashboardLayouts); importedCount++; }
                 if (Array.isArray(content.majorRisks)) { setMajorRisks(content.majorRisks); importedCount++; }
+                
+                // Restauration des données du calendrier dans localStorage
+                if (content.calendar_import_history) {
+                    localStorage.setItem('calendar_import_history', JSON.stringify(content.calendar_import_history));
+                    importedCount++;
+                }
+                if (content.calendar_hidden_summaries) {
+                    localStorage.setItem('calendar_hidden_summaries', JSON.stringify(content.calendar_hidden_summaries));
+                    importedCount++;
+                }
                 
                 if (importedCount > 0) {
                     showFeedback('success', `Sauvegarde restaurée avec succès. ${importedCount} type(s) de données importé(s).`);
@@ -1002,6 +1021,10 @@ const DataManagement: React.FC = () => {
         setLastCsvImportDate(null);
         setLastImportWeek(null);
         setLastImportYear(null);
+        
+        // Reset calendar data
+        localStorage.removeItem('calendar_import_history');
+        localStorage.removeItem('calendar_hidden_summaries');
 
         const refData = await loadReferenceData();
         setOrientations(refData.orientations);
@@ -1036,6 +1059,8 @@ const DataManagement: React.FC = () => {
     setLastCsvImportDate(null);
     setLastImportWeek(null);
     setLastImportYear(null);
+    localStorage.removeItem('calendar_import_history');
+    localStorage.removeItem('calendar_hidden_summaries');
     
     setShowDeleteAllDataModal(false);
     showFeedback('success', 'Toutes les données de l\'application ont été supprimées.');
@@ -1124,7 +1149,7 @@ const DataManagement: React.FC = () => {
         <Card>
           <CardHeader className="flex items-center justify-between">
             <CardTitle>Sauvegarde et restauration</CardTitle>
-            <Tooltip text="La sauvegarde complète inclut : projets (avec historique FDR), activités, objectifs, orientations, chantiers, ressources, initiatives, processus de sécurité, risques majeurs et la disposition du tableau de bord.">
+            <Tooltip text="La sauvegarde complète inclut : projets (avec historique FDR), activités, objectifs, orientations, chantiers, ressources, initiatives, processus de sécurité, risques majeurs, historique d'import calendrier et la disposition du tableau de bord.">
               <Info size={18} className="text-slate-500 cursor-help" />
             </Tooltip>
           </CardHeader>
@@ -1346,7 +1371,7 @@ const DataManagement: React.FC = () => {
             <div className="p-4 border border-red-200 rounded-lg bg-red-50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
                     <h3 className="font-semibold text-red-800">Supprimer toutes les données</h3>
-                    <p className="text-sm text-red-600 mt-1">Supprime DÉFINITIVEMENT toutes les données : projets, activités, et l'ensemble du référentiel (orientations, chantiers, Objectifs, Initiatives, Processus, Ressources, Risques Majeurs)</p>
+                    <p className="text-sm text-red-600 mt-1">Supprime DÉFINITIVEMENT toutes les données : projets, activités, tout le référentiel et l'historique des imports calendrier.</p>
                 </div>
                 <button onClick={() => setShowDeleteAllDataModal(true)} disabled={isReadOnly} className={`${buttonClasses} ${isReadOnly ? disabledClasses : 'bg-red-600 text-white hover:bg-red-700'}`}>
                     <Trash2 className="mr-2" size={18} /> Supprimer toutes les données
@@ -1396,6 +1421,7 @@ const DataManagement: React.FC = () => {
                     <li>Toutes les Activités</li>
                     <li>Tout le référentiel (Orientations, Chantiers, Objectifs, Initiatives, Processus, Ressources, Risques Majeurs)</li>
                     <li>Historiques d'imports FDR</li>
+                    <li>Historique d'importation du Calendrier</li>
                     <li>Configurations des tableaux de bord</li>
                 </ul>
             </div>

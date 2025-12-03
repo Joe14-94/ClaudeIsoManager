@@ -1,7 +1,7 @@
 
 import React from 'react';
 import Card, { CardContent, CardHeader, CardTitle } from '../components/ui/Card';
-import { Info, ListChecks, Workflow, Settings, BrainCircuit, Sparkles, TrendingUp, ShieldAlert, Target } from 'lucide-react';
+import { Info, ListChecks, Workflow, Settings, BrainCircuit, Sparkles, TrendingUp, ShieldAlert, Target, CalendarDays, Calendar, GitBranch } from 'lucide-react';
 import { APP_VERSION } from '../config';
 
 const NewBadge = () => (
@@ -26,14 +26,40 @@ const HelpPage: React.FC = () => {
         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6 text-slate-600">
           <div>
             <h4 className="font-semibold text-slate-800 flex items-center gap-2">
+              <CalendarDays size={18} /> Diagramme de Gantt Avancé
+            </h4>
+            <ul className="mt-2 space-y-2 text-sm list-disc list-inside pl-2">
+              <li>
+                <strong>Planification fine :</strong> Décomposez vos projets en phases et tâches avec une structure WBS (Work Breakdown Structure). <NewBadge />
+              </li>
+              <li>
+                <strong>Dépendances :</strong> Visualisez les liens logiques entre les tâches pour identifier le chemin critique. <NewBadge />
+              </li>
+              <li>
+                <strong>Mode Suivi :</strong> Comparez l'avancement réel par rapport au planning initial (Baseline). <NewBadge />
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h4 className="font-semibold text-slate-800 flex items-center gap-2">
+              <Calendar size={18} /> Import Calendrier
+            </h4>
+            <ul className="mt-2 space-y-2 text-sm list-disc list-inside pl-2">
+              <li>
+                <strong>Transformation du temps :</strong> Convertissez vos événements Outlook (ICS) en temps consommé sur vos projets ou activités. <NewBadge />
+              </li>
+              <li>
+                <strong>Historique & Filtres :</strong> Gestion avancée des événements importés, détection des doublons et masquage des événements récurrents. <NewBadge />
+              </li>
+            </ul>
+          </div>
+          <div>
+            <h4 className="font-semibold text-slate-800 flex items-center gap-2">
               <TrendingUp size={18} /> Pilotage Financier Avancé
             </h4>
             <ul className="mt-2 space-y-2 text-sm list-disc list-inside pl-2">
               <li>
-                <strong>Courbe en S (S-Curve) :</strong> Visualisez l'atterrissage budgétaire de vos projets en comparant le planifié, l'engagé et le réalisé dans le temps. <NewBadge />
-              </li>
-              <li>
-                <strong>Jauges Budgétaires :</strong> Nouveaux visuels pour suivre la consommation des enveloppes (MOA/MOE). <NewBadge />
+                <strong>Courbe en S (S-Curve) :</strong> Visualisez l'atterrissage budgétaire de vos projets en comparant le planifié, l'engagé et le réalisé dans le temps.
               </li>
             </ul>
           </div>
@@ -43,20 +69,12 @@ const HelpPage: React.FC = () => {
             </h4>
             <ul className="mt-2 space-y-2 text-sm list-disc list-inside pl-2">
               <li>
-                <strong>Matrice de Couverture :</strong> Un tableau croisé dynamique pour identifier les "trous dans la raquette" entre vos Risques Majeurs et vos Projets. <NewBadge />
+                <strong>Matrice de Couverture :</strong> Un tableau croisé dynamique pour identifier les "trous dans la raquette" entre vos Risques Majeurs et vos Projets.
               </li>
               <li>
-                <strong>Scoring d'arbitrage :</strong> Calcul automatique d'un score de priorité basé sur l'impact, la couverture de risque et l'effort. <NewBadge />
+                <strong>Scoring d'arbitrage :</strong> Calcul automatique d'un score de priorité basé sur l'impact, la couverture de risque et l'effort.
               </li>
             </ul>
-          </div>
-          <div className="md:col-span-2">
-            <h4 className="font-semibold text-slate-800 flex items-center gap-2">
-              <Target size={18} /> Suivi Opérationnel
-            </h4>
-            <p className="mt-2 text-sm">
-              La fiche projet s'enrichit avec la <strong>Météo du projet</strong> (Flash Report) pour qualifier l'état de santé, et la gestion des <strong>Jalons clés</strong> pour suivre les échéances majeures. <NewBadge />
-            </p>
           </div>
         </CardContent>
       </Card>
@@ -87,33 +105,48 @@ const HelpPage: React.FC = () => {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <ListChecks size={22} />
-            Principales fonctionnalités
+            Fonctionnalités Détaillées
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3 text-slate-600">
+        <CardContent className="space-y-6 text-slate-600">
             <div>
-                <h4 className="font-semibold text-slate-700">Tableaux de bord</h4>
-                <p className="text-sm">Vues synthétiques et personnalisables pour suivre les indicateurs clés (KPIs), la couverture normative et l'état d'avancement général.</p>
+                <h4 className="font-semibold text-slate-700 text-lg mb-2">1. Planification & Diagramme de Gantt</h4>
+                <div className="pl-4 border-l-2 border-slate-200 space-y-2">
+                    <p className="text-sm">Le <strong>Diagramme de Gantt Avancé</strong> (Menu Projets > Gantt) offre une vue complète sur le déroulement de vos projets.</p>
+                    <ul className="list-disc list-inside text-sm pl-2">
+                        <li><strong>Structure WBS :</strong> Vous pouvez créer une arborescence de tâches (Phases > Tâches > Sous-tâches) directement depuis l'éditeur ou dans la fiche projet.</li>
+                        <li><strong>Dépendances :</strong> Liez des tâches entre elles (Fin à Début) pour visualiser l'impact d'un retard.</li>
+                        <li><strong>Jalons :</strong> Placez des repères clés (losanges) pour marquer les étapes importantes.</li>
+                        <li><strong>Mode Suivi (Baseline) :</strong> En activant ce mode, une barre grise apparaît sous la barre d'avancement, représentant les dates initiales prévues. Tout décalage vers la droite est automatiquement signalé en rouge comme un retard.</li>
+                    </ul>
+                </div>
             </div>
+
             <div>
-                <h4 className="font-semibold text-slate-700">Gestion des Projets et Activités</h4>
-                <p className="text-sm">Créez, modifiez et suivez vos projets et activités de sécurité. Liez-les aux référentiels pour contextualiser vos actions.</p>
+                <h4 className="font-semibold text-slate-700 text-lg mb-2">2. Importation de Calendrier (Suivi des Temps)</h4>
+                <div className="pl-4 border-l-2 border-slate-200 space-y-2">
+                    <p className="text-sm">Le module <strong>Import Calendrier</strong> (Menu Données) facilite la déclaration des temps passés (J/H).</p>
+                    <ol className="list-decimal list-inside text-sm pl-2 space-y-1">
+                        <li>Exportez votre calendrier Outlook au format <code>.ics</code>.</li>
+                        <li>Chargez le fichier dans l'application.</li>
+                        <li>Sélectionnez les réunions/événements correspondant à un projet ou une activité.</li>
+                        <li>Utilisez la fonction "Sélectionner les occurrences" pour grouper rapidement les réunions récurrentes.</li>
+                        <li>Cliquez sur <strong>"Valider l'imputation"</strong> : le temps total est calculé et ajouté au "Consommé" du projet ou de l'activité cible.</li>
+                    </ol>
+                    <p className="text-sm mt-2"><em>Astuce : Vous pouvez masquer les événements personnels ou non pertinents pour qu'ils n'apparaissent plus lors des prochains imports.</em></p>
+                </div>
             </div>
+
             <div>
-                <h4 className="font-semibold text-slate-700">Explorateurs de données</h4>
-                <p className="text-sm">Des outils puissants pour créer des tableaux croisés dynamiques. Explorez les relations entre vos orientations, chantiers, objectifs, activités et mesures ISO.</p>
-            </div>
-             <div>
-                <h4 className="font-semibold text-slate-700">Timelines</h4>
-                <p className="text-sm">Visualisez la planification de vos projets et activités sur un axe chronologique de type Gantt.</p>
-            </div>
-            <div>
-                <h4 className="font-semibold text-slate-700">Référentiels</h4>
-                <p className="text-sm">Consultez et gérez l'ensemble des éléments structurants de votre stratégie : référentiel ISO 27002, orientations, chantiers, objectifs, initiatives, ressources et processus.</p>
-            </div>
-            <div>
-                <h4 className="font-semibold text-slate-700">Gestion des données</h4>
-                <p className="text-sm">Importez et exportez vos données aux formats JSON et CSV. Sauvegardez et restaurez l'intégralité de votre environnement de travail.</p>
+                <h4 className="font-semibold text-slate-700 text-lg mb-2">3. Pilotage Stratégique</h4>
+                <div className="pl-4 border-l-2 border-slate-200 space-y-2">
+                    <p className="text-sm">Alignez vos actions opérationnelles avec la stratégie de l'entreprise.</p>
+                    <ul className="list-disc list-inside text-sm pl-2">
+                        <li><strong>Orientations & Chantiers :</strong> Définissez les grands axes.</li>
+                        <li><strong>Objectifs :</strong> Déclinez les axes en objectifs mesurables.</li>
+                        <li><strong>Initiatives :</strong> Regroupez des projets concourant à un but commun.</li>
+                    </ul>
+                </div>
             </div>
         </CardContent>
       </Card>
@@ -137,7 +170,6 @@ const HelpPage: React.FC = () => {
                         <li>Rendez-vous dans le menu <strong className="text-slate-800">Données &gt; Gestion des données</strong>.</li>
                         <li>Cliquez sur le bouton <strong className="text-red-600">"Supprimer toutes les données"</strong> pour vider les données de test.</li>
                         <li>Cliquez sur <strong className="text-blue-600">"Restaurer une sauvegarde"</strong> et sélectionnez votre propre fichier de données JSON.</li>
-                        <li>Vous pouvez alors commencer à travailler avec vos données, et à importer des fichiers CSV de charges ou de budgets pour vos projets.</li>
                     </ol>
                 </div>
             </CardContent>
@@ -157,10 +189,6 @@ const HelpPage: React.FC = () => {
                 <div>
                     <h4 className="font-semibold text-slate-700">Utilisez les filtres</h4>
                     <p>Les filtres sont présents sur la plupart des pages pour vous aider à affiner vos recherches et à vous concentrer sur les informations pertinentes.</p>
-                </div>
-                 <div>
-                    <h4 className="font-semibold text-slate-700">Explorez vos données</h4>
-                    <p>L'explorateur est un outil puissant pour créer des rapports personnalisés. N'hésitez pas à l'utiliser pour croiser les différentes dimensions de votre stratégie.</p>
                 </div>
             </CardContent>
         </Card>

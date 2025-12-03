@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useData } from '../contexts/DataContext';
 import Card, { CardContent, CardHeader, CardTitle } from '../components/ui/Card';
-import { Upload, Calendar, Clock, CheckCircle2, AlertCircle, FileUp, Search, Filter, ArrowRight, RefreshCw, Trash2, History, ArrowDownAZ, CalendarDays, Plus, X, Copy } from 'lucide-react';
+import { Upload, Calendar, Clock, CheckCircle2, AlertCircle, FileUp, Search, Filter, ArrowRight, RefreshCw, Trash2, History, ArrowDownAZ, CalendarDays, Plus, X, Copy, EyeOff, ListX } from 'lucide-react';
 import { parseICSFile, CalendarEvent, ImportHistoryItem } from '../utils/icsParser';
 import { Project, Activity, ProjectStatus, TShirtSize, ProjectCategory, ActivityStatus, Priority, ActivityType, SecurityDomain } from '../types';
 import { loadFromLocalStorage, saveToLocalStorage } from '../utils/storage';
@@ -10,6 +10,7 @@ import Tooltip from '../components/ui/Tooltip';
 import Modal from '../components/ui/Modal';
 
 const HISTORY_STORAGE_KEY = 'calendar_import_history';
+const HIDDEN_SUMMARIES_KEY = 'calendar_hidden_summaries';
 
 type EventStatus = 'new' | 'modified' | 'imported' | 'cancelled';
 
@@ -28,6 +29,7 @@ const CalendarImportPage: React.FC = () => {
   const [events, setEvents] = useState<DisplayEvent[]>([]);
   const [selectedInternalIds, setSelectedInternalIds] = useState<Set<string>>(new Set());
   const [importHistory, setImportHistory] = useState<Record<string, ImportHistoryItem>>({});
+  const [hiddenSummaries, setHiddenSummaries] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   
   // Pagination virtuelle
@@ -47,20 +49,26 @@ const CalendarImportPage: React.FC = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [newItemType, setNewItemType] = useState<'project' | 'activity'>('project');
   const [newItemTitle, setNewItemTitle] = useState('');
+
+  // Gestion des masqués
+  const [isHiddenManagerOpen, setIsHiddenManagerOpen] = useState(false);
   
   // Refs pour le scroll infini
   const listContainerRef = useRef<HTMLDivElement>(null);
 
-  // Chargement de l'historique au démarrage
+  // Chargement de l'historique et des filtres au démarrage
   useEffect(() => {
     const history = loadFromLocalStorage<Record<string, ImportHistoryItem>>(HISTORY_STORAGE_KEY, {});
     setImportHistory(history);
+    
+    const hidden = loadFromLocalStorage<string[]>(HIDDEN_SUMMARIES_KEY, []);
+    setHiddenSummaries(hidden);
   }, []);
 
   // Reset pagination quand les filtres changent
   useEffect(() => {
     setVisibleCount(ITEMS_PER_PAGE);
-  }, [searchTerm, showImported, dateRange, sortOption]);
+  }, [searchTerm, showImported, dateRange, sortOption, hiddenSummaries]);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -72,19 +80,8 @@ const CalendarImportPage: React.FC = () => {
       
       // Comparaison avec l'historique et génération d'internalId
       const processedEvents: DisplayEvent[] = parsedEvents.map((evt, index) => {
-        // On utilise le hash pour retrouver l'historique spécifique de cette instance d'événement
-        // (car UID peut être dupliqué pour les récurrences)
-        // Si pas de hash dans l'historique (vieux format), on fallback sur UID, mais c'est moins précis pour les récurrences.
-        let historyItem = null;
-        
-        // Recherche par UID exact et Hash si possible (pour les récurrents distincts)
-        // Simplification: on regarde si on a une entrée d'historique qui matche cet UID.
-        // Comme importHistory est une map par UID, ça ne gère pas bien les récurrences multiples importées séparément dans la V1.
-        // V2: On va utiliser une clé composite ou juste vérifier l'état "imputé" au moment de l'action.
-        
-        // Pour l'affichage du statut 'déjà importé', on vérifie si le hash existe dans les valeurs de l'historique
         const historyValues = Object.values(importHistory);
-        historyItem = historyValues.find(h => h.uid === evt.uid && h.hash === evt.hash);
+        const historyItem = historyValues.find(h => h.uid === evt.uid && h.hash === evt.hash);
 
         let status: EventStatus = 'new';
 
@@ -119,6 +116,9 @@ const CalendarImportPage: React.FC = () => {
     let result = events.filter(event => {
       if (event.summary === 'Sans titre') return false;
       if (event.summary.startsWith('Annulé:')) return false;
+      
+      // Filtrage des événements masqués par l'utilisateur
+      if (hiddenSummaries.includes(event.summary.trim())) return false;
 
       if (!showImported && event.importStatus === 'imported') return false;
       if (event.importStatus === 'cancelled') return false;
@@ -147,14 +147,13 @@ const CalendarImportPage: React.FC = () => {
             return b.startDate.getTime() - a.startDate.getTime();
         }
     });
-  }, [events, showImported, searchTerm, dateRange, sortOption]);
+  }, [events, showImported, searchTerm, dateRange, sortOption, hiddenSummaries]);
 
   const visibleEvents = useMemo(() => {
       return filteredEvents.slice(0, visibleCount);
   }, [filteredEvents, visibleCount]);
 
   const selectedEventsList = useMemo(() => {
-    // On retrouve les objets complets basés sur les internalIds sélectionnés
     return events.filter(e => selectedInternalIds.has(e.internalId));
   }, [events, selectedInternalIds]);
 
@@ -183,9 +182,6 @@ const CalendarImportPage: React.FC = () => {
       const newSet = new Set(selectedInternalIds);
       const targetSummary = modelEvent.summary.trim();
 
-      // Chercher dans TOUS les événements (pas que les filtrés) ceux qui ont le même résumé (libellé)
-      // On ignore la durée, la date, etc. Seul le libellé compte.
-      // On exclut ceux déjà importés ou annulés pour ne pas polluer la sélection active.
       const similarEvents = events.filter(e => 
           e.summary.trim() === targetSummary && 
           e.importStatus !== 'imported' && 
@@ -201,24 +197,18 @@ const CalendarImportPage: React.FC = () => {
       });
       
       setSelectedInternalIds(newSet);
-      
-      // UX: Mettre à jour le filtre de recherche pour afficher UNIQUEMENT ces événements
-      // Cela permet à l'utilisateur de voir ce qu'il vient de sélectionner
       setSearchTerm(targetSummary);
-      
-      // Feedback console (ou pourrait être un toast)
-      console.log(`${addedCount} événements similaires ajoutés et filtre appliqué.`);
   };
 
   const deselectAll = () => {
     setSelectedInternalIds(new Set());
+    setSearchTerm('');
   };
 
   const handleScroll = () => {
       if (listContainerRef.current) {
           const { scrollTop, scrollHeight, clientHeight } = listContainerRef.current;
           if (scrollTop + clientHeight >= scrollHeight - 50) {
-              // Load more
               if (visibleCount < filteredEvents.length) {
                   setVisibleCount(prev => Math.min(prev + ITEMS_PER_PAGE, filteredEvents.length));
               }
@@ -258,9 +248,7 @@ const CalendarImportPage: React.FC = () => {
       const now = new Date().toISOString();
 
       selectedEventsList.forEach(evt => {
-        // On utilise UID + Hash comme clé composite virtuelle pour l'historique
-        const historyKey = `${evt.uid}_${evt.hash}`; // Clé unique composite
-        
+        const historyKey = `${evt.uid}_${evt.hash}`;
         newHistory[historyKey] = {
           uid: evt.uid,
           hash: evt.hash,
@@ -268,8 +256,6 @@ const CalendarImportPage: React.FC = () => {
           targetId: targetId,
           targetName: targetName
         };
-        
-        // Support legacy (pour que le parsing simple fonctionne aussi si on n'utilise pas le hash)
         newHistory[evt.uid] = newHistory[historyKey];
       });
 
@@ -285,15 +271,64 @@ const CalendarImportPage: React.FC = () => {
       });
       setEvents(updatedEvents);
       setSelectedInternalIds(new Set());
-      
-      // Reset search term if it was set by selectSimilarEvents to let user see all events again?
-      // Or keep it to let user verify. Let's clear it to allow easy continuation.
       setSearchTerm(''); 
       
       alert(`${totalDays} J/H imputés avec succès sur "${targetName}".`);
     } else {
         alert("Erreur : Cible d'imputation non trouvée.");
     }
+  };
+
+  // --- Gestion des masqués ---
+
+  const handleHideSelected = () => {
+      if (selectedEventsList.length === 0) return;
+
+      const summariesToHide = new Set<string>();
+      selectedEventsList.forEach(e => summariesToHide.add(e.summary.trim()));
+
+      const newHiddenSummaries = [...hiddenSummaries];
+      summariesToHide.forEach(s => {
+          if (!newHiddenSummaries.includes(s)) {
+              newHiddenSummaries.push(s);
+          }
+      });
+
+      setHiddenSummaries(newHiddenSummaries);
+      saveToLocalStorage(HIDDEN_SUMMARIES_KEY, newHiddenSummaries);
+      setSelectedInternalIds(new Set()); // Clear selection after hiding
+      setSearchTerm(''); // Clear search to see result
+  };
+
+  const handleHideSingle = (summary: string) => {
+      const s = summary.trim();
+      if (!hiddenSummaries.includes(s)) {
+          const newHiddenSummaries = [...hiddenSummaries, s];
+          setHiddenSummaries(newHiddenSummaries);
+          saveToLocalStorage(HIDDEN_SUMMARIES_KEY, newHiddenSummaries);
+          
+          // If user was filtering by this summary, clear filter
+          if (searchTerm === s) {
+              setSearchTerm('');
+          }
+          
+          // Remove from selection if any event with this summary was selected
+          if (selectedInternalIds.size > 0) {
+              const newSelection = new Set(selectedInternalIds);
+              events.forEach(e => {
+                 if (e.summary.trim() === s && newSelection.has(e.internalId)) {
+                     newSelection.delete(e.internalId);
+                 }
+              });
+              setSelectedInternalIds(newSelection);
+          }
+      }
+  };
+
+  const handleRemoveHiddenSummary = (summary: string) => {
+      const newHiddenSummaries = hiddenSummaries.filter(s => s !== summary);
+      setHiddenSummaries(newHiddenSummaries);
+      saveToLocalStorage(HIDDEN_SUMMARIES_KEY, newHiddenSummaries);
   };
 
   const clearHistory = () => {
@@ -309,54 +344,22 @@ const CalendarImportPage: React.FC = () => {
           alert("Le titre est obligatoire.");
           return;
       }
-
       const newId = Date.now().toString();
       const now = new Date().toISOString();
 
       if (newItemType === 'project') {
         const nextIdNumber = projects.length > 0 ? Math.max(...projects.map(p => { const match = p.projectId.match(/P\d{2}-(\d{3})/); return match ? parseInt(match[1], 10) : 0; })) + 1 : 1;
         const projectIdDisplay = `P25-${String(nextIdNumber).padStart(3, '0')}`;
-
-        const newProject: Project = {
-            id: `proj-${newId}`,
-            projectId: projectIdDisplay,
-            title: newItemTitle,
-            status: ProjectStatus.IDENTIFIED,
-            tShirtSize: TShirtSize.M,
-            category: ProjectCategory.PROJECT,
-            isTop30: false,
-            initiativeId: initiatives[0]?.id || '',
-            isoMeasures: [],
-            createdAt: now,
-            updatedAt: now,
-            internalWorkloadConsumed: 0
-        };
+        const newProject: Project = { id: `proj-${newId}`, projectId: projectIdDisplay, title: newItemTitle, status: ProjectStatus.IDENTIFIED, tShirtSize: TShirtSize.M, category: ProjectCategory.PROJECT, isTop30: false, initiativeId: initiatives[0]?.id || '', isoMeasures: [], createdAt: now, updatedAt: now, internalWorkloadConsumed: 0 };
         setProjects(prev => [...prev, newProject]);
         setTargetId(newProject.id);
       } else {
         const nextIdNumber = activities.length + 1;
         const activityIdDisplay = `ACT-${String(nextIdNumber).padStart(3, '0')}`;
-
-        const newActivity: Activity = {
-            id: `act-${newId}`,
-            activityId: activityIdDisplay,
-            title: newItemTitle,
-            status: ActivityStatus.NOT_STARTED,
-            priority: Priority.MEDIUM,
-            activityType: ActivityType.PONCTUAL,
-            securityDomain: SecurityDomain.GOUVERNANCE,
-            isoMeasures: [],
-            strategicOrientations: [],
-            objectives: [],
-            functionalProcessId: securityProcesses[0]?.id || '',
-            createdAt: now,
-            updatedAt: now,
-            consumedWorkload: 0
-        };
+        const newActivity: Activity = { id: `act-${newId}`, activityId: activityIdDisplay, title: newItemTitle, status: ActivityStatus.NOT_STARTED, priority: Priority.MEDIUM, activityType: ActivityType.PONCTUAL, securityDomain: SecurityDomain.GOUVERNANCE, isoMeasures: [], strategicOrientations: [], objectives: [], functionalProcessId: securityProcesses[0]?.id || '', createdAt: now, updatedAt: now, consumedWorkload: 0 };
         setActivities(prev => [...prev, newActivity]);
         setTargetId(newActivity.id);
       }
-
       setIsCreateModalOpen(false);
       setNewItemTitle('');
   };
@@ -369,6 +372,9 @@ const CalendarImportPage: React.FC = () => {
           <p className="text-slate-600">Transformez vos réunions Outlook en temps consommé.</p>
         </div>
         <div className="flex items-center gap-2">
+            <button onClick={() => setIsHiddenManagerOpen(true)} className="text-slate-600 hover:text-blue-600 text-sm flex items-center gap-1 px-3 py-2 rounded hover:bg-blue-50 transition-colors bg-white border border-slate-200 shadow-sm">
+                <ListX size={14}/> Gérer les masqués ({hiddenSummaries.length})
+            </button>
             <button onClick={clearHistory} className="text-slate-400 hover:text-red-500 text-sm flex items-center gap-1 px-3 py-2 rounded hover:bg-red-50 transition-colors">
                 <Trash2 size={14}/> Effacer historique
             </button>
@@ -477,9 +483,17 @@ const CalendarImportPage: React.FC = () => {
                             <Tooltip text="Sélectionner toutes les occurrences de cet événement (et filtrer la vue)">
                                 <button 
                                     onClick={(e) => { e.stopPropagation(); selectSimilarEvents(event); }}
-                                    className="text-slate-400 hover:text-blue-600 transition-colors p-1 rounded-full hover:bg-blue-100"
+                                    className="text-slate-400 hover:text-blue-600 transition-colors p-1.5 rounded-full hover:bg-blue-100"
                                 >
                                     <Copy size={14} />
+                                </button>
+                            </Tooltip>
+                            <Tooltip text="Masquer cet événement (et les futurs identiques)">
+                                <button 
+                                    onClick={(e) => { e.stopPropagation(); handleHideSingle(event.summary); }}
+                                    className="text-slate-400 hover:text-red-600 transition-colors p-1.5 rounded-full hover:bg-red-100"
+                                >
+                                    <EyeOff size={14} />
                                 </button>
                             </Tooltip>
                         </div>
@@ -545,6 +559,15 @@ const CalendarImportPage: React.FC = () => {
                                 Base de conversion : 1j = {conversionRate}h
                             </div>
                         </div>
+
+                        <button
+                            onClick={handleHideSelected}
+                            disabled={selectedEventsList.length === 0}
+                            className="w-full py-2 bg-white border border-slate-300 text-slate-600 hover:bg-slate-50 rounded-lg font-medium text-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            <EyeOff size={16} />
+                            Masquer la sélection
+                        </button>
 
                         <div>
                             <label className="block text-sm font-medium text-slate-700 mb-1">Imputer sur...</label>
@@ -647,6 +670,43 @@ const CalendarImportPage: React.FC = () => {
                 </div>
             </div>
         </Modal>
+      )}
+
+      {/* Modal de gestion des masqués */}
+      {isHiddenManagerOpen && (
+          <Modal isOpen={isHiddenManagerOpen} onClose={() => setIsHiddenManagerOpen(false)} title="Événements masqués">
+              <div className="space-y-4">
+                  <p className="text-sm text-slate-600">
+                      Les événements ayant ces libellés sont automatiquement masqués de la liste d'importation.
+                  </p>
+                  {hiddenSummaries.length === 0 ? (
+                      <div className="p-8 text-center text-slate-400 italic bg-slate-50 rounded-lg border border-dashed border-slate-300">
+                          Aucun filtre de masquage actif.
+                      </div>
+                  ) : (
+                      <div className="max-h-96 overflow-y-auto divide-y divide-slate-100 border border-slate-200 rounded-md bg-white">
+                          {hiddenSummaries.sort().map(summary => (
+                              <div key={summary} className="flex justify-between items-center p-3 hover:bg-slate-50">
+                                  <span className="text-sm text-slate-800 font-medium">{summary}</span>
+                                  <Tooltip text="Ré-afficher (ne plus masquer)">
+                                      <button 
+                                          onClick={() => handleRemoveHiddenSummary(summary)} 
+                                          className="p-1 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                                      >
+                                          <Trash2 size={16} />
+                                      </button>
+                                  </Tooltip>
+                              </div>
+                          ))}
+                      </div>
+                  )}
+                  <div className="flex justify-end pt-4 border-t">
+                      <button onClick={() => setIsHiddenManagerOpen(false)} className="px-4 py-2 text-sm bg-slate-200 hover:bg-slate-300 text-slate-800 rounded-md transition-colors">
+                          Fermer
+                      </button>
+                  </div>
+              </div>
+          </Modal>
       )}
     </div>
   );

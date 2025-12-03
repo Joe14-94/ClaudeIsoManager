@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { ReactFlow, Background, Controls, Node, Edge, MarkerType, Handle, Position, useNodesState, useEdgesState } from '@xyflow/react';
 
@@ -58,6 +59,7 @@ const dataModelEntities = {
       { name: 'objectives', type: 'string[]' },
       { name: 'owner', type: 'string?' },
       { name: 'functionalProcessId', type: 'string' },
+      { name: 'consumedWorkload', type: 'number?' },
     ],
   },
   Project: {
@@ -66,11 +68,14 @@ const dataModelEntities = {
       { name: 'id', type: 'string' },
       { name: 'projectId', type: 'string' },
       { name: 'title', type: 'string' },
-      { name: 'status', type: 'ActivityStatus' },
+      { name: 'status', type: 'ProjectStatus' },
       { name: 'initiativeId', type: 'string' },
-      { name: 'isoMeasures', type: 'string[]' },
+      { name: 'weather', type: 'ProjectWeather?' },
+      { name: 'priorityScore', type: 'number?' },
+      { name: 'milestones', type: 'ProjectMilestone[]' },
+      { name: 'tasks', type: 'ProjectTask[]' },
+      { name: 'majorRiskIds', type: 'string[]' },
       { name: 'projectManagerMOA', type: 'string?' },
-      { name: 'projectManagerMOE', type: 'string?' },
     ],
   },
   Objective: {
@@ -135,6 +140,34 @@ const dataModelEntities = {
       { name: 'description', type: 'string' },
     ],
   },
+  ProjectTask: {
+      color: '#64748b', // slate-500
+      attributes: [
+          { name: 'id', type: 'string' },
+          { name: 'name', type: 'string' },
+          { name: 'startDate', type: 'DateTime' },
+          { name: 'endDate', type: 'DateTime' },
+          { name: 'progress', type: 'number' },
+          { name: 'children', type: 'ProjectTask[]' },
+      ]
+  },
+  ProjectMilestone: {
+      color: '#fbbf24', // amber-400
+      attributes: [
+          { name: 'id', type: 'string' },
+          { name: 'label', type: 'string' },
+          { name: 'date', type: 'DateTime' },
+          { name: 'completed', type: 'boolean' },
+      ]
+  },
+  MajorRisk: {
+      color: '#ef4444', // red-500
+      attributes: [
+          { name: 'id', type: 'string' },
+          { name: 'label', type: 'string' },
+          { name: 'category', type: 'string' },
+      ]
+  }
 };
 
 const initialNodes: Node[] = [
@@ -147,6 +180,9 @@ const initialNodes: Node[] = [
   { id: 'Initiative', type: ENTITY_NODE_TYPE, position: { x: 800, y: 500 }, data: { name: 'Initiative', ...dataModelEntities.Initiative }, ...nodeDefaults },
   { id: 'Chantier', type: ENTITY_NODE_TYPE, position: { x: 1200, y: 100 }, data: { name: 'Chantier', ...dataModelEntities.Chantier }, ...nodeDefaults },
   { id: 'StrategicOrientation', type: ENTITY_NODE_TYPE, position: { x: 1200, y: 400 }, data: { name: 'StrategicOrientation', ...dataModelEntities.StrategicOrientation }, ...nodeDefaults },
+  { id: 'ProjectTask', type: ENTITY_NODE_TYPE, position: { x: 100, y: 600 }, data: { name: 'ProjectTask', ...dataModelEntities.ProjectTask }, ...nodeDefaults },
+  { id: 'ProjectMilestone', type: ENTITY_NODE_TYPE, position: { x: 400, y: 700 }, data: { name: 'ProjectMilestone', ...dataModelEntities.ProjectMilestone }, ...nodeDefaults },
+  { id: 'MajorRisk', type: ENTITY_NODE_TYPE, position: { x: 700, y: 700 }, data: { name: 'MajorRisk', ...dataModelEntities.MajorRisk }, ...nodeDefaults },
 ];
 
 const edgeDefaults = {
@@ -159,6 +195,7 @@ const edgeDefaults = {
 
 const nmMarker = { type: MarkerType.ArrowClosed };
 const n1Marker = { type: MarkerType.ArrowClosed };
+const compositionMarker = { type: MarkerType.ArrowClosed, color: 'black' };
 
 
 const initialEdges: Edge[] = [
@@ -167,13 +204,14 @@ const initialEdges: Edge[] = [
   { id: 'e-activity-resource', source: 'Activity', target: 'Resource', label: 'owner [n-1]', ...edgeDefaults, className: 'n1-edge', markerEnd: n1Marker },
   { id: 'e-activity-process', source: 'Activity', target: 'SecurityProcess', label: 'functionalProcessId [n-1]', ...edgeDefaults, className: 'n1-edge', markerEnd: n1Marker },
   { id: 'e-activity-objective', source: 'Activity', target: 'Objective', label: 'objectives [n-m]', ...edgeDefaults, className: 'nm-edge', markerEnd: nmMarker },
-  { id: 'e-activity-orientation', source: 'Activity', target: 'StrategicOrientation', label: 'strategicOrientations [n-m]', ...edgeDefaults, className: 'nm-edge', markerEnd: nmMarker },
   
   // Project Edges
   { id: 'e-project-initiative', source: 'Project', target: 'Initiative', label: 'initiativeId [n-1]', ...edgeDefaults, className: 'n1-edge', markerEnd: n1Marker },
   { id: 'e-project-iso', source: 'Project', target: 'IsoMeasure', label: 'isoMeasures [n-m]', ...edgeDefaults, className: 'nm-edge', markerEnd: nmMarker },
   { id: 'e-project-resource-moa', source: 'Project', target: 'Resource', label: 'managerMOA [n-1]', ...edgeDefaults, className: 'n1-edge', markerEnd: n1Marker },
-  { id: 'e-project-resource-moe', source: 'Project', target: 'Resource', label: 'managerMOE [n-1]', ...edgeDefaults, className: 'n1-edge', markerEnd: n1Marker },
+  { id: 'e-project-task', source: 'Project', target: 'ProjectTask', label: 'tasks [1-n]', ...edgeDefaults, className: 'n1-edge', markerEnd: compositionMarker },
+  { id: 'e-project-milestone', source: 'Project', target: 'ProjectMilestone', label: 'milestones [1-n]', ...edgeDefaults, className: 'n1-edge', markerEnd: compositionMarker },
+  { id: 'e-project-risk', source: 'Project', target: 'MajorRisk', label: 'majorRiskIds [n-m]', ...edgeDefaults, className: 'nm-edge', markerEnd: nmMarker },
 
   // Initiative Edges
   { id: 'e-initiative-iso', source: 'Initiative', target: 'IsoMeasure', label: 'isoMeasureIds [n-m]', ...edgeDefaults, className: 'nm-edge', markerEnd: nmMarker },

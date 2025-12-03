@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useMemo, useState } from 'react';
 // FIX: Replace monolithic d3 import with specific named imports to resolve type errors.
 import { select, zoom, zoomIdentity, forceSimulation, forceLink, forceManyBody, forceCollide, forceCenter, drag, SimulationNodeDatum, ZoomBehavior } from 'd3';
@@ -7,13 +8,13 @@ const dataModelEntities = {
   Activity: { 
     color: '#ca8a04', 
     attributes: [
-        { name: 'id', type: 'string' }, { name: 'activityId', type: 'string' }, { name: 'title', type: 'string' }, { name: 'status', type: 'ActivityStatus' }, { name: 'priority', type: 'Priority' }, { name: 'isoMeasures', type: 'string[]', isKey: true }, { name: 'objectives', type: 'string[]', isKey: true }, { name: 'owner', type: 'string?', isKey: true }, { name: 'functionalProcessId', type: 'string', isKey: true }, { name: 'strategicOrientations', type: 'string[]', isKey: true }
+        { name: 'id', type: 'string' }, { name: 'activityId', type: 'string' }, { name: 'title', type: 'string' }, { name: 'status', type: 'ActivityStatus' }, { name: 'priority', type: 'Priority' }, { name: 'isoMeasures', type: 'string[]', isKey: true }, { name: 'objectives', type: 'string[]', isKey: true }, { name: 'owner', type: 'string?', isKey: true }, { name: 'functionalProcessId', type: 'string', isKey: true }, { name: 'consumedWorkload', type: 'number?' }
     ] 
   },
   Project: { 
     color: '#10b981', 
     attributes: [
-        { name: 'id', type: 'string' }, { name: 'projectId', type: 'string' }, { name: 'title', type: 'string' }, { name: 'status', type: 'ActivityStatus' }, { name: 'initiativeId', type: 'string', isKey: true }, { name: 'isoMeasures', type: 'string[]', isKey: true }, { name: 'projectManagerMOA', type: 'string?', isKey: true }, { name: 'projectManagerMOE', type: 'string?', isKey: true }
+        { name: 'id', type: 'string' }, { name: 'projectId', type: 'string' }, { name: 'title', type: 'string' }, { name: 'status', type: 'ActivityStatus' }, { name: 'initiativeId', type: 'string', isKey: true }, { name: 'isoMeasures', type: 'string[]', isKey: true }, { name: 'projectManagerMOA', type: 'string?', isKey: true }, { name: 'projectManagerMOE', type: 'string?', isKey: true }, { name: 'weather', type: 'ProjectWeather?' }, { name: 'priorityScore', type: 'number?' }, { name: 'majorRiskIds', type: 'string[]', isKey: true }
     ] 
   },
   Objective: { 
@@ -58,12 +59,31 @@ const dataModelEntities = {
         { name: 'id', type: 'string' }, { name: 'name', type: 'string' }, { name: 'description', type: 'string' }
     ] 
   },
+  ProjectTask: {
+    color: '#64748b',
+    attributes: [
+        { name: 'id', type: 'string' }, { name: 'name', type: 'string' }, { name: 'dates', type: 'DateTime' }, { name: 'progress', type: 'number' }, { name: 'children', type: 'ProjectTask[]' }
+    ]
+  },
+  ProjectMilestone: {
+    color: '#fbbf24',
+    attributes: [
+        { name: 'id', type: 'string' }, { name: 'label', type: 'string' }, { name: 'date', type: 'DateTime' }, { name: 'completed', type: 'boolean' }
+    ]
+  },
+  MajorRisk: {
+    color: '#ef4444',
+    attributes: [
+        { name: 'id', type: 'string' }, { name: 'label', type: 'string' }, { name: 'category', type: 'string' }
+    ]
+  }
 };
 
 const initialLinksData = [
   { source: 'Activity', target: 'IsoMeasure', label: '[n-m]' }, { source: 'Activity', target: 'Resource', label: '[n-1]' }, { source: 'Activity', target: 'SecurityProcess', label: '[n-1]' }, { source: 'Activity', target: 'Objective', label: '[n-m]' }, { source: 'Activity', target: 'StrategicOrientation', label: '[n-m]' },
   { source: 'Project', target: 'Initiative', label: '[n-1]' }, { source: 'Project', target: 'IsoMeasure', label: '[n-m]' }, { source: 'Project', target: 'Resource', label: 'managerMOA [n-1]' }, { source: 'Project', target: 'Resource', label: 'managerMOE [n-1]' },
   { source: 'Initiative', target: 'IsoMeasure', label: '[n-m]' }, { source: 'Objective', target: 'StrategicOrientation', label: '[n-m]' }, { source: 'Chantier', target: 'StrategicOrientation', label: '[n-1]' }, { source: 'Objective', target: 'IsoMeasure', label: '[n-m]' }, { source: 'Objective', target: 'Chantier', label: '[n-1]' },
+  { source: 'Project', target: 'ProjectTask', label: '[1-n]' }, { source: 'Project', target: 'ProjectMilestone', label: '[1-n]' }, { source: 'Project', target: 'MajorRisk', label: '[n-m]' }
 ];
 
 const NODE_WIDTH = 240;
@@ -120,13 +140,13 @@ const DataModelView2: React.FC = () => {
         zoomRef.current = zoomBehavior;
         svg.call(zoomBehavior);
         
-        const initialTransform = zoomIdentity.translate(width / 2, height / 2).scale(0.8);
+        const initialTransform = zoomIdentity.translate(width / 2, height / 2).scale(0.6); // Scale down slightly to fit more nodes
         svg.call(zoomBehavior.transform, initialTransform);
         
         const simulation = forceSimulation(nodes as SimulationNodeDatum[])
-            .force('link', forceLink(links).id((d: any) => d.id).distance(400).strength(0.6))
-            .force('charge', forceManyBody().strength(-2500))
-            .force('collide', forceCollide().radius(200))
+            .force('link', forceLink(links).id((d: any) => d.id).distance(450).strength(0.5))
+            .force('charge', forceManyBody().strength(-3000))
+            .force('collide', forceCollide().radius(250))
             .force('center', forceCenter(0, 0));
 
         const linkGroup = g.selectAll('.links').data([null]).join('g').attr('class', 'links');
