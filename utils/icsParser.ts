@@ -1,4 +1,5 @@
 
+
 export interface CalendarEvent {
   uid: string;
   summary: string;
@@ -45,29 +46,44 @@ const parseICSDate = (dateStr: string): Date => {
   const minute = parseInt(cleanDateStr.substring(11, 13)) || 0;
   const second = parseInt(cleanDateStr.substring(13, 15)) || 0;
 
+  // Si la date contient 'Z', c'est de l'UTC. Sinon, c'est du "local" (souvent flottant dans les ICS)
+  // Pour simplifier dans ce contexte web, on traite tout comme UTC pour éviter les décalages de fuseau horaire locaux du navigateur
   const date = new Date(Date.UTC(year, month, day, hour, minute, second));
   
-  // Si pas de Z à la fin, c'est souvent du local, mais pour simplifier on traite tout en UTC
-  // ou on laisse le navigateur gérer le décalage si nécessaire.
   return date;
 };
 
 export const parseICSFile = async (file: File): Promise<CalendarEvent[]> => {
   const text = await file.text();
+  // Utilisation d'une regex plus robuste pour le split des lignes pour gérer différents formats de fin de ligne
   const lines = text.split(/\r\n|\n|\r/);
   const events: CalendarEvent[] = [];
   
   let currentEvent: any = null;
   let inEvent = false;
 
+  // Pré-traitement pour gérer le "line folding" (lignes coupées commençant par un espace)
+  const unfoldedLines: string[] = [];
   for (let i = 0; i < lines.length; i++) {
-    let line = lines[i];
-
-    // Gestion des lignes pliées (folding)
-    while (i + 1 < lines.length && lines[i + 1].startsWith(' ')) {
-      line += lines[i + 1].substring(1);
-      i++;
+    const line = lines[i];
+    if (line.startsWith(' ') || line.startsWith('\t')) {
+      if (unfoldedLines.length > 0) {
+        unfoldedLines[unfoldedLines.length - 1] += line.substring(1);
+      }
+    } else {
+      if (line.trim() !== '') {
+        unfoldedLines.push(line);
+      }
     }
+  }
+
+  // Limite de sécurité augmentée pour gérer de gros calendriers (ex: plusieurs années)
+  const MAX_EVENTS = 5000;
+
+  for (let i = 0; i < unfoldedLines.length; i++) {
+    if (events.length >= MAX_EVENTS) break;
+
+    const line = unfoldedLines[i];
 
     if (line.startsWith('BEGIN:VEVENT')) {
       inEvent = true;
@@ -80,10 +96,10 @@ export const parseICSFile = async (file: File): Promise<CalendarEvent[]> => {
         const durationMs = end.getTime() - start.getTime();
         const durationHours = durationMs / (1000 * 60 * 60);
 
-        // Ignorer les événements < 15 min ou > 24h (erreurs ou rappels)
+        // Ignorer les événements < 15 min ou > 24h (erreurs ou rappels ou journées entières mal formées)
         if (durationHours >= 0.25 && durationHours < 24) {
             const eventObj: CalendarEvent = {
-                uid: currentEvent.UID || `generated-${Math.random()}`,
+                uid: currentEvent.UID || `generated-${Math.random()}-${Date.now()}`,
                 summary: currentEvent.SUMMARY || 'Sans titre',
                 description: currentEvent.DESCRIPTION || '',
                 startDate: start,
@@ -100,20 +116,30 @@ export const parseICSFile = async (file: File): Promise<CalendarEvent[]> => {
       }
       currentEvent = null;
     } else if (inEvent) {
-      const [key, ...values] = line.split(':');
-      const value = values.join(':'); // Re-join in case value contained colons (e.g. http://)
-      
-      // Nettoyage des clés avec paramètres (ex: DTSTART;TZID=Europe/Paris)
-      const cleanKey = key.split(';')[0];
-      
-      if (['UID', 'SUMMARY', 'DESCRIPTION', 'LOCATION', 'STATUS'].includes(cleanKey)) {
-        // Décodage basique des caractères échappés
-        currentEvent[cleanKey] = value.replace(/\\,/g, ',').replace(/\\;/g, ';').replace(/\\n/g, '\n').replace(/\\N/g, '\n');
-      } else if (['DTSTART', 'DTEND', 'ORGANIZER'].includes(cleanKey)) {
-        currentEvent[cleanKey] = line; // On garde la ligne entière pour le parsing de date ou nettoyer plus tard
+      // Séparation clé:valeur, en gérant le fait que la valeur peut contenir des ':'
+      const separatorIndex = line.indexOf(':');
+      if (separatorIndex > -1) {
+          const keyPart = line.substring(0, separatorIndex);
+          const valuePart = line.substring(separatorIndex + 1);
+          
+          // Nettoyage des clés avec paramètres (ex: DTSTART;TZID=Europe/Paris)
+          const cleanKey = keyPart.split(';')[0];
+
+          if (['UID', 'SUMMARY', 'DESCRIPTION', 'LOCATION', 'STATUS'].includes(cleanKey)) {
+            // Décodage basique des caractères échappés ICS
+            currentEvent[cleanKey] = valuePart
+                .replace(/\\,/g, ',')
+                .replace(/\\;/g, ';')
+                .replace(/\\n/g, '\n')
+                .replace(/\\N/g, '\n')
+                .replace(/\\\\/g, '\\');
+          } else if (['DTSTART', 'DTEND', 'ORGANIZER'].includes(cleanKey)) {
+            currentEvent[cleanKey] = line; // On garde la ligne entière pour le parsing de date spécifique
+          }
       }
     }
   }
 
+  // Tri décroissant par défaut
   return events.sort((a, b) => b.startDate.getTime() - a.startDate.getTime());
 };

@@ -16,10 +16,10 @@ interface ZoomLevel {
 
 const ZOOM_LEVELS: ZoomLevel[] = [
     { mode: 'Year', dayWidth: 1, label: 'Année (Ultra Compact)' },
-    { mode: 'Quarter', dayWidth: 4, label: 'Trimestre' }, // Augmenté pour afficher les semaines
-    { mode: 'Month', dayWidth: 5, label: 'Mois (Compact)' }, 
-    { mode: 'Week', dayWidth: 20, label: 'Semaine' },
-    { mode: 'Day', dayWidth: 50, label: 'Jour' },
+    { mode: 'Quarter', dayWidth: 4, label: 'Trimestre' }, 
+    { mode: 'Month', dayWidth: 15, label: 'Mois' }, 
+    { mode: 'Week', dayWidth: 40, label: 'Semaine' },
+    { mode: 'Day', dayWidth: 80, label: 'Jour' },
 ];
 
 interface AdvancedGanttChartProps {
@@ -52,17 +52,25 @@ interface GanttRow {
   colorClass: string; // Couleur de la barre
 }
 
+interface TimeBlock {
+    left: number;
+    width: number;
+    label: string;
+    isEven: boolean;
+}
+
 const HEADER_HEIGHT = 50; 
-const ROW_HEIGHT = 40; // Réduit légèrement pour plus de densité et éviter les décalages de calcul
+const ROW_HEIGHT = 40; 
 const SIDEBAR_WIDTH = 450; 
+const HEADER_BUFFER = 200; // Buffer pour le scroll horizontal
 
 // --- Fonctions Utilitaires ---
 
 const getPhaseColor = (index: number, type: string): string => {
-    if (type === 'project') return 'bg-indigo-600'; // Indigo soutenu pour les projets
+    if (type === 'project') return 'bg-indigo-600'; 
     
     const colors = [
-        'bg-blue-500',   // Bleu corporate
+        'bg-blue-500', 
         'bg-blue-500',
         'bg-blue-500',
         'bg-blue-500',
@@ -92,15 +100,14 @@ const getWeekNumber = (d: Date) => {
 const AdvancedGanttChart: React.FC<AdvancedGanttChartProps> = ({ projects, resources, onProjectClick, onDataChange }) => {
   // État local pour permettre l'édition "in-place"
   const [localProjects, setLocalProjects] = useState<Project[]>([]);
-  // Snapshot des projets initiaux pour la baseline (ne change jamais après le chargement initial)
+  // Snapshot des projets initiaux pour la baseline
   const [initialProjectsSnapshot, setInitialProjectsSnapshot] = useState<Project[]>([]);
 
-  const [zoomIndex, setZoomIndex] = useState(2); // Vue Mois par défaut pour voir large
+  const [zoomIndex, setZoomIndex] = useState(2); // Vue Mois par défaut
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set()); 
   const [tooltip, setTooltip] = useState<{ visible: boolean; x: number; y: number; content: React.ReactNode } | null>(null);
-  const [showBaseline, setShowBaseline] = useState(false); // Mode comparaison
+  const [showBaseline, setShowBaseline] = useState(false); 
   const [showDependencies, setShowDependencies] = useState(true);
-  const [showWeekends, setShowWeekends] = useState(true);
   const [isOptionsOpen, setIsOptionsOpen] = useState(false);
   const [scrollbarWidth, setScrollbarWidth] = useState(0);
   
@@ -109,9 +116,9 @@ const AdvancedGanttChart: React.FC<AdvancedGanttChartProps> = ({ projects, resou
   const [editFormData, setEditFormData] = useState<{ name: string; start: string; end: string; progress: number } | null>(null);
 
   // Refs pour la synchro du scroll
-  const scrollContainerRef = useRef<HTMLDivElement>(null); // Le conteneur principal de la timeline (scroll X)
-  const headerRef = useRef<HTMLDivElement>(null); // Le header de la timeline (scroll X sync avec container)
-  const verticalScrollContainerRef = useRef<HTMLDivElement>(null); // Conteneur global scrollable Y (sidebar + timeline)
+  const scrollContainerRef = useRef<HTMLDivElement>(null); 
+  const headerRef = useRef<HTMLDivElement>(null); 
+  const verticalScrollContainerRef = useRef<HTMLDivElement>(null); 
   const optionsRef = useRef<HTMLDivElement>(null);
 
   const currentZoom = ZOOM_LEVELS[zoomIndex];
@@ -120,15 +127,10 @@ const AdvancedGanttChart: React.FC<AdvancedGanttChartProps> = ({ projects, resou
   // Initialisation des données locales et du snapshot
   useEffect(() => {
       if (projects && projects.length > 0) {
-          // Deep copy pour briser les références et permettre l'édition locale sans affecter la baseline
           const projectsCopy = JSON.parse(JSON.stringify(projects));
           setLocalProjects(projectsCopy);
-          
-          // Initialisation du snapshot seulement s'il est vide (au premier chargement)
-          // Cela garantit que la baseline reste fixe même si on reçoit des updates
           setInitialProjectsSnapshot((prev) => prev.length === 0 ? JSON.parse(JSON.stringify(projects)) : prev);
           
-          // Par défaut, on étend tous les projets
           setExpandedIds(prev => {
              if (prev.size === 0) {
                  return new Set(projects.map(p => p.id));
@@ -138,13 +140,10 @@ const AdvancedGanttChart: React.FC<AdvancedGanttChartProps> = ({ projects, resou
       }
   }, [projects]);
 
-  // Mémorisation des dates initiales (Baseline) à partir du SNAPSHOT
   const initialDatesMap = useMemo(() => {
       const map = new Map<string, { start: Date, end: Date }>();
-      
       const traverse = (items: any[]) => {
           items.forEach(item => {
-              // On gère à la fois les projets (projectStartDate) et les tâches (startDate)
               const startStr = item.startDate || item.projectStartDate;
               const endStr = item.endDate || item.projectEndDate;
 
@@ -159,12 +158,10 @@ const AdvancedGanttChart: React.FC<AdvancedGanttChartProps> = ({ projects, resou
               if (item.children) traverse(item.children);
           });
       };
-      
       traverse(initialProjectsSnapshot);
       return map;
   }, [initialProjectsSnapshot]);
 
-  // Gestion du clic extérieur pour le menu options
   useEffect(() => {
       const handleClickOutside = (event: MouseEvent) => {
           if (optionsRef.current && !optionsRef.current.contains(event.target as Node)) {
@@ -195,8 +192,6 @@ const AdvancedGanttChart: React.FC<AdvancedGanttChartProps> = ({ projects, resou
         if (duration <= 0) type = 'milestone';
 
         const colorClass = getPhaseColor(rootIndex, type);
-
-        // Récupération de la baseline depuis la map immuable
         const initialDates = initialDatesMap.get(task.id);
         const baselineStartDate = initialDates ? initialDates.start : start;
         const baselineEndDate = initialDates ? initialDates.end : end;
@@ -246,7 +241,6 @@ const AdvancedGanttChart: React.FC<AdvancedGanttChartProps> = ({ projects, resou
              progress = Math.min(100, Math.round((totalConsumed / totalEngaged) * 100));
         }
 
-        // Récupération de la baseline projet
         const initialDates = initialDatesMap.get(project.id);
         const baselineStartDate = initialDates ? initialDates.start : startDate;
         const baselineEndDate = initialDates ? initialDates.end : endDate;
@@ -297,25 +291,18 @@ const AdvancedGanttChart: React.FC<AdvancedGanttChartProps> = ({ projects, resou
     return visible;
   }, [allRows, expandedIds]);
 
-  // Calcul de la largeur de la scrollbar pour aligner le header
   useLayoutEffect(() => {
       const container = verticalScrollContainerRef.current;
       if (!container) return;
-
       const updateScrollbarWidth = () => {
           const width = container.offsetWidth - container.clientWidth;
           setScrollbarWidth(width);
       };
-
-      // Observer les changements de taille du conteneur
       const resizeObserver = new ResizeObserver(updateScrollbarWidth);
       resizeObserver.observe(container);
-      
-      // Calcul initial
       updateScrollbarWidth();
-
       return () => resizeObserver.disconnect();
-  }, [visibleRows.length]); // Dépendance ajoutée pour recalculer si le contenu change
+  }, [visibleRows.length]); 
 
   // --- 2. Calculs de temps et dimensions ---
   const { minDate, maxDate } = useMemo(() => {
@@ -329,8 +316,8 @@ const AdvancedGanttChart: React.FC<AdvancedGanttChartProps> = ({ projects, resou
         if(p.projectEndDate) { const d = new Date(p.projectEndDate); if(d > max) max = d; }
     });
     
-    min.setDate(min.getDate() - 60); 
-    max.setDate(max.getDate() + 60); 
+    min.setDate(min.getDate() - 30); 
+    max.setDate(max.getDate() + 30); 
     return { minDate: min, maxDate: max };
   }, [localProjects]);
 
@@ -346,67 +333,145 @@ const AdvancedGanttChart: React.FC<AdvancedGanttChartProps> = ({ projects, resou
       return Math.ceil(diffDays * dayWidth);
   }, [minDate, maxDate, dayWidth]);
 
-  // Auto-scroll to Today on load
   useLayoutEffect(() => {
      if (scrollContainerRef.current) {
          const todayX = getXPosition(new Date());
          const containerWidth = scrollContainerRef.current.clientWidth;
          scrollContainerRef.current.scrollLeft = todayX - (containerWidth / 2);
-         // Sync header initial
          if(headerRef.current) headerRef.current.scrollLeft = todayX - (containerWidth / 2);
      }
   }, [zoomIndex, getXPosition]);
 
-  // Génération des ticks pour le header
-  const headerTicks = useMemo(() => {
-      const ticks = [];
-      const current = new Date(minDate);
+  // Génération des blocs d'en-tête (Majeurs et Mineurs)
+  const headerBlocks = useMemo(() => {
+      const majorBlocks: TimeBlock[] = [];
+      const minorBlocks: TimeBlock[] = [];
       
-      while (current <= maxDate) {
+      let current = new Date(minDate);
+      // On s'assure de commencer à 00:00
+      current.setHours(0,0,0,0);
+      
+      // Fonction pour obtenir les labels en fonction du zoom
+      const getMajorLabel = (d: Date): string => {
+          if (currentZoom.mode === 'Year') return d.getFullYear().toString();
+          if (currentZoom.mode === 'Quarter') {
+            const label = d.toLocaleDateString('fr-FR', { month: 'short', year: '2-digit' });
+            return label.charAt(0).toUpperCase() + label.slice(1);
+          }
+          if (currentZoom.mode === 'Month') {
+            const label = d.toLocaleString('fr-FR', { month: 'long', year: 'numeric' });
+            return label.charAt(0).toUpperCase() + label.slice(1);
+          }
+          if (currentZoom.mode === 'Week') {
+            const label = d.toLocaleString('fr-FR', { month: 'long', year: 'numeric' });
+            return label.charAt(0).toUpperCase() + label.slice(1);
+          }
+          if (currentZoom.mode === 'Day') return `Semaine du ${d.toLocaleDateString()}`;
+          return '';
+      };
+
+      const getMinorLabel = (d: Date): string => {
+          if (currentZoom.mode === 'Year') return d.toLocaleDateString('fr-FR', { month: 'narrow' }).toUpperCase();
+          if (currentZoom.mode === 'Quarter') return `S${getWeekNumber(d)}`;
+          if (currentZoom.mode === 'Month') return `S${getWeekNumber(d)}`; // Affichage semaine pour le mois
+          if (currentZoom.mode === 'Week') return d.getDate().toString();
+          if (currentZoom.mode === 'Day') return d.getDate().toString();
+          return '';
+      };
+
+      // Clés uniques pour identifier les changements de blocs temporels
+      const getMajorKey = (d: Date): string => {
+          if (currentZoom.mode === 'Year') return d.getFullYear().toString();
+          if (currentZoom.mode === 'Quarter' || currentZoom.mode === 'Month' || currentZoom.mode === 'Week') {
+              return `${d.getFullYear()}-${d.getMonth()}`;
+          }
+          // Day mode: Major is Week
+          return `${d.getFullYear()}-W${getWeekNumber(d)}`;
+      };
+
+      const getMinorKey = (d: Date): string => {
+          if (currentZoom.mode === 'Year') return `${d.getFullYear()}-${d.getMonth()}`;
+          if (currentZoom.mode === 'Quarter' || currentZoom.mode === 'Month') {
+              return `${d.getFullYear()}-W${getWeekNumber(d)}`;
+          }
+          // Week and Day mode: Minor is Day
+          return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+      };
+
+      let currentMajorLabel = getMajorLabel(current);
+      let currentMinorLabel = getMinorLabel(current);
+      
+      let currentMajorKey = getMajorKey(current);
+      let currentMinorKey = getMinorKey(current);
+      
+      let majorStartX = getXPosition(current);
+      let minorStartX = getXPosition(current);
+      
+      let minorCount = 0; // Pour l'alternance (zebra)
+
+      // On boucle jusqu'à maxDate + 1 jour pour fermer les derniers blocs
+      const endDateLoop = new Date(maxDate);
+      endDateLoop.setDate(endDateLoop.getDate() + 1);
+
+      while (current <= endDateLoop) {
           const x = getXPosition(current);
           
-          if (currentZoom.mode === 'Year') {
-               // Top row: Year
-               if (current.getMonth() === 0 && current.getDate() === 1) {
-                   ticks.push({ x, label: current.getFullYear().toString(), type: 'major' });
-               }
-               // Bottom row: First letter of month
-               if (current.getDate() === 1) {
-                   const monthLabel = current.toLocaleDateString('fr-FR', { month: 'narrow' }).toUpperCase();
-                   ticks.push({ x, label: monthLabel, type: 'minor', isMonth: true });
-               }
+          const majorKey = getMajorKey(current);
+          const minorKey = getMinorKey(current);
+
+          // Changement de bloc Majeur (Ligne du haut)
+          if (majorKey !== currentMajorKey) {
+              majorBlocks.push({
+                  left: majorStartX,
+                  width: x - majorStartX,
+                  label: currentMajorLabel,
+                  isEven: false 
+              });
+              currentMajorKey = majorKey;
+              currentMajorLabel = getMajorLabel(current);
+              majorStartX = x;
           }
-          else if (currentZoom.mode === 'Quarter') {
-               // Top row: Month Name + Year (Janv. 25)
-               if (current.getDate() === 1) {
-                   const label = current.toLocaleDateString('fr-FR', { month: 'short', year: '2-digit' });
-                   const formattedLabel = label.charAt(0).toUpperCase() + label.slice(1);
-                   ticks.push({ x, label: formattedLabel, type: 'major' });
-               }
-               // Bottom row: Week number (S46)
-               if (current.getDay() === 1) { // Monday
-                   const weekNum = getWeekNumber(current);
-                   ticks.push({ x, label: `S${weekNum}`, type: 'minor', isMonth: false });
-               }
+
+          // Changement de bloc Mineur (Ligne du bas)
+          if (minorKey !== currentMinorKey) {
+              minorBlocks.push({
+                  left: minorStartX,
+                  width: x - minorStartX,
+                  label: currentMinorLabel,
+                  isEven: minorCount % 2 === 0
+              });
+              currentMinorKey = minorKey;
+              currentMinorLabel = getMinorLabel(current);
+              minorStartX = x;
+              minorCount++;
           }
-          else if ((currentZoom.mode === 'Month' || currentZoom.mode === 'Week') && current.getDate() === 1) {
-               const label = current.toLocaleString('fr-FR', { month: 'long', year: 'numeric' });
-               const formattedLabel = label.charAt(0).toUpperCase() + label.slice(1);
-              ticks.push({ x, label: formattedLabel, type: 'major' });
-          } 
-          else if (currentZoom.mode === 'Week' && current.getDay() === 1) { 
-               ticks.push({ x, label: `${current.getDate()}`, type: 'minor' });
-          } 
-          else if (currentZoom.mode === 'Day') {
-               if (current.getDay() === 1) { 
-                    ticks.push({ x, label: `Semaine du ${current.toLocaleDateString()}`, type: 'major' });
-               }
-               ticks.push({ x, label: `${current.getDate()}`, type: 'minor' });
-          }
+          
           current.setDate(current.getDate() + 1);
       }
-      return ticks;
-  }, [minDate, maxDate, currentZoom, dayWidth, getXPosition]);
+      
+      // Ajout des derniers blocs s'ils n'ont pas été fermés (fin de la plage)
+      const endX = getXPosition(endDateLoop);
+      if (endX > majorStartX) {
+          majorBlocks.push({
+              left: majorStartX,
+              width: endX - majorStartX,
+              label: currentMajorLabel,
+              isEven: false
+          });
+      }
+      if (endX > minorStartX) {
+          minorBlocks.push({
+              left: minorStartX,
+              width: endX - minorStartX,
+              label: currentMinorLabel,
+              isEven: minorCount % 2 === 0
+          });
+      }
+
+      return { major: majorBlocks, minor: minorBlocks };
+
+  }, [minDate, maxDate, currentZoom, getXPosition]);
+
 
   // --- 3. Gestionnaires ---
 
@@ -517,10 +582,8 @@ const AdvancedGanttChart: React.FC<AdvancedGanttChartProps> = ({ projects, resou
       } else {
           updatedProjects.forEach((p: Project) => {
               if (p.tasks && updateTree(p.tasks)) {
-                  // Si une tâche a été mise à jour, on vérifie si la fin du projet doit être repoussée
                   const tasksMaxEnd = getMaxEndDate(p.tasks);
                   const currentProjectEnd = new Date(p.projectEndDate || 0).getTime();
-                  
                   if (tasksMaxEnd > currentProjectEnd) {
                       p.projectEndDate = new Date(tasksMaxEnd).toISOString();
                   }
@@ -530,8 +593,6 @@ const AdvancedGanttChart: React.FC<AdvancedGanttChartProps> = ({ projects, resou
       
       setLocalProjects(updatedProjects);
       setSelectedItem(null);
-      
-      // Synchroniser avec le contexte global si le callback est fourni
       if (onDataChange) {
           onDataChange(updatedProjects);
       }
@@ -588,16 +649,12 @@ const AdvancedGanttChart: React.FC<AdvancedGanttChartProps> = ({ projects, resou
                   const startY = sourceAnchor.y;
                   const endY = targetAnchor.y;
 
-                  // Détection de conflit : La fin de la source est après le début de la cible
                   const isConflict = sourceAnchor.row.endDate.getTime() > targetAnchor.row.startDate.getTime();
-                  
                   const midX = (startX + endX) / 2;
-                  // Si conflit (recul), on ajuste la courbe pour qu'elle soit lisible
                   const controlX = isConflict ? startX + 20 : midX; 
 
                   const path = `M ${startX} ${startY} C ${controlX} ${startY}, ${controlX} ${endY}, ${endX} ${endY}`;
-
-                  const strokeColor = isConflict ? "#ef4444" : "#94a3b8"; // Rouge si conflit, Gris sinon
+                  const strokeColor = isConflict ? "#ef4444" : "#94a3b8"; 
                   const strokeWidth = isConflict ? "2.5" : "1.5";
                   const opacity = isConflict ? "1" : "0.4";
 
@@ -658,13 +715,6 @@ const AdvancedGanttChart: React.FC<AdvancedGanttChartProps> = ({ projects, resou
                             {showDependencies ? <CheckSquare size={14} className="text-blue-600"/> : <Square size={14} className="text-slate-400"/>}
                             Afficher les dépendances
                         </button>
-                        <button 
-                            onClick={() => { setShowWeekends(!showWeekends); setIsOptionsOpen(false); }}
-                            className="w-full text-left px-4 py-2 hover:bg-slate-50 flex items-center gap-2"
-                        >
-                            {showWeekends ? <CheckSquare size={14} className="text-blue-600"/> : <Square size={14} className="text-slate-400"/>}
-                            Afficher les week-ends
-                        </button>
                     </div>
                 )}
              </div>
@@ -674,7 +724,6 @@ const AdvancedGanttChart: React.FC<AdvancedGanttChartProps> = ({ projects, resou
       {/* Main Content with Fixed Header + Scrollable Body */}
       <div className="flex flex-col flex-grow overflow-hidden">
           {/* Header Area */}
-          {/* Remove paddingRight from container, using spacer instead for perfect sync */}
           <div className="flex flex-shrink-0 border-b border-slate-200 bg-slate-50 h-[50px]">
                {/* Fixed Sidebar Header */}
                <div className="flex items-center font-semibold text-slate-600 border-r border-slate-200 flex-shrink-0" style={{ width: SIDEBAR_WIDTH }}>
@@ -684,27 +733,25 @@ const AdvancedGanttChart: React.FC<AdvancedGanttChartProps> = ({ projects, resou
                     <div className="w-20 px-2 text-center">Fin</div>
                </div>
                {/* Scrollable Timeline Header */}
-               <div ref={headerRef} className="overflow-hidden flex-grow relative">
-                   <div className="relative h-full" style={{ width: totalWidth + scrollbarWidth }}>
-                        {headerTicks.map((tick, i) => (
-                            <div key={`tick-${i}`} 
-                                 className={`absolute border-l flex items-center justify-center px-1 ${tick.type === 'major' ? 'border-slate-300 bg-slate-100/50 z-10' : 'border-slate-200 z-0'}`} 
-                                 style={{ 
-                                     left: tick.x, 
-                                     height: '50%', // Toujours 50% de hauteur
-                                     top: tick.type === 'major' ? 0 : '50%' // Soit en haut, soit en bas
-                                 }}>
-                                {tick.type === 'major' && (
-                                    <span className="font-bold text-slate-500 text-[10px] uppercase tracking-wider whitespace-nowrap absolute top-1">{tick.label}</span>
-                                )}
-                                {tick.type === 'minor' && tick.isMonth && (
-                                    <span className="text-[10px] text-slate-400 font-semibold absolute top-1">{tick.label}</span>
-                                )}
-                                {tick.type === 'minor' && !tick.isMonth && (
-                                    <span className="text-[10px] text-slate-500 font-medium">{tick.label}</span>
-                                )}
-                            </div>
+               <div ref={headerRef} className="overflow-hidden flex-grow relative bg-white">
+                   <div className="relative h-full" style={{ width: totalWidth + HEADER_BUFFER }}>
+                        {/* Major Rows (Top) */}
+                        {headerBlocks.major.map((block, i) => (
+                             <div key={`major-${i}`} 
+                                className="absolute top-0 h-1/2 border-l border-slate-300 flex items-center justify-center bg-slate-100/50 font-bold text-slate-600 text-[10px] uppercase tracking-wider z-10"
+                                style={{ left: block.left, width: block.width }}>
+                                {block.label}
+                             </div>
                         ))}
+                        {/* Minor Rows (Bottom) */}
+                        {headerBlocks.minor.map((block, i) => (
+                             <div key={`minor-${i}`}
+                                className="absolute bottom-0 h-1/2 border-l border-slate-200 flex items-center justify-center text-[10px] text-slate-500 font-medium"
+                                style={{ left: block.left, width: block.width }}>
+                                {block.label}
+                             </div>
+                        ))}
+
                         {/* Today Indicator in Header */}
                         <div className="absolute top-0 bottom-0 border-l border-red-400 z-30 pointer-events-none" style={{ left: getXPosition(new Date()) }}>
                             <div className="bg-red-500 text-white text-[9px] px-1.5 py-0.5 rounded-b-sm absolute top-0 transform -translate-x-1/2 shadow-sm font-bold">Aujourd'hui</div>
@@ -776,28 +823,21 @@ const AdvancedGanttChart: React.FC<AdvancedGanttChartProps> = ({ projects, resou
                    </div>
 
                    {/* Timeline Body */}
-                   {/* Added overflow-y-hidden to prevent double vertical scrollbar */}
-                   <div ref={scrollContainerRef} onScroll={handleHorizontalScroll} className="flex-grow overflow-x-auto overflow-y-hidden bg-slate-50/30">
-                        <div className="relative" style={{ width: totalWidth, height: visibleRows.length * ROW_HEIGHT }}>
+                   <div ref={scrollContainerRef} onScroll={handleHorizontalScroll} className="flex-grow overflow-x-auto overflow-y-hidden bg-white">
+                        <div className="relative" style={{ width: totalWidth + HEADER_BUFFER, height: visibleRows.length * ROW_HEIGHT }}>
                             
-                            {/* Vertical Grid Lines */}
-                            <div className="absolute inset-0 pointer-events-none">
-                                {headerTicks.map((tick, i) => (
-                                    <div key={`grid-${i}`} className={`absolute top-0 bottom-0 border-l ${tick.type === 'major' ? 'border-slate-200' : 'border-slate-100'}`} style={{ left: tick.x }}></div>
+                            {/* Zebra Striped Background (based on Minor Blocks) */}
+                            <div className="absolute inset-0 pointer-events-none h-full">
+                                {headerBlocks.minor.map((block, i) => (
+                                    <div key={`grid-col-${i}`} 
+                                         className={`absolute top-0 bottom-0 border-l border-slate-100 ${block.isEven ? 'bg-white' : 'bg-slate-50/80'}`} 
+                                         style={{ left: block.left, width: block.width }}>
+                                    </div>
                                 ))}
-                                {/* Weekend highlighting */}
-                                {showWeekends && currentZoom.mode !== 'Year' && currentZoom.mode !== 'Quarter' && Array.from({ length: Math.ceil((maxDate.getTime() - minDate.getTime()) / (1000 * 60 * 60 * 24)) }).map((_, i) => {
-                                    const date = new Date(minDate);
-                                    date.setDate(date.getDate() + i);
-                                    const day = date.getDay();
-                                    if (day === 0 || day === 6) {
-                                        const left = getXPosition(date);
-                                        return (
-                                            <div key={`weekend-${i}`} className="absolute top-0 bottom-0 bg-slate-100/50" style={{ left, width: dayWidth }}></div>
-                                        )
-                                    }
-                                    return null;
-                                })}
+                                {/* Major Grid Lines (Darker) */}
+                                {headerBlocks.major.map((block, i) => (
+                                     <div key={`grid-major-${i}`} className="absolute top-0 bottom-0 border-l border-slate-200" style={{ left: block.left }}></div>
+                                ))}
                                 {/* Today Line Body */}
                                 <div className="absolute top-0 bottom-0 border-l border-red-400 z-30 pointer-events-none" style={{ left: getXPosition(new Date()) }}></div>
                             </div>
@@ -820,7 +860,6 @@ const AdvancedGanttChart: React.FC<AdvancedGanttChartProps> = ({ projects, resou
                                 const xStart = getXPosition(row.startDate);
                                 const width = Math.max(getXPosition(row.endDate) - xStart, Math.max(2, dayWidth));
                                 
-                                // Baseline Calculations
                                 let baselineX = 0;
                                 let baselineWidth = 0;
                                 let isDelayed = false;
