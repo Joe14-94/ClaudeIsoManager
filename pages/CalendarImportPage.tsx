@@ -202,7 +202,7 @@ const CalendarImportPage: React.FC = () => {
 
   const deselectAll = () => {
     setSelectedInternalIds(new Set());
-    setSearchTerm('');
+    setSearchTerm(''); // Réinitialiser aussi la recherche pour revenir à la vue complète
   };
 
   const handleScroll = () => {
@@ -307,12 +307,12 @@ const CalendarImportPage: React.FC = () => {
           setHiddenSummaries(newHiddenSummaries);
           saveToLocalStorage(HIDDEN_SUMMARIES_KEY, newHiddenSummaries);
           
-          // If user was filtering by this summary, clear filter
+          // Si l'utilisateur filtrait sur ce terme, on vide la recherche pour revenir à la liste
           if (searchTerm === s) {
               setSearchTerm('');
           }
           
-          // Remove from selection if any event with this summary was selected
+          // On enlève de la sélection tout événement correspondant
           if (selectedInternalIds.size > 0) {
               const newSelection = new Set(selectedInternalIds);
               events.forEach(e => {
@@ -368,7 +368,7 @@ const CalendarImportPage: React.FC = () => {
     <div className="h-full flex flex-col space-y-4">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-slate-800">Import Calendrier</h1>
+          <h1 className="text-3xl font-bold text-slate-800">Import calendrier</h1>
           <p className="text-slate-600">Transformez vos réunions Outlook en temps consommé.</p>
         </div>
         <div className="flex items-center gap-2">
@@ -473,14 +473,15 @@ const CalendarImportPage: React.FC = () => {
                         key={event.internalId} 
                         className={`p-3 flex items-start gap-3 transition-colors border-l-4 ${isSelected ? 'bg-blue-50 border-l-blue-500' : 'border-l-transparent hover:bg-slate-50'} ${event.importStatus === 'imported' ? 'opacity-60 grayscale-[0.5]' : ''}`}
                       >
-                        <div className="flex flex-col items-center gap-2 mt-1">
+                        {/* Colonne Gauche : Checkbox et Copie */}
+                        <div className="flex flex-col items-center gap-2 mt-1 flex-shrink-0 w-8">
                             <input 
-                            type="checkbox" 
-                            checked={isSelected} 
-                            onChange={() => toggleSelection(event.internalId)}
-                            className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                                type="checkbox" 
+                                checked={isSelected} 
+                                onChange={() => toggleSelection(event.internalId)}
+                                className="rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
                             />
-                            <Tooltip text="Sélectionner toutes les occurrences de cet événement (et filtrer la vue)">
+                            <Tooltip text="Sélectionner toutes les occurrences (et filtrer)">
                                 <button 
                                     onClick={(e) => { e.stopPropagation(); selectSimilarEvents(event); }}
                                     className="text-slate-400 hover:text-blue-600 transition-colors p-1.5 rounded-full hover:bg-blue-100"
@@ -488,31 +489,46 @@ const CalendarImportPage: React.FC = () => {
                                     <Copy size={14} />
                                 </button>
                             </Tooltip>
-                            <Tooltip text="Masquer cet événement (et les futurs identiques)">
+                        </div>
+
+                        {/* Colonne Centrale : Contenu (Titre sur ligne 1, Dates sur ligne 2) */}
+                        <div className="flex-grow min-w-0 cursor-pointer flex flex-col justify-center gap-1" onClick={() => toggleSelection(event.internalId)}>
+                            <h4 className="font-bold text-slate-800 truncate text-sm leading-tight" title={event.summary}>
+                                {event.summary}
+                            </h4>
+                            
+                            <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500">
+                                <span className="flex items-center gap-1">
+                                    <Calendar size={12} className="text-slate-400"/> 
+                                    {event.startDate.toLocaleDateString()}
+                                </span>
+                                <span className="flex items-center gap-1">
+                                    <Clock size={12} className="text-slate-400"/> 
+                                    {event.startDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - {event.endDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                </span>
+                                <span className="font-medium text-slate-700 bg-slate-100 px-1.5 rounded border border-slate-200">
+                                    {event.durationHours}h
+                                </span>
+                                {event.importStatus === 'imported' && event.history && (
+                                    <span className="text-[10px] text-green-600 flex items-center gap-1 ml-auto">
+                                        <History size={10}/>
+                                        Imputé sur : {event.history.targetName}
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Colonne Droite : Statut et Masquer */}
+                        <div className="flex flex-col items-end justify-between gap-2 flex-shrink-0 w-20 self-stretch">
+                             {statusBadge}
+                             <Tooltip text="Masquer cet événement (et similaires)">
                                 <button 
                                     onClick={(e) => { e.stopPropagation(); handleHideSingle(event.summary); }}
-                                    className="text-slate-400 hover:text-red-600 transition-colors p-1.5 rounded-full hover:bg-red-100"
+                                    className="text-slate-400 hover:text-red-600 transition-colors p-1.5 rounded-full hover:bg-red-50 mb-1"
                                 >
-                                    <EyeOff size={14} />
+                                    <EyeOff size={16} />
                                 </button>
                             </Tooltip>
-                        </div>
-                        <div className="flex-grow min-w-0 cursor-pointer" onClick={() => toggleSelection(event.internalId)}>
-                          <div className="flex justify-between items-start">
-                            <h4 className="font-semibold text-slate-800 truncate pr-2" title={event.summary}>{event.summary}</h4>
-                            {statusBadge}
-                          </div>
-                          <div className="flex items-center gap-4 text-xs text-slate-500 mt-1">
-                            <span className="flex items-center gap-1"><Calendar size={12}/> {event.startDate.toLocaleDateString()}</span>
-                            <span className="flex items-center gap-1"><Clock size={12}/> {event.startDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - {event.endDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
-                            <span className="font-medium text-slate-700">{event.durationHours}h</span>
-                          </div>
-                          {event.importStatus === 'imported' && event.history && (
-                              <div className="text-[10px] text-green-600 mt-1 flex items-center gap-1">
-                                  <History size={10}/>
-                                  Déjà imputé sur : {event.history.targetName} le {new Date(event.history.importedOn).toLocaleDateString()}
-                              </div>
-                          )}
                         </div>
                       </div>
                     );
@@ -666,7 +682,7 @@ const CalendarImportPage: React.FC = () => {
                 </div>
                 <div className="flex justify-end gap-2 pt-4 border-t">
                     <button onClick={() => setIsCreateModalOpen(false)} className="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-md">Annuler</button>
-                    <button onClick={handleCreateNewItem} className="px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700">Créer et Sélectionner</button>
+                    <button onClick={handleCreateNewItem} className="px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700">Créer et sélectionner</button>
                 </div>
             </div>
         </Modal>

@@ -1,5 +1,6 @@
 
 
+
 export interface CalendarEvent {
   uid: string;
   summary: string;
@@ -78,7 +79,8 @@ export const parseICSFile = async (file: File): Promise<CalendarEvent[]> => {
   }
 
   // Limite de sécurité augmentée pour gérer de gros calendriers (ex: plusieurs années)
-  const MAX_EVENTS = 20000;
+  // Augmenté à 50000 pour répondre à la demande utilisateur et garantir l'import complet
+  const MAX_EVENTS = 50000;
 
   for (let i = 0; i < unfoldedLines.length; i++) {
     if (events.length >= MAX_EVENTS) break;
