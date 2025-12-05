@@ -159,10 +159,7 @@ const Sidebar: React.FC = () => {
               <div className={`${!isCollapsed && !isDonneesOpen ? 'hidden' : 'block'}`}>
                 <div className='space-y-1'>
                     {(userRole === 'admin' || userRole === 'pmo') && (
-                      <>
-                        <NavItem to="/data-management" icon={<Database />} label="Gestion des données" isCollapsed={isCollapsed} end={true} />
-                        <NavItem to="/data-management/calendar-import" icon={<Calendar />} label="Import calendrier" isCollapsed={isCollapsed} />
-                      </>
+                      <NavItem to="/data-management" icon={<Database />} label="Gestion des données" isCollapsed={isCollapsed} end={true} />
                     )}
                     {userRole === 'admin' && (<><NavItem to="/data-model" icon={<DatabaseZap />} label="Modèle de données" isCollapsed={isCollapsed} /><NavItem to="/data-model-2" icon={<GitBranch />} label="Modèle de données 2" isCollapsed={isCollapsed} /></>)}
                 </div>

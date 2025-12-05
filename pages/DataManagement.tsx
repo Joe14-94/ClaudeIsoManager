@@ -2,10 +2,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Card, { CardContent, CardHeader, CardTitle } from '../components/ui/Card';
-import { Timer, Coins, Table, Info, AlertTriangle, CheckCircle, Upload, Download, FileJson, Trash2, Database, Calendar, RefreshCw } from 'lucide-react';
+import { Timer, Coins, Table, Info, AlertTriangle, CheckCircle, Upload, Download, FileJson, Trash2, Database, Calendar, RefreshCw, FileCog } from 'lucide-react';
 import { useData } from '../contexts/DataContext';
 import { Project, ProjectCategory, ProjectStatus, Initiative, FdrHistoryEntry, TShirtSize } from '../types';
 import Modal from '../components/ui/Modal';
+import AdvancedImportModal from '../components/data/AdvancedImportModal';
 
 // --- Interfaces & Constants ---
 
@@ -439,6 +440,7 @@ const DataManagement: React.FC = () => {
 
     const [isFdrChoiceOpen, setIsFdrChoiceOpen] = useState(false);
     const [isFdrImportOpen, setIsFdrImportOpen] = useState(false);
+    const [isAdvancedImportOpen, setIsAdvancedImportOpen] = useState(false);
     const [importMode, setImportMode] = useState<'workload' | 'budget'>('workload');
     const [isResetModalOpen, setIsResetModalOpen] = useState(false);
 
@@ -614,17 +616,32 @@ const DataManagement: React.FC = () => {
                     </CardContent>
                 </Card>
 
-                {/* Card Import */}
+                {/* Card Advanced Import */}
+                <Card className="cursor-pointer hover:shadow-md transition-all border-l-4 border-l-violet-500" onClick={() => setIsAdvancedImportOpen(true)}>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2 text-violet-700">
+                            <FileCog size={20} />
+                            Restauration avancée
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-sm text-slate-500">
+                            Restaurer sélectivement des données depuis une sauvegarde (fusion intelligente).
+                        </p>
+                    </CardContent>
+                </Card>
+
+                {/* Card Import Full */}
                 <Card className="relative border-l-4 border-l-amber-500">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-amber-700">
                             <Upload size={20} />
-                            Restaurer une sauvegarde
+                            Restauration complète
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
                         <p className="text-sm text-slate-500 mb-3">
-                            Remplacer les données actuelles par celles d'un fichier de sauvegarde JSON.
+                            Remplacer TOUTES les données actuelles par celles d'un fichier de sauvegarde.
                         </p>
                         <label className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-amber-50 text-amber-700 rounded-md hover:bg-amber-100 transition-colors text-sm font-medium w-full justify-center border border-amber-200">
                             <FileJson size={16}/>
@@ -666,6 +683,11 @@ const DataManagement: React.FC = () => {
                     initiatives={initiatives}
                 />
             )}
+
+            <AdvancedImportModal 
+                isOpen={isAdvancedImportOpen}
+                onClose={() => setIsAdvancedImportOpen(false)}
+            />
 
             {isResetModalOpen && (
                 <Modal isOpen={isResetModalOpen} onClose={() => setIsResetModalOpen(false)} title="Confirmation requise">
