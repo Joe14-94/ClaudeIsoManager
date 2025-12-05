@@ -1,10 +1,10 @@
 
-import React, { useState, useMemo, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import Card, { CardContent, CardHeader, CardTitle } from '../components/ui/Card';
-import { Timer, Coins, Table, Info, AlertTriangle, CheckCircle, Upload } from 'lucide-react';
+import { Timer, Coins, Table, Info, AlertTriangle, CheckCircle, Upload, Download, FileJson, Trash2, Database, Calendar, RefreshCw } from 'lucide-react';
 import { useData } from '../contexts/DataContext';
-import { Project, ProjectCategory, ProjectStatus, Initiative, FdrHistoryEntry } from '../types';
+import { Project, ProjectCategory, ProjectStatus, Initiative, FdrHistoryEntry, TShirtSize } from '../types';
 import Modal from '../components/ui/Modal';
 
 // --- Interfaces & Constants ---
@@ -33,41 +33,6 @@ const fieldAliases: { [key in keyof Partial<Project> | string]: { label: string,
 };
 
 // --- Helper Components ---
-
-const ImportedDataDisplay: React.FC<{ data: Partial<Project> }> = ({ data }) => {
-    const workloadKeys: (keyof Project)[] = ['internalWorkloadRequested', 'internalWorkloadEngaged', 'internalWorkloadConsumed', 'externalWorkloadRequested', 'externalWorkloadEngaged', 'externalWorkloadConsumed'];
-    const budgetKeys: (keyof Project)[] = ['budgetRequested', 'budgetApproved', 'budgetCommitted', 'validatedPurchaseOrders', 'completedPV', 'forecastedPurchaseOrders'];
-    const otherKeys: (keyof Project)[] = ['category'];
-
-    const renderGroup = (title: string, keys: (keyof Project)[]) => {
-        const items = keys.map(key => {
-            const value = data[key];
-            if (value === undefined || value === null || value === '') return null;
-            const label = fieldAliases[key as keyof typeof fieldAliases]?.label || key;
-            const displayValue = typeof value === 'number' ? value.toLocaleString('fr-FR') : String(value);
-            return <div key={key} className="truncate text-slate-700"><span className="font-medium text-slate-500">{label}:</span> {displayValue}</div>
-        }).filter(Boolean);
-
-        if (items.length === 0) return null;
-
-        return (
-            <div>
-                <h6 className="font-semibold text-slate-600 mt-2">{title}</h6>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 pl-2">
-                    {items}
-                </div>
-            </div>
-        );
-    };
-    
-    return (
-        <div className="space-y-1 text-xs">
-            {renderGroup('Charges (J/H)', workloadKeys)}
-            {renderGroup('Budget (€)', budgetKeys)}
-            {renderGroup('Autres', otherKeys)}
-        </div>
-    );
-};
 
 const FdrChoiceModal: React.FC<{
     isOpen: boolean;
@@ -118,7 +83,6 @@ const FdrImportModal: React.FC<{
     const [headers, setHeaders] = useState<string[]>([]);
     const [step, setStep] = useState<'input' | 'preview'>('input');
     
-    // Nouveaux états pour la semaine et l'année
     const [week, setWeek] = useState<string>('');
     const [year, setYear] = useState<string>(new Date().getFullYear().toString());
 
@@ -132,7 +96,6 @@ const FdrImportModal: React.FC<{
              setWeek(prevWeek.toString());
              setYear(now.getFullYear().toString());
              
-             // Reset internal state
              setPastedData('');
              setDisplayedData([]);
              setStep('input');
@@ -148,7 +111,6 @@ const FdrImportModal: React.FC<{
         const categoryKeywords = ["Activité", "EPA", "MCO", "Opportunité", "Opération", "Projet"];
         let currentCategory = "";
 
-        // 1. Identifier la ligne d'en-tête
         let headerRowIndex = -1;
         
         const keywords = mode === 'workload' 
@@ -167,7 +129,6 @@ const FdrImportModal: React.FC<{
              headerRowIndex = 0;
         }
 
-        // 2. Préparer les nouveaux en-têtes
         const originalHeaders = rawData[headerRowIndex];
         const newHeaders = ["Catégorie", "ID Projet", "Libellé"];
         
@@ -189,7 +150,6 @@ const FdrImportModal: React.FC<{
 
         const finalRows: string[][] = [];
 
-        // 3. Itérer sur les données (après la ligne d'en-tête)
         for (let i = headerRowIndex + 1; i < rawData.length; i++) {
             const row = rawData[i];
             const colA = (row[0] || '').trim();
@@ -312,7 +272,6 @@ const FdrImportModal: React.FC<{
             
             if (project) {
                 // Update existing
-                // Add history entry
                 const historyEntry: FdrHistoryEntry = {
                     week,
                     year,
@@ -330,7 +289,7 @@ const FdrImportModal: React.FC<{
                     updatedAt: new Date().toISOString()
                 };
                 updatedProjectsList.push(updatedProject);
-                existingMap.delete(projectId); // Remove from map so we don't process it again
+                existingMap.delete(projectId);
             } else {
                 // Create new
                 const historyEntry: FdrHistoryEntry = {
@@ -360,7 +319,6 @@ const FdrImportModal: React.FC<{
             }
         });
 
-        // Add remaining projects that weren't in the import file
         existingMap.forEach((p) => {
             updatedProjectsList.push(p);
         });
@@ -461,22 +419,35 @@ const FdrImportModal: React.FC<{
 // --- Page Component ---
 
 const DataManagement: React.FC = () => {
-    const { projects, setProjects, initiatives, setLastCsvImportDate, setLastImportWeek, setLastImportYear, lastCsvImportDate } = useData();
+    const { 
+        projects, setProjects, 
+        activities, setActivities, 
+        objectives, setObjectives,
+        orientations, setOrientations,
+        chantiers, setChantiers,
+        initiatives, setInitiatives,
+        resources, setResources,
+        securityProcesses, setSecurityProcesses,
+        majorRisks, setMajorRisks,
+        dashboardLayouts, setDashboardLayouts,
+        setLastCsvImportDate, setLastImportWeek, setLastImportYear, lastCsvImportDate 
+    } = useData();
+    
     const location = useLocation();
+    const navigate = useNavigate();
     const locationState = location.state as any;
 
     const [isFdrChoiceOpen, setIsFdrChoiceOpen] = useState(false);
     const [isFdrImportOpen, setIsFdrImportOpen] = useState(false);
     const [importMode, setImportMode] = useState<'workload' | 'budget'>('workload');
+    const [isResetModalOpen, setIsResetModalOpen] = useState(false);
 
-    // Handle initial state from navigation (e.g. from Sidebar)
     useEffect(() => {
-        if (locationState?.openFdrChoice) {
+        // Si l'URL se termine par /fdr ou si l'état demande l'ouverture, on ouvre la modale
+        if (location.pathname.endsWith('/fdr') || locationState?.openFdrChoice) {
             setIsFdrChoiceOpen(true);
-            // In a real app, you might want to clear location state here to prevent reopening on refresh
-            // window.history.replaceState({}, document.title)
         }
-    }, [locationState]);
+    }, [location, locationState]);
 
     const handleOpenFdrImport = (mode: 'workload' | 'budget') => {
         setImportMode(mode);
@@ -484,49 +455,196 @@ const DataManagement: React.FC = () => {
         setIsFdrImportOpen(true);
     };
 
-    const handleImport = (updatedProjects: Project[], week: string, year: string) => {
+    // Lors de la fermeture des modales FDR, on revient toujours à la racine de DataManagement
+    const handleCloseFdrChoice = () => {
+        setIsFdrChoiceOpen(false);
+        navigate('/data-management');
+    };
+
+    const handleCloseFdrImport = () => {
+        setIsFdrImportOpen(false);
+        navigate('/data-management');
+    };
+
+    const handleImportFdr = (updatedProjects: Project[], week: string, year: string) => {
         setProjects(updatedProjects);
         setLastCsvImportDate(new Date().toISOString());
         setLastImportWeek(week);
         setLastImportYear(year);
-        setIsFdrImportOpen(false);
+        handleCloseFdrImport();
+        alert("Données FDR importées avec succès !");
+    };
+
+    const handleExportJSON = () => {
+        const calendarHistory = localStorage.getItem('calendar_import_history');
+        const calendarHidden = localStorage.getItem('calendar_hidden_summaries');
+
+        const allData = { 
+            activities, 
+            objectives, 
+            orientations, 
+            resources, 
+            chantiers, 
+            securityProcesses, 
+            projects, 
+            initiatives, 
+            dashboardLayouts,
+            majorRisks,
+            calendar_import_history: calendarHistory ? JSON.parse(calendarHistory) : {},
+            calendar_hidden_summaries: calendarHidden ? JSON.parse(calendarHidden) : []
+        };
+
+        const blob = new Blob([JSON.stringify(allData, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `iso-manager-backup-${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    };
+
+    const handleImportJSON = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            try {
+                const json = JSON.parse(e.target?.result as string);
+                
+                if (json.activities) setActivities(json.activities);
+                if (json.projects) setProjects(json.projects);
+                if (json.objectives) setObjectives(json.objectives);
+                if (json.orientations) setOrientations(json.orientations);
+                if (json.chantiers) setChantiers(json.chantiers);
+                if (json.initiatives) setInitiatives(json.initiatives);
+                if (json.resources) setResources(json.resources);
+                if (json.securityProcesses) setSecurityProcesses(json.securityProcesses);
+                if (json.majorRisks) setMajorRisks(json.majorRisks);
+                if (json.dashboardLayouts) setDashboardLayouts(json.dashboardLayouts);
+
+                if (json.calendar_import_history) localStorage.setItem('calendar_import_history', JSON.stringify(json.calendar_import_history));
+                if (json.calendar_hidden_summaries) localStorage.setItem('calendar_hidden_summaries', JSON.stringify(json.calendar_hidden_summaries));
+
+                alert("Restauration des données réussie !");
+            } catch (err) {
+                console.error("Erreur import JSON", err);
+                alert("Erreur lors de l'importation du fichier de sauvegarde.");
+            }
+        };
+        reader.readAsText(file);
+        // Reset value to allow re-importing same file
+        event.target.value = '';
+    };
+
+    const handleResetData = () => {
+        setActivities([]);
+        setProjects([]);
+        setObjectives([]);
+        setChantiers([]);
+        setOrientations([]);
+        setInitiatives([]);
+        setResources([]);
+        setSecurityProcesses([]);
+        setMajorRisks([]);
+        setLastCsvImportDate(null);
+        setLastImportWeek(null);
+        setLastImportYear(null);
+        localStorage.removeItem('calendar_import_history');
+        localStorage.removeItem('calendar_hidden_summaries');
+        setIsResetModalOpen(false);
+        alert("Toutes les données ont été effacées.");
     };
 
     return (
         <div className="space-y-6">
             <h1 className="text-3xl font-bold text-slate-800">Gestion des données</h1>
-            <p className="text-slate-600">Importez vos données depuis les fichiers FDR.</p>
+            <p className="text-slate-600">Administrez les données de l'application : imports, exports et mises à jour.</p>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Card className="cursor-pointer hover:shadow-md transition-all" onClick={() => setIsFdrChoiceOpen(true)}>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {/* Card FDR */}
+                <Card className="cursor-pointer hover:shadow-md transition-all border-l-4 border-l-blue-500" onClick={() => setIsFdrChoiceOpen(true)}>
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Table className="text-blue-600" />
+                        <CardTitle className="flex items-center gap-2 text-blue-700">
+                            <Table size={20} />
                             Mise à jour FDR
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-sm text-slate-500">
+                        <p className="text-sm text-slate-500 mb-4">
                             Importer les charges (J/H) ou les budgets (€) depuis un export Excel/CSV de l'outil FDR.
                         </p>
                         {lastCsvImportDate && (
-                            <p className="text-xs text-slate-400 mt-2 flex items-center gap-1">
-                                <Info size={12}/> Dernière mise à jour: {new Date(lastCsvImportDate).toLocaleString()}
-                            </p>
+                            <div className="text-xs text-slate-400 flex items-center gap-1 bg-slate-50 p-2 rounded">
+                                <Info size={12}/> Dernière màj: {new Date(lastCsvImportDate).toLocaleDateString()}
+                            </div>
                         )}
                     </CardContent>
                 </Card>
-                
-                <Card className="opacity-60 cursor-not-allowed">
+
+                {/* Card Calendar */}
+                <Card className="cursor-pointer hover:shadow-md transition-all border-l-4 border-l-indigo-500" onClick={() => navigate('/data-management/calendar-import')}>
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Upload className="text-slate-400" />
-                            Import JSON (Backup)
+                        <CardTitle className="flex items-center gap-2 text-indigo-700">
+                            <Calendar size={20} />
+                            Import calendrier
                         </CardTitle>
                     </CardHeader>
                     <CardContent>
                         <p className="text-sm text-slate-500">
-                            Restaurer une sauvegarde complète des données (Fonctionnalité à venir).
+                            Convertir des réunions Outlook (.ics) en temps consommé sur les projets et activités.
+                        </p>
+                    </CardContent>
+                </Card>
+
+                {/* Card Export */}
+                <Card className="cursor-pointer hover:shadow-md transition-all border-l-4 border-l-emerald-500" onClick={handleExportJSON}>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2 text-emerald-700">
+                            <Download size={20} />
+                            Sauvegarder les données
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-sm text-slate-500">
+                            Télécharger une copie complète de toutes les données actuelles au format JSON.
+                        </p>
+                    </CardContent>
+                </Card>
+
+                {/* Card Import */}
+                <Card className="relative border-l-4 border-l-amber-500">
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2 text-amber-700">
+                            <Upload size={20} />
+                            Restaurer une sauvegarde
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-sm text-slate-500 mb-3">
+                            Remplacer les données actuelles par celles d'un fichier de sauvegarde JSON.
+                        </p>
+                        <label className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 bg-amber-50 text-amber-700 rounded-md hover:bg-amber-100 transition-colors text-sm font-medium w-full justify-center border border-amber-200">
+                            <FileJson size={16}/>
+                            Choisir un fichier...
+                            <input type="file" accept=".json" onChange={handleImportJSON} className="hidden" />
+                        </label>
+                    </CardContent>
+                </Card>
+
+                {/* Card Reset */}
+                <Card className="cursor-pointer hover:shadow-md transition-all border-l-4 border-l-red-500 bg-red-50/30" onClick={() => setIsResetModalOpen(true)}>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2 text-red-700">
+                            <Trash2 size={20} />
+                            Réinitialiser l'application
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-sm text-red-600/80">
+                            Attention : Cette action effacera toutes les données (projets, activités, paramètres...).
                         </p>
                     </CardContent>
                 </Card>
@@ -534,7 +652,7 @@ const DataManagement: React.FC = () => {
 
             <FdrChoiceModal 
                 isOpen={isFdrChoiceOpen} 
-                onClose={() => setIsFdrChoiceOpen(false)} 
+                onClose={handleCloseFdrChoice} 
                 onSelect={handleOpenFdrImport} 
             />
 
@@ -542,11 +660,32 @@ const DataManagement: React.FC = () => {
                 <FdrImportModal 
                     isOpen={isFdrImportOpen} 
                     mode={importMode} 
-                    onClose={() => setIsFdrImportOpen(false)} 
-                    onImport={handleImport}
+                    onClose={handleCloseFdrImport} 
+                    onImport={handleImportFdr}
                     existingProjects={projects}
                     initiatives={initiatives}
                 />
+            )}
+
+            {isResetModalOpen && (
+                <Modal isOpen={isResetModalOpen} onClose={() => setIsResetModalOpen(false)} title="Confirmation requise">
+                    <div className="space-y-4">
+                        <div className="flex items-center gap-3 text-red-600 bg-red-50 p-4 rounded-lg border border-red-200">
+                            <AlertTriangle size={32} className="flex-shrink-0" />
+                            <div>
+                                <h3 className="font-bold text-lg">Êtes-vous sûr ?</h3>
+                                <p className="text-sm">Cette action est irréversible. Toutes les données locales seront perdues.</p>
+                            </div>
+                        </div>
+                        <div className="flex justify-end gap-3 pt-4">
+                            <button onClick={() => setIsResetModalOpen(false)} className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded transition-colors">Annuler</button>
+                            <button onClick={handleResetData} className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors flex items-center gap-2">
+                                <Trash2 size={16} />
+                                Tout effacer
+                            </button>
+                        </div>
+                    </div>
+                </Modal>
             )}
         </div>
     );

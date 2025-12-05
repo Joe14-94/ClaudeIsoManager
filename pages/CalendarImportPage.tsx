@@ -80,7 +80,7 @@ const CalendarImportPage: React.FC = () => {
       
       // Comparaison avec l'historique et génération d'internalId
       const processedEvents: DisplayEvent[] = parsedEvents.map((evt, index) => {
-        const historyValues = Object.values(importHistory);
+        const historyValues = Object.values(importHistory) as ImportHistoryItem[];
         const historyItem = historyValues.find(h => h.uid === evt.uid && h.hash === evt.hash);
 
         let status: EventStatus = 'new';

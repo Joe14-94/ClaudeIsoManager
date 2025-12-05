@@ -734,7 +734,7 @@ const AdvancedGanttChart: React.FC<AdvancedGanttChartProps> = ({ projects, resou
                </div>
                {/* Scrollable Timeline Header */}
                <div ref={headerRef} className="overflow-hidden flex-grow relative bg-white">
-                   <div className="relative h-full" style={{ width: totalWidth + HEADER_BUFFER }}>
+                   <div className="relative h-full" style={{ width: totalWidth + HEADER_BUFFER + 100 }}>
                         {/* Major Rows (Top) */}
                         {headerBlocks.major.map((block, i) => (
                              <div key={`major-${i}`} 

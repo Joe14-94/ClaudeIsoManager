@@ -161,7 +161,6 @@ const Sidebar: React.FC = () => {
                     {(userRole === 'admin' || userRole === 'pmo') && (
                       <>
                         <NavItem to="/data-management" icon={<Database />} label="Gestion des données" isCollapsed={isCollapsed} end={true} />
-                        <NavItem to={{ pathname: "/data-management/fdr", state: { openFdrChoice: true } }} icon={<Table />} label="Mise à jour FDR" isCollapsed={isCollapsed} />
                         <NavItem to="/data-management/calendar-import" icon={<Calendar />} label="Import calendrier" isCollapsed={isCollapsed} />
                       </>
                     )}
