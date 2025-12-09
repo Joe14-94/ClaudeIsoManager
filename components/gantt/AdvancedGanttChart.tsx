@@ -47,6 +47,15 @@ const formatDateFR = (date: Date): string => {
     return date.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: '2-digit' });
 };
 
+// Helper pour formater une date Date en YYYY-MM-DD pour les inputs
+const formatDateForInput = (date: Date): string => {
+    if (!date || isNaN(date.getTime())) return '';
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+};
+
 // Helper pour obtenir le numéro de semaine ISO
 const getWeekNumber = (d: Date) => {
     const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
@@ -173,6 +182,20 @@ export const AdvancedGanttChart: React.FC<AdvancedGanttChartProps> = ({ projects
          if(headerRef.current) headerRef.current.scrollLeft = todayX - (containerWidth / 2);
      }
   }, [zoomIndex, getXPosition]);
+  
+  // Mapping pour les dépendances
+  const rowCoords = useMemo(() => {
+    const coords = new Map<string, { xStart: number, xEnd: number, y: number, isCritical?: boolean }>();
+    visibleRows.forEach((row, index) => {
+        coords.set(row.id, {
+            xStart: getXPosition(row.startDate),
+            xEnd: getXPosition(row.endDate),
+            y: index * ROW_HEIGHT + ROW_HEIGHT / 2,
+            isCritical: row.isCritical
+        });
+    });
+    return coords;
+  }, [visibleRows, getXPosition]);
 
   // Génération des blocs d'en-tête (Majeurs et Mineurs)
   const headerBlocks = useMemo(() => {
@@ -286,12 +309,42 @@ export const AdvancedGanttChart: React.FC<AdvancedGanttChartProps> = ({ projects
       }
   };
 
+  // Mise à jour des données (Dates et Pourcentage)
+  const handleCellChange = (id: string, type: 'project' | 'task', field: 'start' | 'end' | 'progress', value: string | number) => {
+      const updateRecursive = (list: any[]): any[] => {
+          return list.map(item => {
+              if (item.id === id) {
+                  const updates: any = {};
+                  if (field === 'start') {
+                    if (type === 'project') updates.projectStartDate = new Date(value as string).toISOString();
+                    else updates.startDate = new Date(value as string).toISOString();
+                  }
+                  if (field === 'end') {
+                    if (type === 'project') updates.projectEndDate = new Date(value as string).toISOString();
+                    else updates.endDate = new Date(value as string).toISOString();
+                  }
+                  if (field === 'progress') {
+                    updates.progress = Number(value);
+                  }
+                  return { ...item, ...updates };
+              }
+              if (item.tasks) return { ...item, tasks: updateRecursive(item.tasks) };
+              if (item.children) return { ...item, children: updateRecursive(item.children) };
+              return item;
+          });
+      };
+
+      const newProjects = updateRecursive(localProjects);
+      setLocalProjects(newProjects);
+      if (onDataChange) onDataChange(newProjects);
+  };
+
   // --- 4. Rendu ---
 
   return (
     <div className="flex flex-col h-full bg-white rounded-lg border border-slate-200 overflow-hidden text-sm">
         {/* Toolbar */}
-        <div className="flex items-center justify-between p-2 border-b border-slate-200 bg-slate-50">
+        <div className="flex items-center justify-between p-2 border-b border-slate-200 bg-slate-50 flex-shrink-0">
             <div className="flex items-center gap-2">
                 <div className="flex bg-white rounded-md border border-slate-300 p-0.5">
                     <button onClick={() => setZoomIndex(Math.max(0, zoomIndex - 1))} disabled={zoomIndex === 0} className="p-1 hover:bg-slate-100 rounded disabled:opacity-50"><ZoomOut size={16}/></button>
@@ -313,6 +366,7 @@ export const AdvancedGanttChart: React.FC<AdvancedGanttChartProps> = ({ projects
                  <div className="flex items-center gap-3 text-xs text-slate-500 mr-4">
                      <div className="flex items-center gap-1"><div className="w-3 h-3 bg-indigo-600 rounded-sm"></div> Projet</div>
                      <div className="flex items-center gap-1"><div className="w-3 h-3 bg-blue-500 rounded-sm"></div> Phase/Tâche</div>
+                     <div className="flex items-center gap-1"><div className="w-3 h-3 bg-red-500 rounded-sm"></div> Critique</div>
                      <div className="flex items-center gap-1"><div className="w-3 h-3 rotate-45 bg-yellow-500 rounded-[1px]"></div> Jalon</div>
                      <div className="flex items-center gap-1"><div className="w-3 h-1 bg-slate-400"></div> Baseline</div>
                  </div>
@@ -320,55 +374,21 @@ export const AdvancedGanttChart: React.FC<AdvancedGanttChartProps> = ({ projects
         </div>
 
         {/* Main Content Area */}
-        <div className="flex-grow flex min-h-0 relative">
+        <div className="flex-grow flex flex-col min-h-0 relative">
             
-            {/* Sidebar (Task List) */}
-            <div className="flex-shrink-0 flex flex-col border-r border-slate-200 bg-white z-20" style={{ width: SIDEBAR_WIDTH }}>
-                {/* Header Sidebar */}
-                <div className="h-[50px] border-b border-slate-200 bg-slate-50 flex items-center px-2 font-semibold text-slate-600 text-xs">
+            {/* Headers Row */}
+            <div className="flex flex-shrink-0 z-30 bg-white">
+                 {/* Sidebar Header */}
+                <div className="flex-shrink-0 flex items-center bg-slate-50 px-2 font-semibold text-slate-600 text-xs border-r border-b border-slate-200 overflow-hidden" style={{ width: SIDEBAR_WIDTH, height: HEADER_HEIGHT }}>
                     <div className="w-8 text-center">#</div>
                     <div className="flex-grow pl-2">Nom</div>
                     <div className="w-24 text-center">Début</div>
                     <div className="w-24 text-center">Fin</div>
                     <div className="w-12 text-center">%</div>
                 </div>
-                {/* Rows Sidebar */}
-                <div className="flex-grow overflow-hidden relative" ref={sidebarRef}>
-                    <div className="relative" style={{ height: visibleRows.length * ROW_HEIGHT }}>
-                        {visibleRows.map((row) => (
-                            <div 
-                                key={row.id}
-                                className={`absolute w-full flex items-center px-2 border-b border-slate-100 hover:bg-slate-50 transition-colors cursor-pointer ${row.type === 'project' ? 'bg-slate-50 font-semibold' : ''}`}
-                                style={{ height: ROW_HEIGHT, top: 0, transform: `translateY(${visibleRows.indexOf(row) * ROW_HEIGHT}px)` }}
-                                onClick={() => {
-                                    if(row.type === 'project' && onProjectClick) onProjectClick(row.id);
-                                }}
-                            >
-                                <div className="w-8 text-center text-slate-400 text-[10px]">{row.wbs}</div>
-                                <div className="flex-grow pl-2 flex items-center gap-1 overflow-hidden" style={{ paddingLeft: `${row.level * 16}px` }}>
-                                    {row.hasChildren && (
-                                        <button 
-                                            onClick={(e) => { e.stopPropagation(); handleExpand(row.id); }}
-                                            className="p-0.5 hover:bg-slate-200 rounded"
-                                        >
-                                            {row.expanded ? <ChevronDown size={12}/> : <ChevronRight size={12}/>}
-                                        </button>
-                                    )}
-                                    <span className="truncate" title={row.name}>{row.name}</span>
-                                </div>
-                                <div className="w-24 text-center text-xs text-slate-500">{formatDateFR(row.startDate)}</div>
-                                <div className="w-24 text-center text-xs text-slate-500">{formatDateFR(row.endDate)}</div>
-                                <div className="w-12 text-center text-xs text-slate-500">{row.progress}%</div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </div>
 
-            {/* Gantt Area */}
-            <div className="flex-grow flex flex-col min-w-0 bg-slate-50 overflow-hidden relative">
                 {/* Timeline Header */}
-                <div ref={headerRef} className="flex-shrink-0 overflow-hidden bg-white border-b border-slate-200 relative select-none" style={{ height: HEADER_HEIGHT }}>
+                <div ref={headerRef} className="flex-grow overflow-hidden bg-white border-b border-slate-200 relative select-none" style={{ height: HEADER_HEIGHT }}>
                     <div className="absolute top-0 left-0 h-full" style={{ width: totalWidth }}>
                         {headerBlocks.majorBlocks.map((block, i) => (
                             <div 
@@ -390,10 +410,126 @@ export const AdvancedGanttChart: React.FC<AdvancedGanttChartProps> = ({ projects
                         ))}
                     </div>
                 </div>
+            </div>
 
-                {/* Bars Area */}
-                <div ref={scrollContainerRef} className="flex-grow overflow-auto overflow-y-hidden relative" onScroll={handleScroll}>
+            {/* Bodies Row (Container for syncing vertical scroll) */}
+            <div className="flex-grow flex overflow-hidden relative">
+                
+                {/* Sidebar Body */}
+                <div className="flex-shrink-0 flex flex-col border-r border-slate-200 bg-white z-20 overflow-hidden" style={{ width: SIDEBAR_WIDTH }} ref={sidebarRef}>
+                    <div className="relative" style={{ height: visibleRows.length * ROW_HEIGHT }}>
+                        {visibleRows.map((row, index) => {
+                            const isProject = row.type === 'project';
+                            return (
+                                <div 
+                                    key={row.id}
+                                    className={`absolute w-full flex items-center px-2 border-b border-slate-100 hover:bg-slate-50 transition-colors ${isProject ? 'bg-slate-50 font-semibold' : ''}`}
+                                    style={{ height: ROW_HEIGHT, top: index * ROW_HEIGHT }}
+                                    onClick={() => {
+                                        if(isProject && onProjectClick) onProjectClick(row.id);
+                                    }}
+                                >
+                                    <div className="w-8 text-center text-slate-400 text-[10px]">{row.wbs}</div>
+                                    <div className="flex-grow pl-2 flex items-center gap-1 overflow-hidden" style={{ paddingLeft: `${row.level * 16}px` }}>
+                                        {row.hasChildren && (
+                                            <button 
+                                                onClick={(e) => { e.stopPropagation(); handleExpand(row.id); }}
+                                                className="p-0.5 hover:bg-slate-200 rounded"
+                                            >
+                                                {row.expanded ? <ChevronDown size={12}/> : <ChevronRight size={12}/>}
+                                            </button>
+                                        )}
+                                        <span className="truncate cursor-pointer" title={row.name}>{row.name}</span>
+                                        {row.isCritical && <span className="w-2 h-2 rounded-full bg-red-500 ml-2" title="Tâche critique"></span>}
+                                    </div>
+                                    {/* Editable Inputs */}
+                                    <div className="w-24 px-1" onClick={e => e.stopPropagation()}>
+                                        <input 
+                                            type="date" 
+                                            className="w-full text-xs bg-transparent border border-transparent hover:border-slate-300 focus:border-blue-500 rounded px-1 text-slate-500 focus:text-slate-900"
+                                            value={formatDateForInput(row.startDate)}
+                                            onChange={(e) => handleCellChange(row.id, isProject ? 'project' : 'task', 'start', e.target.value)}
+                                        />
+                                    </div>
+                                    <div className="w-24 px-1" onClick={e => e.stopPropagation()}>
+                                        <input 
+                                            type="date" 
+                                            className="w-full text-xs bg-transparent border border-transparent hover:border-slate-300 focus:border-blue-500 rounded px-1 text-slate-500 focus:text-slate-900"
+                                            value={formatDateForInput(row.endDate)}
+                                            onChange={(e) => handleCellChange(row.id, isProject ? 'project' : 'task', 'end', e.target.value)}
+                                        />
+                                    </div>
+                                    <div className="w-12 px-1" onClick={e => e.stopPropagation()}>
+                                        <input 
+                                            type="number" 
+                                            min="0" max="100"
+                                            className="w-full text-xs text-right bg-transparent border border-transparent hover:border-slate-300 focus:border-blue-500 rounded px-1 text-slate-500 focus:text-slate-900"
+                                            value={row.progress}
+                                            onChange={(e) => handleCellChange(row.id, isProject ? 'project' : 'task', 'progress', e.target.value)}
+                                            readOnly={isProject} // Project progress is typically calculated
+                                            title={isProject ? "Calculé automatiquement pour les projets" : ""}
+                                        />
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+
+                {/* Timeline Body */}
+                <div ref={scrollContainerRef} onScroll={handleScroll} className="flex-grow overflow-auto bg-white relative">
                     <div className="relative" style={{ width: totalWidth, height: visibleRows.length * ROW_HEIGHT }}>
+                        
+                         {/* SVG Layer for Dependencies */}
+                         {showDependencies && (
+                            <svg className="absolute top-0 left-0 pointer-events-none z-0" style={{ width: totalWidth, height: visibleRows.length * ROW_HEIGHT }}>
+                                <defs>
+                                    <marker id="arrow" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto" markerUnits="strokeWidth">
+                                        <path d="M0,0 L0,6 L6,3 z" fill="#94a3b8" />
+                                    </marker>
+                                    <marker id="arrow-critical" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto" markerUnits="strokeWidth">
+                                        <path d="M0,0 L0,6 L6,3 z" fill="#ef4444" />
+                                    </marker>
+                                </defs>
+                                {visibleRows.map(row => {
+                                    if (!row.dependencyIds || row.dependencyIds.length === 0) return null;
+                                    const targetCoords = rowCoords.get(row.id);
+                                    if (!targetCoords) return null;
+
+                                    return row.dependencyIds.map(depId => {
+                                        const sourceCoords = rowCoords.get(depId);
+                                        // On ne dessine que si les deux (source et cible) sont visibles (non repliés)
+                                        if (!sourceCoords) return null;
+
+                                        const sourceRow = visibleRows.find(r => r.id === depId);
+                                        // Le lien est critique si la source et la cible sont critiques (heuristic simple)
+                                        // ou mieux, si la source est critique ET que la cible est critique ET dépendante.
+                                        const isCriticalLink = row.isCritical && sourceRow?.isCritical;
+
+                                        const x1 = sourceCoords.xEnd;
+                                        const y1 = sourceCoords.y;
+                                        const x2 = targetCoords.xStart;
+                                        const y2 = targetCoords.y;
+
+                                        // Bezier Curve Logic
+                                        const curveOffset = 20;
+                                        const path = `M ${x1} ${y1} C ${x1 + curveOffset} ${y1}, ${x2 - curveOffset} ${y2}, ${x2} ${y2}`;
+
+                                        return (
+                                            <path 
+                                                key={`${depId}-${row.id}`}
+                                                d={path}
+                                                fill="none"
+                                                stroke={isCriticalLink ? '#ef4444' : '#94a3b8'}
+                                                strokeWidth={isCriticalLink ? 2 : 1}
+                                                markerEnd={isCriticalLink ? "url(#arrow-critical)" : "url(#arrow)"}
+                                            />
+                                        );
+                                    });
+                                })}
+                            </svg>
+                        )}
+
                         {/* Grid Columns Background */}
                         {headerBlocks.minorBlocks.map((block, i) => (
                             <div 
@@ -423,11 +559,14 @@ export const AdvancedGanttChart: React.FC<AdvancedGanttChartProps> = ({ projects
                             const baselineWidth = Math.max(2, baselineEnd - baselineStart);
 
                             const isMilestone = row.type === 'milestone';
+                            
+                            // Style critique
+                            const criticalBorderClass = row.isCritical ? 'ring-2 ring-red-400 ring-offset-1' : '';
 
                             return (
                                 <div 
                                     key={`bar-${row.id}`} 
-                                    className="absolute w-full border-b border-slate-100/50 hover:bg-blue-50/10 transition-colors"
+                                    className="absolute w-full border-b border-slate-100/50 hover:bg-blue-50/10 transition-colors z-10"
                                     style={{ height: ROW_HEIGHT, top: rowTop }}
                                 >
                                     {showBaseline && row.baselineStartDate && (
@@ -443,21 +582,21 @@ export const AdvancedGanttChart: React.FC<AdvancedGanttChartProps> = ({ projects
 
                                     {isMilestone ? (
                                         <div
-                                            className="absolute w-4 h-4 rotate-45 bg-yellow-400 border border-yellow-600 z-10 group"
+                                            className={`absolute w-4 h-4 rotate-45 bg-yellow-400 border border-yellow-600 z-10 group ${criticalBorderClass}`}
                                             style={{ left: xStart - 8, top: 12 }}
                                             onMouseEnter={(e) => setTooltip({ visible: true, x: e.clientX, y: e.clientY, content: <div className="text-xs font-bold">{row.name}<br/>{formatDateFR(row.startDate)}</div> })}
                                             onMouseLeave={() => setTooltip(null)}
                                         />
                                     ) : (
                                         <div 
-                                            className={`absolute h-5 rounded-sm shadow-sm z-10 group cursor-pointer ${row.colorClass}`}
+                                            className={`absolute h-5 rounded-sm shadow-sm z-10 group cursor-pointer ${row.colorClass} ${criticalBorderClass}`}
                                             style={{ 
                                                 left: xStart, 
                                                 width: width,
                                                 top: 8,
                                                 opacity: row.type === 'phase' ? 0.8 : 1
                                             }}
-                                            onMouseEnter={(e) => setTooltip({ visible: true, x: e.clientX, y: e.clientY, content: <div className="text-xs"><strong>{row.name}</strong><br/>Du {formatDateFR(row.startDate)} au {formatDateFR(row.endDate)}<br/>{row.progress}%</div> })}
+                                            onMouseEnter={(e) => setTooltip({ visible: true, x: e.clientX, y: e.clientY, content: <div className="text-xs"><strong>{row.name}</strong><br/>Du {formatDateFR(row.startDate)} au {formatDateFR(row.endDate)}<br/>{row.progress}% {row.isCritical ? '(Critique)' : ''}</div> })}
                                             onMouseLeave={() => setTooltip(null)}
                                         >
                                             <div className="h-full bg-white/30" style={{ width: `${row.progress}%` }} />

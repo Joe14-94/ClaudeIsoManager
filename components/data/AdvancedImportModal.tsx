@@ -250,7 +250,8 @@ const AdvancedImportModal: React.FC<AdvancedImportModalProps> = ({ isOpen, onClo
     };
 
     // FIX: Explicitly cast set to Set<string> to avoid "Property 'size' does not exist on type 'unknown'" error
-    const totalSelected = Object.values(selection).reduce((sum, set) => sum + (set as Set<string>).size, 0);
+    // FIX: Explicitly typed 'sum' to avoid 'unknown' type error.
+    const totalSelected = Object.values(selection).reduce((sum: number, set) => sum + (set as Set<string>).size, 0);
 
     return (
         <Modal isOpen={isOpen} onClose={onClose} title="Restauration avancée de sauvegarde">

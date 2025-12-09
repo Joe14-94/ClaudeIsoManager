@@ -1,6 +1,7 @@
 
 import { useMemo } from 'react';
 import { Project, ProjectTask, Resource } from '../types';
+import { analyzeTaskCriticalPath } from '../utils/projectAnalysis';
 
 export interface GanttRow {
   id: string;
@@ -22,9 +23,12 @@ export interface GanttRow {
   visible: boolean;
   hasChildren: boolean;
   colorClass: string;
+  dependencyIds?: string[];
+  isCritical?: boolean;
 }
 
-const getPhaseColor = (index: number, type: string): string => {
+const getPhaseColor = (index: number, type: string, isCritical: boolean): string => {
+    if (isCritical) return 'bg-red-500';
     if (type === 'project') return 'bg-indigo-600'; 
     const colors = ['bg-blue-500', 'bg-blue-500', 'bg-blue-500', 'bg-blue-500'];
     return colors[index % colors.length];
@@ -40,7 +44,14 @@ export const useGanttData = (
   return useMemo(() => {
     const result: GanttRow[] = [];
     
-    const processTask = (task: ProjectTask, level: number, parentId: string, wbsPrefix: string, rootIndex: number): GanttRow[] => {
+    const processTask = (
+        task: ProjectTask, 
+        level: number, 
+        parentId: string, 
+        wbsPrefix: string, 
+        rootIndex: number,
+        criticalTasks: Set<string>
+    ): GanttRow[] => {
         const taskRows: GanttRow[] = [];
         const isExpanded = expandedIds.has(task.id);
         const assigneeName = task.assigneeId ? resources.find(r => r.id === task.assigneeId)?.name : undefined;
@@ -55,7 +66,8 @@ export const useGanttData = (
         
         if (duration <= 0) type = 'milestone';
 
-        const colorClass = getPhaseColor(rootIndex, type);
+        const isCritical = criticalTasks.has(task.id);
+        const colorClass = getPhaseColor(rootIndex, type, isCritical);
         const initialDates = initialDatesMap.get(task.id);
         const baselineStartDate = initialDates ? initialDates.start : start;
         const baselineEndDate = initialDates ? initialDates.end : end;
@@ -79,13 +91,15 @@ export const useGanttData = (
             parentId,
             visible: true,
             hasChildren,
-            colorClass
+            colorClass,
+            dependencyIds: task.dependencyIds,
+            isCritical
         });
 
         if (task.children && task.children.length > 0) {
             task.children.forEach((child, idx) => {
                 const childWbs = `${wbsPrefix}.${idx + 1}`;
-                taskRows.push(...processTask(child, level + 1, task.id, childWbs, rootIndex));
+                taskRows.push(...processTask(child, level + 1, task.id, childWbs, rootIndex, criticalTasks));
             });
         }
         return taskRows;
@@ -108,6 +122,9 @@ export const useGanttData = (
         const initialDates = initialDatesMap.get(project.id);
         const baselineStartDate = initialDates ? initialDates.start : startDate;
         const baselineEndDate = initialDates ? initialDates.end : endDate;
+        
+        // Analyse du chemin critique pour les tâches de ce projet
+        const criticalTasks = project.tasks ? analyzeTaskCriticalPath(project.tasks) : new Set<string>();
 
         result.push({
             id: project.id,
@@ -125,13 +142,14 @@ export const useGanttData = (
             data: project,
             visible: true,
             hasChildren: !!(project.tasks && project.tasks.length > 0),
-            colorClass: 'bg-indigo-600'
+            colorClass: 'bg-indigo-600',
+            isCritical: false // Project level criticality handled separately if needed
         });
 
         if (project.tasks) {
             project.tasks.forEach((task, taskIdx) => {
                 const taskWbs = `${wbs}.${taskIdx + 1}`;
-                result.push(...processTask(task, 1, project.id, taskWbs, taskIdx));
+                result.push(...processTask(task, 1, project.id, taskWbs, taskIdx, criticalTasks));
             });
         }
     });
