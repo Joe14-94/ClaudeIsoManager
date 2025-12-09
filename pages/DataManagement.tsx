@@ -2,11 +2,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Card, { CardContent, CardHeader, CardTitle } from '../components/ui/Card';
-import { Timer, Coins, Table, Info, AlertTriangle, CheckCircle, Upload, Download, FileJson, Trash2, Database, Calendar, RefreshCw, FileCog } from 'lucide-react';
+import { Timer, Coins, Table, Info, AlertTriangle, CheckCircle, Upload, Download, FileJson, Trash2, Database, Calendar, RefreshCw, FileCog, Wand2 } from 'lucide-react';
 import { useData } from '../contexts/DataContext';
 import { Project, ProjectCategory, ProjectStatus, Initiative, FdrHistoryEntry, TShirtSize } from '../types';
 import Modal from '../components/ui/Modal';
 import AdvancedImportModal from '../components/data/AdvancedImportModal';
+import { demoData } from '../utils/demoData';
 
 // --- Interfaces & Constants ---
 
@@ -443,6 +444,7 @@ const DataManagement: React.FC = () => {
     const [isAdvancedImportOpen, setIsAdvancedImportOpen] = useState(false);
     const [importMode, setImportMode] = useState<'workload' | 'budget'>('workload');
     const [isResetModalOpen, setIsResetModalOpen] = useState(false);
+    const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
 
     useEffect(() => {
         // Si l'URL se termine par /fdr ou si l'état demande l'ouverture, on ouvre la modale
@@ -541,6 +543,21 @@ const DataManagement: React.FC = () => {
         event.target.value = '';
     };
 
+    const handleLoadDemoData = () => {
+        setActivities(demoData.activities);
+        setProjects(demoData.projects);
+        setObjectives(demoData.objectives);
+        setChantiers(demoData.chantiers);
+        setOrientations(demoData.orientations);
+        setInitiatives(demoData.initiatives);
+        setResources(demoData.resources);
+        setSecurityProcesses(demoData.securityProcesses);
+        setMajorRisks(demoData.majorRisks);
+        
+        setIsDemoModalOpen(false);
+        alert("Jeu de données de démonstration chargé avec succès !");
+    };
+
     const handleResetData = () => {
         setActivities([]);
         setProjects([]);
@@ -597,6 +614,21 @@ const DataManagement: React.FC = () => {
                     <CardContent>
                         <p className="text-sm text-slate-500">
                             Convertir des réunions Outlook (.ics) en temps consommé sur les projets et activités.
+                        </p>
+                    </CardContent>
+                </Card>
+                
+                {/* Card Demo Generator */}
+                <Card className="cursor-pointer hover:shadow-md transition-all border-l-4 border-l-purple-500" onClick={() => setIsDemoModalOpen(true)}>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2 text-purple-700">
+                            <Wand2 size={20} />
+                            Générateur de données
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-sm text-slate-500">
+                            Injecter un jeu de données de démonstration complet (Projets, Activités, Risques...) pour tester l'application.
                         </p>
                     </CardContent>
                 </Card>
@@ -704,6 +736,30 @@ const DataManagement: React.FC = () => {
                             <button onClick={handleResetData} className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors flex items-center gap-2">
                                 <Trash2 size={16} />
                                 Tout effacer
+                            </button>
+                        </div>
+                    </div>
+                </Modal>
+            )}
+            
+            {isDemoModalOpen && (
+                <Modal isOpen={isDemoModalOpen} onClose={() => setIsDemoModalOpen(false)} title="Génération de données de test">
+                    <div className="space-y-4">
+                        <div className="flex items-center gap-3 text-purple-600 bg-purple-50 p-4 rounded-lg border border-purple-200">
+                            <Wand2 size={32} className="flex-shrink-0" />
+                            <div>
+                                <h3 className="font-bold text-lg">Mode Démonstration</h3>
+                                <p className="text-sm">
+                                    Cette action va <strong>remplacer</strong> vos données actuelles par un jeu de données fictif complet (Projets, Risques, Activités, etc.). 
+                                    Idéal pour découvrir les fonctionnalités avancées.
+                                </p>
+                            </div>
+                        </div>
+                        <div className="flex justify-end gap-3 pt-4">
+                            <button onClick={() => setIsDemoModalOpen(false)} className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded transition-colors">Annuler</button>
+                            <button onClick={handleLoadDemoData} className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 transition-colors flex items-center gap-2">
+                                <Wand2 size={16} />
+                                Générer les données
                             </button>
                         </div>
                     </div>

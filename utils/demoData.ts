@@ -173,209 +173,116 @@ export const demoData = {
             { week: '44', year: '2025', type: 'budget', importDate: '2025-10-31T12:00:00Z', data: { budgetCommitted: 75000, completedPV: 45000 } },
         ]
       },
+      // ... existing projects
       {
-        id: 'proj-demo-2',
-        projectId: 'P24-012',
-        title: 'Migration Cloud Azure',
-        description: 'Migration de l\'infrastructure on-premise vers Azure.',
-        status: ProjectStatus.NF,
-        tShirtSize: TShirtSize.XL,
-        projectManagerMOA: 'res-demo-5',
-        projectManagerMOE: 'res-demo-4',
-        projectStartDate: '2024-01-15T00:00:00Z',
-        projectEndDate: '2025-07-30T00:00:00Z',
-        isTop30: true,
-        category: ProjectCategory.PROJECT,
-        createdAt: '2023-11-01T00:00:00Z',
-        updatedAt: '2025-08-10T00:00:00Z',
-        initiativeId: 'init-demo-B',
-        isoMeasures: ['5.23', '7.11'],
-        predecessorIds: [],
-        budgetRequested: 250000,
-        budgetApproved: 250000,
-        weather: ProjectWeather.SUNNY,
-        priorityScore: 3.0,
-        milestones: [
-            { 
-                id: 'p2-m3', 
-                label: 'Migration terminée', 
-                date: '2025-06-30T00:00:00Z', 
-                initialDate: '2025-06-30T00:00:00Z', 
-                completed: true, 
-                history: [] 
-            }
-        ],
-        tasks: [
-            { id: 'p2-ph1', name: '1. Assessment & Plan', startDate: '2024-01-15T00:00:00Z', endDate: '2024-03-15T00:00:00Z', progress: 100, status: TaskStatus.DONE, children: [
-                    { id: 'p2-t1', name: 'Inventaire applicatif', startDate: '2024-01-15T00:00:00Z', endDate: '2024-02-15T00:00:00Z', progress: 100, status: TaskStatus.DONE },
-                    { id: 'p2-t2', name: 'Analyse de dépendances', startDate: '2024-02-15T00:00:00Z', endDate: '2024-03-15T00:00:00Z', progress: 100, status: TaskStatus.DONE, dependencyIds: ['p2-t1'] }
-                ]
-            },
-            { id: 'p2-ph2', name: '2. Landing Zone', startDate: '2024-03-16T00:00:00Z', endDate: '2024-05-30T00:00:00Z', progress: 100, status: TaskStatus.DONE, dependencyIds: ['p2-ph1'], children: [
-                    { id: 'p2-t3', name: 'Design Architecture', startDate: '2024-03-16T00:00:00Z', endDate: '2024-04-15T00:00:00Z', progress: 100, status: TaskStatus.DONE },
-                    { id: 'p2-t4', name: 'Implémentation Hub & Spoke', startDate: '2024-04-16T00:00:00Z', endDate: '2024-05-30T00:00:00Z', progress: 100, status: TaskStatus.DONE, dependencyIds: ['p2-t3'] }
-                ]
-            },
-            { id: 'p2-ph3', name: '3. Migration des Workloads', startDate: '2024-06-01T00:00:00Z', endDate: '2025-06-30T00:00:00Z', progress: 100, status: TaskStatus.DONE, dependencyIds: ['p2-ph2'], children: [
-                    { id: 'p2-t5', name: 'Lot 1 : Applications Web', startDate: '2024-06-01T00:00:00Z', endDate: '2024-09-30T00:00:00Z', progress: 100, status: TaskStatus.DONE },
-                    { id: 'p2-t6', name: 'Lot 2 : Bases de données', startDate: '2024-10-01T00:00:00Z', endDate: '2025-02-28T00:00:00Z', progress: 100, status: TaskStatus.DONE, dependencyIds: ['p2-t5'] },
-                    { id: 'p2-t7', name: 'Lot 3 : Legacy', startDate: '2025-03-01T00:00:00Z', endDate: '2025-06-30T00:00:00Z', progress: 100, status: TaskStatus.DONE, dependencyIds: ['p2-t6'] }
-                ]
-            }
-        ]
-      },
-       {
-        id: 'proj-demo-3',
-        projectId: 'P25-003',
-        title: 'Outil de Data Classification',
-        description: 'Mise en place d\'un outil pour classifier et étiqueter automatiquement les données sensibles.',
-        status: ProjectStatus.NT,
-        tShirtSize: TShirtSize.M,
-        projectManagerMOA: 'res-demo-3',
-        projectManagerMOE: 'res-demo-2',
-        projectStartDate: '2025-09-01T00:00:00Z',
-        projectEndDate: '2026-04-01T00:00:00Z',
-        isTop30: false,
-        category: ProjectCategory.PROJECT,
-        initiativeId: 'init-demo-C',
-        isoMeasures: ['5.12', '5.13', '8.11'],
-        budgetRequested: 80000,
-        budgetApproved: 60000,
-        predecessorIds: [], 
-        createdAt: '2025-09-01T00:00:00Z',
-        updatedAt: '2025-10-15T00:00:00Z',
-        weather: ProjectWeather.CLOUDY,
-        weatherDescription: "Retard sur la livraison de l'éditeur.",
-        strategicImpact: 4,
-        priorityScore: 5.3,
-        tasks: [
-            { id: 'p3-ph1', name: 'Phase 1 : Sélection', startDate: '2025-09-01T00:00:00Z', endDate: '2025-10-15T00:00:00Z', progress: 100, status: TaskStatus.DONE, children: [
-                    { id: 'p3-t1', name: 'RFI / RFP', startDate: '2025-09-01T00:00:00Z', endDate: '2025-09-30T00:00:00Z', progress: 100, status: TaskStatus.DONE },
-                    { id: 'p3-t2', name: 'Contractualisation', startDate: '2025-10-01T00:00:00Z', endDate: '2025-10-15T00:00:00Z', progress: 100, status: TaskStatus.DONE, dependencyIds: ['p3-t1'] },
-                    { id: 'p3-m1', name: 'Jalon : Outil Choisi', startDate: '2025-10-15T00:00:00Z', endDate: '2025-10-15T00:00:00Z', progress: 100, status: TaskStatus.DONE, dependencyIds: ['p3-t2'] }
-                ]
-            },
-            { id: 'p3-ph2', name: 'Phase 2 : Implémentation', startDate: '2025-10-16T00:00:00Z', endDate: '2026-01-31T00:00:00Z', progress: 20, status: TaskStatus.IN_PROGRESS, dependencyIds: ['p3-ph1'], children: [
-                    { id: 'p3-t3', name: 'Installation & Config', startDate: '2025-10-16T00:00:00Z', endDate: '2025-11-15T00:00:00Z', progress: 80, status: TaskStatus.IN_PROGRESS },
-                    { id: 'p3-t4', name: 'POC (Proof of Concept)', startDate: '2025-11-15T00:00:00Z', endDate: '2025-12-15T00:00:00Z', progress: 0, status: TaskStatus.TODO, dependencyIds: ['p3-t3'] },
-                    { id: 'p3-t5', name: 'Déploiement Agents', startDate: '2026-01-01T00:00:00Z', endDate: '2026-01-31T00:00:00Z', progress: 0, status: TaskStatus.TODO, dependencyIds: ['p3-t4'] }
-                ]
-            }
-        ]
-      },
-      {
-        id: 'proj-demo-4',
-        projectId: 'P26-001',
-        title: 'Refonte de l\'IAM',
-        description: 'Remplacer la solution IAM actuelle par une nouvelle plateforme supportant le Zero Trust.',
+        id: 'proj-demo-10',
+        projectId: 'P26-005',
+        title: 'Mise en œuvre du SIEM (Security Information Event Management)',
+        description: 'Déploiement et configuration d\'une solution SIEM pour centraliser et analyser les logs de sécurité.',
         status: ProjectStatus.IDENTIFIED,
-        tShirtSize: TShirtSize.L,
-        projectStartDate: '2026-01-15T00:00:00Z',
-        projectEndDate: '2027-01-15T00:00:00Z',
-        isTop30: true,
-        category: ProjectCategory.OPPORTUNITY,
-        initiativeId: 'init-demo-D',
-        isoMeasures: ['5.16', '5.17', '5.18', '8.5'],
-        predecessorIds: [], 
-        priorityScore: 5.0,
-        createdAt: '2025-12-01T00:00:00Z',
-        updatedAt: '2025-12-01T00:00:00Z',
-        tasks: [
-            { id: 'p4-ph1', name: 'Phase 1 : Etude & Choix', startDate: '2026-01-15T00:00:00Z', endDate: '2026-03-30T00:00:00Z', progress: 0, status: TaskStatus.TODO },
-            { id: 'p4-ph2', name: 'Phase 2 : Design & Build', startDate: '2026-04-01T00:00:00Z', endDate: '2026-09-30T00:00:00Z', progress: 0, status: TaskStatus.TODO, dependencyIds: ['p4-ph1'] },
-            { id: 'p4-ph3', name: 'Phase 3 : Migration & Run', startDate: '2026-10-01T00:00:00Z', endDate: '2027-01-15T00:00:00Z', progress: 0, status: TaskStatus.TODO, dependencyIds: ['p4-ph2'] },
-        ]
-      },
-      {
-        id: 'proj-demo-5',
-        projectId: 'P25-005',
-        title: 'Audit de conformité RGPD',
-        description: 'Audit annuel pour vérifier la conformité des traitements.',
-        status: ProjectStatus.NO,
-        tShirtSize: TShirtSize.M,
-        isTop30: false,
-        createdAt: '2025-09-15T00:00:00Z',
-        updatedAt: '2025-10-01T00:00:00Z',
-        projectStartDate: '2025-10-01T00:00:00Z',
-        projectEndDate: '2025-12-20T00:00:00Z',
-        category: ProjectCategory.MCO,
-        initiativeId: 'init-demo-C',
-        isoMeasures: ['5.34'],
-        predecessorIds: [], 
-        priorityScore: 30.0,
-        tasks: [
-            { id: 'p5-ph1', name: 'Phase 1 : Audit', startDate: '2025-10-01T00:00:00Z', endDate: '2025-12-20T00:00:00Z', progress: 50, status: TaskStatus.IN_PROGRESS, children: [
-                { id: 'p5-t1', name: 'Préparation', startDate: '2025-10-01T00:00:00Z', endDate: '2025-10-15T00:00:00Z', progress: 100, status: TaskStatus.DONE },
-                { id: 'p5-t2', name: 'Entretiens', startDate: '2025-10-16T00:00:00Z', endDate: '2025-11-30T00:00:00Z', progress: 70, status: TaskStatus.IN_PROGRESS, dependencyIds: ['p5-t1'] },
-                { id: 'p5-t3', name: 'Rapport', startDate: '2025-12-01T00:00:00Z', endDate: '2025-12-20T00:00:00Z', progress: 0, status: TaskStatus.TODO, dependencyIds: ['p5-t2'] }
-              ]
-            }
-        ]
-      },
-      {
-        id: 'proj-demo-6',
-        projectId: 'P25-020',
-        title: 'Durcissement Active Directory',
-        status: ProjectStatus.NO,
-        tShirtSize: TShirtSize.L,
-        isTop30: true,
-        createdAt: '2025-04-15T00:00:00Z',
-        updatedAt: '2025-05-01T00:00:00Z',
-        projectStartDate: '2025-05-01T00:00:00Z',
-        projectEndDate: '2026-03-01T00:00:00Z',
-        category: ProjectCategory.PROJECT,
-        initiativeId: 'init-demo-D',
-        isoMeasures: ['8.2', '8.5', '5.15'],
-        predecessorIds: [],
-        priorityScore: 6.3,
-        tasks: [
-            { id: 'p6-ph1', name: 'Remédiation Tier 0', startDate: '2025-05-01T00:00:00Z', endDate: '2025-08-30T00:00:00Z', progress: 80, status: TaskStatus.IN_PROGRESS },
-            { id: 'p6-ph2', name: 'Remédiation Tier 1', startDate: '2025-09-01T00:00:00Z', endDate: '2025-12-31T00:00:00Z', progress: 20, status: TaskStatus.IN_PROGRESS, dependencyIds: ['p6-ph1'] },
-            { id: 'p6-ph3', name: 'Remédiation Tier 2', startDate: '2026-01-01T00:00:00Z', endDate: '2026-03-01T00:00:00Z', progress: 0, status: TaskStatus.TODO, dependencyIds: ['p6-ph2'] }
-        ]
-      },
-      {
-        id: 'proj-demo-7',
-        projectId: 'P25-030',
-        title: 'Mise en place SOC Hybride 24/7',
-        status: ProjectStatus.NO,
         tShirtSize: TShirtSize.XL,
+        projectManagerMOA: 'res-demo-3',
+        projectManagerMOE: 'res-demo-1',
+        projectStartDate: '2026-01-01T00:00:00Z',
+        projectEndDate: '2026-12-31T00:00:00Z',
         isTop30: true,
-        isoMeasures: ['8.16', '5.26'],
-        createdAt: '2025-01-20T00:00:00Z',
-        updatedAt: '2025-02-01T00:00:00Z',
-        projectStartDate: '2025-02-01T00:00:00Z',
-        projectEndDate: '2025-12-31T00:00:00Z',
         category: ProjectCategory.PROJECT,
         initiativeId: 'init-demo-A',
+        isoMeasures: ['8.15', '8.16'],
         predecessorIds: [],
-        priorityScore: 8.3,
+        budgetRequested: 300000,
+        budgetApproved: 0,
+        weather: ProjectWeather.SUNNY,
+        priorityScore: 7.5,
+        majorRiskIds: ['risk-ransomware', 'risk-insider'],
         tasks: [
-            { id: 'p7-ph1', name: 'Phase 1 : Appel d\'offre', startDate: '2025-02-01T00:00:00Z', endDate: '2025-04-30T00:00:00Z', progress: 100, status: TaskStatus.DONE },
-            { id: 'p7-ph2', name: 'Phase 2 : Onboarding & Build', startDate: '2025-05-01T00:00:00Z', endDate: '2025-09-30T00:00:00Z', progress: 100, status: TaskStatus.DONE, dependencyIds: ['p7-ph1'] },
-            { id: 'p7-ph3', name: 'Phase 3 : Run (Service Régulier)', startDate: '2025-10-01T00:00:00Z', endDate: '2025-12-31T00:00:00Z', progress: 30, status: TaskStatus.IN_PROGRESS, dependencyIds: ['p7-ph2'] }
+            { id: 'p10-ph1', name: 'Phase 1 : Cadrage & Choix Solution', startDate: '2026-01-01T00:00:00Z', endDate: '2026-03-31T00:00:00Z', progress: 0, status: TaskStatus.TODO },
+            { id: 'p10-ph2', name: 'Phase 2 : Intégration technique', startDate: '2026-04-01T00:00:00Z', endDate: '2026-09-30T00:00:00Z', progress: 0, status: TaskStatus.TODO, dependencyIds: ['p10-ph1'] },
+             { id: 'p10-ph3', name: 'Phase 3 : Création des règles de corrélation', startDate: '2026-10-01T00:00:00Z', endDate: '2026-12-31T00:00:00Z', progress: 0, status: TaskStatus.TODO, dependencyIds: ['p10-ph2'] }
         ]
       },
-       {
-        id: 'proj-demo-8',
-        projectId: 'P25-040',
-        title: 'Campagne Phishing S2 2025',
+      {
+        id: 'proj-demo-11',
+        projectId: 'P26-006',
+        title: 'Projet IGA (Identity Governance and Administration)',
+        description: 'Automatisation de la gestion du cycle de vie des identités et des accès (JML).',
         status: ProjectStatus.NO,
-        tShirtSize: TShirtSize.S,
-        isTop30: false,
-        isoMeasures: ['6.3'],
-        createdAt: '2025-10-25T00:00:00Z',
-        updatedAt: '2025-11-01T00:00:00Z',
-        projectStartDate: '2025-11-01T00:00:00Z',
-        projectEndDate: '2025-11-30T00:00:00Z',
-        category: ProjectCategory.ACTIVITY,
-        initiativeId: 'init-demo-C',
+        tShirtSize: TShirtSize.L,
+        projectManagerMOA: 'res-demo-5',
+        projectManagerMOE: 'res-demo-2',
+        projectStartDate: '2025-09-01T00:00:00Z',
+        projectEndDate: '2026-06-30T00:00:00Z',
+        isTop30: true,
+        category: ProjectCategory.PROJECT,
+        initiativeId: 'init-demo-D',
+        isoMeasures: ['5.16', '5.18'],
         predecessorIds: [],
-        priorityScore: 45.0,
+        budgetRequested: 200000,
+        budgetApproved: 180000,
+        budgetCommitted: 50000,
+        weather: ProjectWeather.RAINY,
+        weatherDescription: 'Complexité sous-estimée sur les connecteurs RH.',
+        priorityScore: 6.8,
+        majorRiskIds: ['risk-insider', 'risk-compliance'],
         tasks: [
-            { id: 'p8-t1', name: 'Préparation Scénarios', startDate: '2025-11-01T00:00:00Z', endDate: '2025-11-10T00:00:00Z', progress: 100, status: TaskStatus.DONE },
-            { id: 'p8-t2', name: 'Lancement Campagne', startDate: '2025-11-13T00:00:00Z', endDate: '2025-11-20T00:00:00Z', progress: 0, status: TaskStatus.TODO, dependencyIds: ['p8-t1'] },
-            { id: 'p8-t3', name: 'Analyse & REX', startDate: '2025-11-21T00:00:00Z', endDate: '2025-11-30T00:00:00Z', progress: 0, status: TaskStatus.TODO, dependencyIds: ['p8-t2'] }
+             { id: 'p11-ph1', name: 'Cadrage processus IAM', startDate: '2025-09-01T00:00:00Z', endDate: '2025-10-30T00:00:00Z', progress: 100, status: TaskStatus.DONE },
+             { id: 'p11-ph2', name: 'Implémentation Connecteur RH', startDate: '2025-11-01T00:00:00Z', endDate: '2026-02-28T00:00:00Z', progress: 30, status: TaskStatus.IN_PROGRESS, dependencyIds: ['p11-ph1'] },
+             { id: 'p11-ph3', name: 'Recette & déploiement', startDate: '2026-03-01T00:00:00Z', endDate: '2026-06-30T00:00:00Z', progress: 0, status: TaskStatus.TODO, dependencyIds: ['p11-ph2'] }
+        ]
+      },
+      {
+        id: 'proj-demo-12',
+        projectId: 'P25-045',
+        title: 'Mise en place DevSecOps',
+        description: 'Intégration de tests de sécurité (SAST/DAST) dans la CI/CD.',
+        status: ProjectStatus.NO,
+        tShirtSize: TShirtSize.M,
+        projectManagerMOA: 'res-demo-2',
+        projectManagerMOE: 'res-demo-2',
+        projectStartDate: '2025-06-01T00:00:00Z',
+        projectEndDate: '2025-12-31T00:00:00Z',
+        isTop30: false,
+        category: ProjectCategory.PROJECT,
+        initiativeId: 'init-demo-A',
+        isoMeasures: ['8.25', '8.29'],
+        predecessorIds: [],
+        budgetRequested: 80000,
+        budgetApproved: 80000,
+        budgetCommitted: 70000,
+        weather: ProjectWeather.SUNNY,
+        priorityScore: 4.5,
+        majorRiskIds: ['risk-obsolescence'],
+         tasks: [
+             { id: 'p12-ph1', name: 'Sélection outils SAST/DAST', startDate: '2025-06-01T00:00:00Z', endDate: '2025-07-31T00:00:00Z', progress: 100, status: TaskStatus.DONE },
+             { id: 'p12-ph2', name: 'Intégration Pipeline CI/CD', startDate: '2025-08-01T00:00:00Z', endDate: '2025-10-31T00:00:00Z', progress: 90, status: TaskStatus.IN_PROGRESS, dependencyIds: ['p12-ph1'] },
+             { id: 'p12-ph3', name: 'Formation développeurs', startDate: '2025-11-01T00:00:00Z', endDate: '2025-12-31T00:00:00Z', progress: 10, status: TaskStatus.IN_PROGRESS, dependencyIds: ['p12-ph2'] }
+        ]
+      },
+      {
+        id: 'proj-demo-13',
+        projectId: 'P26-010',
+        title: 'Segmentation Réseau Industrielle (OT)',
+        description: 'Isolation des réseaux de production industrielle pour limiter la propagation des malwares.',
+        status: ProjectStatus.IDENTIFIED,
+        tShirtSize: TShirtSize.XL,
+        projectManagerMOA: 'res-demo-4',
+        projectManagerMOE: 'res-demo-4',
+        projectStartDate: '2026-03-01T00:00:00Z',
+        projectEndDate: '2027-03-01T00:00:00Z',
+        isTop30: true,
+        category: ProjectCategory.PROJECT,
+        initiativeId: 'init-demo-D',
+        isoMeasures: ['8.20', '8.22'],
+        predecessorIds: [],
+        budgetRequested: 450000,
+        budgetApproved: 0,
+        weather: ProjectWeather.SUNNY,
+        priorityScore: 8.8,
+        majorRiskIds: ['risk-ransomware', 'risk-availability'],
+        tasks: [
+             { id: 'p13-ph1', name: 'Audit existant & Cartographie', startDate: '2026-03-01T00:00:00Z', endDate: '2026-05-30T00:00:00Z', progress: 0, status: TaskStatus.TODO },
+             { id: 'p13-ph2', name: 'Design Architecture Purdue', startDate: '2026-06-01T00:00:00Z', endDate: '2026-08-30T00:00:00Z', progress: 0, status: TaskStatus.TODO, dependencyIds: ['p13-ph1'] },
+             { id: 'p13-ph3', name: 'Déploiement Firewalls Industriels', startDate: '2026-09-01T00:00:00Z', endDate: '2027-03-01T00:00:00Z', progress: 0, status: TaskStatus.TODO, dependencyIds: ['p13-ph2'] }
         ]
       }
     ] as Project[],

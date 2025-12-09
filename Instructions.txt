@@ -6,7 +6,7 @@
 - Tu dois respecter scrupuleusement les règles d'utilisation des majuscules en Français.
 - Tu dois t'assurer à chaque étape de la pertinence et de la fiabilité des modifications effectuées
 - A chaque nouvelle itération tu dois mettre à jour le numéro de version de l'application. Le numéro de version est composé comme suit : Année sur 4 caractères, mois sur deux caractères, le caractère "-" puis le numéro d'itération sur 3 caractères. Cela donne donc par exemple 202511-011 (11ème itération du mois de novembre 2025). Etant donné que tu n'es pas en capacité de disposer de la date réelle. Utilise la date que je te donne dans le prompt système.
-- DATE : 202511
+- DATE : 202512
 - N'utilise jamais des fonds noirs dans les zones de saisies ou de validation. Uniquement des fonds blancs. Idem pour les bulles d'information qui ne doivent jamais être sur fond foncé, mais sur fond blanc. Les textes utilisées sur fond blanc ne doit jamais être blanc.
 - Il est essentiel que les interfaces restent cohérentes sur leur forme
 - Tu dois t'assurer systématiquement d'utiliser des composants à jour et à l'état de l'art en prenant en compte que nous sommes en novembre 2025.

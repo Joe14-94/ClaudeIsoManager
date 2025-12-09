@@ -1,8 +1,7 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useData } from '../contexts/DataContext';
-import AdvancedGanttChart from '../components/gantt/AdvancedGanttChart';
+import { AdvancedGanttChart } from '../components/gantt/AdvancedGanttChart';
 import Card, { CardContent } from '../components/ui/Card';
 
 const GanttDiagramPage: React.FC = () => {
