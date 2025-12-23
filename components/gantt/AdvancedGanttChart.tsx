@@ -2,7 +2,7 @@
 import React, { useState, useMemo, useRef, useLayoutEffect, useCallback, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Project, ProjectTask, Resource } from '../../types';
-import { ChevronDown, ChevronRight, ZoomIn, ZoomOut, Calendar, MoreVertical, User, History, GitCommitVertical, X, Save, CheckSquare, Square } from 'lucide-react';
+import { ChevronDown, ChevronRight, ZoomIn, ZoomOut, Calendar, MoreVertical, User, History, GitCommitVertical, X, Save, CheckSquare, Square, AlertCircle } from 'lucide-react';
 import { useGanttData, GanttRow } from '../../hooks/useGanttData';
 
 // --- Types et Constantes ---
@@ -369,6 +369,11 @@ export const AdvancedGanttChart: React.FC<AdvancedGanttChartProps> = ({ projects
                      <div className="flex items-center gap-1"><div className="w-3 h-3 bg-red-500 rounded-sm"></div> Critique</div>
                      <div className="flex items-center gap-1"><div className="w-3 h-3 rotate-45 bg-yellow-500 rounded-[1px]"></div> Jalon</div>
                      <div className="flex items-center gap-1"><div className="w-3 h-1 bg-slate-400"></div> Baseline</div>
+                     {/* Légende Retard */}
+                     <div className="flex items-center gap-1">
+                        <div className="w-3 h-3 border border-red-500 bg-white" style={{ backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(239, 68, 68, 0.5) 2px, rgba(239, 68, 68, 0.5) 4px)' }}></div>
+                        Retard
+                     </div>
                  </div>
             </div>
         </div>
@@ -420,6 +425,9 @@ export const AdvancedGanttChart: React.FC<AdvancedGanttChartProps> = ({ projects
                     <div className="relative" style={{ height: visibleRows.length * ROW_HEIGHT }}>
                         {visibleRows.map((row, index) => {
                             const isProject = row.type === 'project';
+                            const today = new Date();
+                            const isOverdue = row.progress < 100 && row.endDate < today;
+                            
                             return (
                                 <div 
                                     key={row.id}
@@ -439,14 +447,17 @@ export const AdvancedGanttChart: React.FC<AdvancedGanttChartProps> = ({ projects
                                                 {row.expanded ? <ChevronDown size={12}/> : <ChevronRight size={12}/>}
                                             </button>
                                         )}
-                                        <span className="truncate cursor-pointer" title={row.name}>{row.name}</span>
+                                        <span className="truncate cursor-pointer flex items-center gap-1" title={row.name}>
+                                            {row.name}
+                                            {isOverdue && <AlertCircle size={12} className="text-red-500 flex-shrink-0" />}
+                                        </span>
                                         {row.isCritical && <span className="w-2 h-2 rounded-full bg-red-500 ml-2" title="Tâche critique"></span>}
                                     </div>
                                     {/* Editable Inputs */}
                                     <div className="w-24 px-1" onClick={e => e.stopPropagation()}>
                                         <input 
                                             type="date" 
-                                            className="w-full text-xs bg-transparent border border-transparent hover:border-slate-300 focus:border-blue-500 rounded px-1 text-slate-500 focus:text-slate-900"
+                                            className={`w-full text-xs bg-transparent border border-transparent hover:border-slate-300 focus:border-blue-500 rounded px-1 text-slate-500 focus:text-slate-900 ${isOverdue ? 'text-red-600 font-semibold' : ''}`}
                                             value={formatDateForInput(row.startDate)}
                                             onChange={(e) => handleCellChange(row.id, isProject ? 'project' : 'task', 'start', e.target.value)}
                                         />
@@ -454,7 +465,7 @@ export const AdvancedGanttChart: React.FC<AdvancedGanttChartProps> = ({ projects
                                     <div className="w-24 px-1" onClick={e => e.stopPropagation()}>
                                         <input 
                                             type="date" 
-                                            className="w-full text-xs bg-transparent border border-transparent hover:border-slate-300 focus:border-blue-500 rounded px-1 text-slate-500 focus:text-slate-900"
+                                            className={`w-full text-xs bg-transparent border border-transparent hover:border-slate-300 focus:border-blue-500 rounded px-1 text-slate-500 focus:text-slate-900 ${isOverdue ? 'text-red-600 font-semibold' : ''}`}
                                             value={formatDateForInput(row.endDate)}
                                             onChange={(e) => handleCellChange(row.id, isProject ? 'project' : 'task', 'end', e.target.value)}
                                         />
@@ -480,9 +491,8 @@ export const AdvancedGanttChart: React.FC<AdvancedGanttChartProps> = ({ projects
                 <div ref={scrollContainerRef} onScroll={handleScroll} className="flex-grow overflow-auto bg-white relative">
                     <div className="relative" style={{ width: totalWidth, height: visibleRows.length * ROW_HEIGHT }}>
                         
-                         {/* SVG Layer for Dependencies */}
-                         {showDependencies && (
-                            <svg className="absolute top-0 left-0 pointer-events-none z-0" style={{ width: totalWidth, height: visibleRows.length * ROW_HEIGHT }}>
+                         {/* SVG Layer for Dependencies and Patterns */}
+                         <svg className="absolute top-0 left-0 pointer-events-none z-0" style={{ width: totalWidth, height: visibleRows.length * ROW_HEIGHT }}>
                                 <defs>
                                     <marker id="arrow" markerWidth="6" markerHeight="6" refX="6" refY="3" orient="auto" markerUnits="strokeWidth">
                                         <path d="M0,0 L0,6 L6,3 z" fill="#94a3b8" />
@@ -491,19 +501,16 @@ export const AdvancedGanttChart: React.FC<AdvancedGanttChartProps> = ({ projects
                                         <path d="M0,0 L0,6 L6,3 z" fill="#ef4444" />
                                     </marker>
                                 </defs>
-                                {visibleRows.map(row => {
+                                {showDependencies && visibleRows.map(row => {
                                     if (!row.dependencyIds || row.dependencyIds.length === 0) return null;
                                     const targetCoords = rowCoords.get(row.id);
                                     if (!targetCoords) return null;
 
                                     return row.dependencyIds.map(depId => {
                                         const sourceCoords = rowCoords.get(depId);
-                                        // On ne dessine que si les deux (source et cible) sont visibles (non repliés)
                                         if (!sourceCoords) return null;
 
                                         const sourceRow = visibleRows.find(r => r.id === depId);
-                                        // Le lien est critique si la source et la cible sont critiques (heuristic simple)
-                                        // ou mieux, si la source est critique ET que la cible est critique ET dépendante.
                                         const isCriticalLink = row.isCritical && sourceRow?.isCritical;
 
                                         const x1 = sourceCoords.xEnd;
@@ -511,7 +518,6 @@ export const AdvancedGanttChart: React.FC<AdvancedGanttChartProps> = ({ projects
                                         const x2 = targetCoords.xStart;
                                         const y2 = targetCoords.y;
 
-                                        // Bezier Curve Logic
                                         const curveOffset = 20;
                                         const path = `M ${x1} ${y1} C ${x1 + curveOffset} ${y1}, ${x2 - curveOffset} ${y2}, ${x2} ${y2}`;
 
@@ -527,8 +533,7 @@ export const AdvancedGanttChart: React.FC<AdvancedGanttChartProps> = ({ projects
                                         );
                                     });
                                 })}
-                            </svg>
-                        )}
+                        </svg>
 
                         {/* Grid Columns Background */}
                         {headerBlocks.minorBlocks.map((block, i) => (
@@ -560,8 +565,27 @@ export const AdvancedGanttChart: React.FC<AdvancedGanttChartProps> = ({ projects
 
                             const isMilestone = row.type === 'milestone';
                             
-                            // Style critique
-                            const criticalBorderClass = row.isCritical ? 'ring-2 ring-red-400 ring-offset-1' : '';
+                            // Calcul du décalage (Slippage) par rapport à la baseline
+                            // Le décalage correspond à la partie de la barre actuelle qui se trouve APRES la date de fin de la baseline.
+                            // Si la fin actuelle est après la fin de la baseline
+                            // On prend le max entre le début actuel et la fin de la baseline comme point de départ du hachurage pour gérer les cas où la tâche a aussi commencé en retard.
+                            // Mais visuellement, on veut juste montrer ce qui dépasse à droite.
+                            
+                            // Logique simplifiée : 
+                            // Si la barre finit après la baseline, la partie qui dépasse est rouge hachurée.
+                            // Attention : Si la barre commence après la fin de la baseline, toute la barre est hachurée.
+                            
+                            const slippageStart = Math.max(xStart, baselineEnd);
+                            const slippageWidth = Math.max(0, xEnd - baselineEnd);
+                            
+                            // La largeur "normale" est la largeur totale moins la partie hachurée
+                            // SAUF si la barre est entièrement hachurée (début après fin baseline)
+                            const normalWidth = width - slippageWidth;
+                            
+                            // Indicateur de dépassement (Overdue) : Pas fini et date de fin passée
+                            const isOverdue = row.progress < 100 && new Date() > row.endDate;
+                            const overdueClass = isOverdue ? 'ring-2 ring-red-500 ring-offset-1' : '';
+                            const criticalBorderClass = row.isCritical ? 'border-2 border-red-400' : '';
 
                             return (
                                 <div 
@@ -569,6 +593,7 @@ export const AdvancedGanttChart: React.FC<AdvancedGanttChartProps> = ({ projects
                                     className="absolute w-full border-b border-slate-100/50 hover:bg-blue-50/10 transition-colors z-10"
                                     style={{ height: ROW_HEIGHT, top: rowTop }}
                                 >
+                                    {/* Baseline Bar */}
                                     {showBaseline && row.baselineStartDate && (
                                         <div 
                                             className="absolute h-1.5 bg-slate-300 rounded-full opacity-60"
@@ -589,17 +614,39 @@ export const AdvancedGanttChart: React.FC<AdvancedGanttChartProps> = ({ projects
                                         />
                                     ) : (
                                         <div 
-                                            className={`absolute h-5 rounded-sm shadow-sm z-10 group cursor-pointer ${row.colorClass} ${criticalBorderClass}`}
+                                            className={`absolute h-5 rounded-sm shadow-sm z-10 group cursor-pointer ${overdueClass}`}
                                             style={{ 
                                                 left: xStart, 
                                                 width: width,
                                                 top: 8,
                                                 opacity: row.type === 'phase' ? 0.8 : 1
                                             }}
-                                            onMouseEnter={(e) => setTooltip({ visible: true, x: e.clientX, y: e.clientY, content: <div className="text-xs"><strong>{row.name}</strong><br/>Du {formatDateFR(row.startDate)} au {formatDateFR(row.endDate)}<br/>{row.progress}% {row.isCritical ? '(Critique)' : ''}</div> })}
+                                            onMouseEnter={(e) => setTooltip({ visible: true, x: e.clientX, y: e.clientY, content: <div className="text-xs"><strong>{row.name}</strong><br/>Du {formatDateFR(row.startDate)} au {formatDateFR(row.endDate)}<br/>{row.progress}% {row.isCritical ? '(Critique)' : ''}{slippageWidth > 0 ? <span className="text-red-300"><br/>Retard planifié détecté</span> : ''}</div> })}
                                             onMouseLeave={() => setTooltip(null)}
                                         >
-                                            <div className="h-full bg-white/30" style={{ width: `${row.progress}%` }} />
+                                            {/* Partie Normale de la barre */}
+                                            {normalWidth > 0 && (
+                                                <div className={`absolute left-0 top-0 h-full ${row.colorClass} ${criticalBorderClass} ${slippageWidth > 0 ? 'rounded-l-sm' : 'rounded-sm'}`} style={{ width: normalWidth }}>
+                                                </div>
+                                            )}
+
+                                            {/* Partie Retard (Slippage) */}
+                                            {slippageWidth > 0 && (
+                                                <div 
+                                                    className={`absolute top-0 h-full border-t border-b border-r border-red-500 ${normalWidth <= 0 ? 'rounded-sm border-l' : 'rounded-r-sm'}`}
+                                                    style={{ 
+                                                        left: normalWidth, 
+                                                        width: slippageWidth,
+                                                        backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(239, 68, 68, 0.5) 5px, rgba(239, 68, 68, 0.5) 10px)',
+                                                        backgroundColor: 'rgba(255, 255, 255, 0.5)'
+                                                    }}
+                                                >
+                                                </div>
+                                            )}
+                                            
+                                            {/* Progress Overlay - on top of both parts */}
+                                            <div className="absolute left-0 top-0 h-full bg-white/30 rounded-sm" style={{ width: `${row.progress}%` }} />
+
                                             {width < 50 && (
                                                 <div className="absolute left-full ml-2 top-0 h-full flex items-center text-xs text-slate-500 whitespace-nowrap pointer-events-none">
                                                     {row.name}
