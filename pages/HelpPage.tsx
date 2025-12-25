@@ -112,9 +112,9 @@ const HelpPage: React.FC = () => {
             <div>
                 <h4 className="font-semibold text-slate-700 text-lg mb-2">1. Planification & Diagramme de Gantt</h4>
                 <div className="pl-4 border-l-2 border-slate-200 space-y-2">
-                    <p className="text-sm">Le <strong>Diagramme de Gantt Avancé</strong> (Menu Projets > Gantt) offre une vue complète sur le déroulement de vos projets.</p>
+                    <p className="text-sm">Le <strong>Diagramme de Gantt Avancé</strong> (Menu Projets &gt; Gantt) offre une vue complète sur le déroulement de vos projets.</p>
                     <ul className="list-disc list-inside text-sm pl-2">
-                        <li><strong>Structure WBS :</strong> Vous pouvez créer une arborescence de tâches (Phases > Tâches > Sous-tâches) directement depuis l'éditeur ou dans la fiche projet.</li>
+                        <li><strong>Structure WBS :</strong> Vous pouvez créer une arborescence de tâches (Phases &gt; Tâches &gt; Sous-tâches) directement depuis l'éditeur ou dans la fiche projet.</li>
                         <li><strong>Dépendances :</strong> Liez des tâches entre elles (Fin à Début) pour visualiser l'impact d'un retard.</li>
                         <li><strong>Jalons :</strong> Placez des repères clés (losanges) pour marquer les étapes importantes.</li>
                         <li><strong>Mode Suivi (Baseline) :</strong> En activant ce mode, une barre grise apparaît sous la barre d'avancement, représentant les dates initiales prévues. Tout décalage vers la droite est automatiquement signalé en rouge comme un retard.</li>
