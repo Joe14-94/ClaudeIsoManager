@@ -1,6 +1,5 @@
 
 import React from 'react';
-// FIX: The project appears to use react-router-dom v5, but the installed version is v6. Updating imports to v6.
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Sidebar from './components/layout/Sidebar';
 import Activities from './pages/Activities';
@@ -17,6 +16,8 @@ import Processes from './pages/Processes';
 import LoginPage from './pages/LoginPage';
 import { DataProvider } from './contexts/DataContext';
 import { AuthProvider } from './contexts/AuthContext';
+import { ToastProvider } from './contexts/ToastContext';
+import { AuditProvider } from './contexts/AuditContext';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import DataModelView from './pages/DataModelView';
 import DataModelView2 from './pages/DataModelView2';
@@ -38,6 +39,7 @@ import HelpPage from './pages/HelpPage';
 import GraphCreatorPage from './pages/GraphCreatorPage';
 import GanttDiagramPage from './pages/GanttDiagramPage';
 import CalendarImportPage from './pages/CalendarImportPage';
+import AuditLogPage from './pages/AuditLogPage';
 
 const AppLayout: React.FC = () => {
   return (
@@ -79,6 +81,7 @@ const AppLayout: React.FC = () => {
             <Route path="/data-model" element={<DataModelView />} />
             <Route path="/data-model-2" element={<DataModelView2 />} />
             <Route path="/droits-acces" element={<AccessRightsPage />} />
+            <Route path="/audit-log" element={<AuditLogPage />} />
             <Route path="/aide" element={<HelpPage />} />
           </Routes>
         </main>
@@ -91,23 +94,24 @@ const App: React.FC = () => {
   return (
     <HashRouter>
       <AuthProvider>
-        <DataProvider>
-          <NotificationProvider>
-            <SidebarProvider>
-              {/* FIX: Replaced v5 Switch with v6 Routes */}
-              <Routes>
-                {/* FIX: Updated Route components to use `element` prop for v6 */}
-                <Route path="/login" element={<LoginPage />} />
-                {/* FIX: Updated catch-all route for v6 */}
-                <Route path="/*" element={
-                  <ProtectedRoute>
-                    <AppLayout />
-                  </ProtectedRoute>
-                } />
-              </Routes>
-            </SidebarProvider>
-          </NotificationProvider>
-        </DataProvider>
+        <ToastProvider>
+          <DataProvider>
+            <AuditProvider>
+              <NotificationProvider>
+                <SidebarProvider>
+                  <Routes>
+                    <Route path="/login" element={<LoginPage />} />
+                    <Route path="/*" element={
+                      <ProtectedRoute>
+                        <AppLayout />
+                      </ProtectedRoute>
+                    } />
+                  </Routes>
+                </SidebarProvider>
+              </NotificationProvider>
+            </AuditProvider>
+          </DataProvider>
+        </ToastProvider>
       </AuthProvider>
     </HashRouter>
   );

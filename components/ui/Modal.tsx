@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef, useCallback } from 'react';
 import { X } from 'lucide-react';
 
 interface ModalProps {
@@ -8,20 +8,85 @@ interface ModalProps {
   children: React.ReactNode;
   headerActions?: React.ReactNode;
   position?: 'center' | 'right';
+  /** Désactiver le focus trap (par défaut: false) */
+  disableFocusTrap?: boolean;
 }
 
-const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, headerActions, position = 'center' }) => {
+const Modal: React.FC<ModalProps> = ({
+  isOpen,
+  onClose,
+  title,
+  children,
+  headerActions,
+  position = 'center',
+  disableFocusTrap = false
+}) => {
+  const modalRef = useRef<HTMLDivElement>(null);
+  const previousActiveElement = useRef<HTMLElement | null>(null);
+
+  // Sélecteurs pour les éléments focusables
+  const getFocusableElements = useCallback(() => {
+    if (!modalRef.current) return [];
+    return Array.from(
+      modalRef.current.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      )
+    );
+  }, []);
+
   useEffect(() => {
-    const handleEsc = (event: KeyboardEvent) => {
+    if (!isOpen) return;
+
+    // Sauvegarder l'élément actif avant l'ouverture
+    previousActiveElement.current = document.activeElement as HTMLElement;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         onClose();
+        return;
+      }
+
+      // Focus trap
+      if (event.key === 'Tab' && !disableFocusTrap) {
+        const focusableElements = getFocusableElements();
+        if (focusableElements.length === 0) return;
+
+        const firstElement = focusableElements[0];
+        const lastElement = focusableElements[focusableElements.length - 1];
+
+        if (event.shiftKey) {
+          if (document.activeElement === firstElement) {
+            event.preventDefault();
+            lastElement.focus();
+          }
+        } else {
+          if (document.activeElement === lastElement) {
+            event.preventDefault();
+            firstElement.focus();
+          }
+        }
       }
     };
-    window.addEventListener('keydown', handleEsc);
+
+    // Focus sur le premier élément focusable
+    const focusableElements = getFocusableElements();
+    if (focusableElements.length > 0) {
+      focusableElements[0].focus();
+    }
+
+    // Bloquer le scroll du body
+    document.body.style.overflow = 'hidden';
+    document.addEventListener('keydown', handleKeyDown);
+
     return () => {
-      window.removeEventListener('keydown', handleEsc);
+      document.body.style.overflow = '';
+      document.removeEventListener('keydown', handleKeyDown);
+      // Restaurer le focus sur l'élément précédent
+      if (previousActiveElement.current) {
+        previousActiveElement.current.focus();
+      }
     };
-  }, [onClose]);
+  }, [isOpen, onClose, disableFocusTrap, getFocusableElements]);
 
   if (!isOpen) return null;
 
@@ -34,14 +99,15 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, headerA
     : "bg-white shadow-xl h-full w-full max-w-lg flex flex-col";
 
   return (
-    <div 
+    <div
       className={overlayClasses}
       onClick={onClose}
       role="dialog"
       aria-modal="true"
       aria-labelledby="modal-title"
     >
-      <div 
+      <div
+        ref={modalRef}
         className={modalClasses}
         onClick={e => e.stopPropagation()}
       >

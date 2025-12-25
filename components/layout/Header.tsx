@@ -2,6 +2,7 @@ import React from 'react';
 import { Menu } from 'lucide-react';
 import { useSidebar } from '../../contexts/SidebarContext';
 import NotificationBell from './NotificationBell';
+import GlobalSearch from '../search/GlobalSearch';
 
 const Header: React.FC = () => {
     const { toggleMobileSidebar } = useSidebar();
@@ -19,8 +20,9 @@ const Header: React.FC = () => {
                     <h1 className="text-lg font-bold text-slate-800">ISO Manager</h1>
                 </div>
             </div>
-            
-            <div className="flex items-center">
+
+            <div className="flex items-center gap-3">
+                <GlobalSearch />
                 <NotificationBell />
             </div>
         </header>

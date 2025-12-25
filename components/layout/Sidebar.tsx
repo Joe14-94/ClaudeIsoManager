@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, ListChecks, Network, ShieldCheck, Target, TrendingUp, Users, Database, FileUp, FileDown, Workflow, GitMerge, ClipboardCheck, LogOut, KeyRound, DatabaseZap, GanttChart, LayoutGrid, Flag, ClipboardList, ChevronUp, ChevronDown, Coins, Timer, GitBranch, ChevronsLeft, ChevronsRight, UserCog, HelpCircle, BarChart3, Table, CalendarDays, Calendar } from 'lucide-react';
+import { LayoutDashboard, ListChecks, Network, ShieldCheck, Target, TrendingUp, Users, Database, FileUp, FileDown, Workflow, GitMerge, ClipboardCheck, LogOut, KeyRound, DatabaseZap, GanttChart, LayoutGrid, Flag, ClipboardList, ChevronUp, ChevronDown, Coins, Timer, GitBranch, ChevronsLeft, ChevronsRight, UserCog, HelpCircle, BarChart3, Table, CalendarDays, Calendar, History } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import ChangePasswordModal from '../auth/ChangePasswordModal';
 import { APP_VERSION } from '../../config';
@@ -175,6 +175,7 @@ const Sidebar: React.FC = () => {
                 <div className={`${!isCollapsed && !isDroitsAccesOpen ? 'hidden' : 'block'}`}>
                     <div className='space-y-1'>
                         <NavItem to="/droits-acces" icon={<UserCog />} label="Droits d'accès" isCollapsed={isCollapsed} />
+                        <NavItem to="/audit-log" icon={<History />} label="Journal d'audit" isCollapsed={isCollapsed} />
                     </div>
                 </div>
                 </div>
