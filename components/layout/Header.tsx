@@ -3,6 +3,7 @@ import { Menu } from 'lucide-react';
 import { useSidebar } from '../../contexts/SidebarContext';
 import NotificationBell from './NotificationBell';
 import GlobalSearch from '../search/GlobalSearch';
+import ThemeSelector from '../ui/ThemeSelector';
 
 const Header: React.FC = () => {
     const { toggleMobileSidebar } = useSidebar();
@@ -23,6 +24,7 @@ const Header: React.FC = () => {
 
             <div className="flex items-center gap-3">
                 <GlobalSearch />
+                <ThemeSelector />
                 <NotificationBell />
             </div>
         </header>

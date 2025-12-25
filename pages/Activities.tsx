@@ -11,6 +11,10 @@ import GuidedActivityWizard from '../components/wizards/GuidedActivityWizard';
 import ActiveFiltersDisplay from '../components/ui/ActiveFiltersDisplay';
 import ActivityForm from '../components/activities/ActivityForm';
 import { useTableSort } from '../hooks/useTableSort';
+import ExportButton from '../components/ui/ExportButton';
+import { CsvColumn, dateFormatters, arrayFormatter, numberFormatters } from '../utils/csvExport';
+import { useSavedFilters } from '../hooks/useSavedFilters';
+import SavedFiltersMenu from '../components/ui/SavedFiltersMenu';
 
 type FormActivity = Partial<Activity> & { chantierIds?: string[] };
 
@@ -32,7 +36,7 @@ const Activities: React.FC = () => {
   const isReadOnly = false;
   const location = useLocation();
   const locationState = location.state as any;
-  
+
   const [domainFilter, setDomainFilter] = useState(locationState?.domainFilter || '');
   const [statusFilter, setStatusFilter] = useState(locationState?.statusFilter || '');
   const [priorityFilter, setPriorityFilter] = useState('');
@@ -40,8 +44,11 @@ const Activities: React.FC = () => {
   const [resourceFilter, setResourceFilter] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [isEditMode, setIsEditMode] = useState(false);
-  
+
   const { sortConfig, requestSort } = useTableSort<Activity>(activities, 'activityId');
+
+  // Système de filtres sauvegardés
+  const { savedFilters, saveCurrentFilter, loadFilter, deleteFilter } = useSavedFilters('activities');
 
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [isWizardOpen, setIsWizardOpen] = useState(false);
@@ -151,13 +158,90 @@ const Activities: React.FC = () => {
   };
 
   const handleClearAll = () => { setDomainFilter(''); setStatusFilter(''); setPriorityFilter(''); setResourceFilter(''); setProcessFilter(''); setSearchTerm(''); };
+
+  // Gestion des filtres sauvegardés
+  const handleSaveFilters = (name: string) => {
+    const currentFilters = {
+      domainFilter,
+      statusFilter,
+      priorityFilter,
+      resourceFilter,
+      processFilter,
+      searchTerm,
+    };
+    saveCurrentFilter(name, currentFilters);
+  };
+
+  const handleLoadFilters = (filterId: string) => {
+    const filters = loadFilter(filterId);
+    if (filters) {
+      setDomainFilter(filters.domainFilter || '');
+      setStatusFilter(filters.statusFilter || '');
+      setPriorityFilter(filters.priorityFilter || '');
+      setResourceFilter(filters.resourceFilter || '');
+      setProcessFilter(filters.processFilter || '');
+      setSearchTerm(filters.searchTerm || '');
+    }
+  };
+
+  const hasActiveFilters = Boolean(
+    domainFilter || statusFilter || priorityFilter || resourceFilter || processFilter || searchTerm
+  );
   const renderSortArrow = (key: string) => { if (sortConfig?.key === key) return sortConfig.direction === 'ascending' ? <ArrowUp size={14} /> : <ArrowDown size={14} />; return null; }
+
+  // Configuration des colonnes pour l'export CSV
+  const csvColumns: CsvColumn<Activity>[] = useMemo(() => [
+    { header: 'ID', accessor: 'activityId' },
+    { header: 'Titre', accessor: 'title' },
+    { header: 'Description', accessor: 'description' },
+    { header: 'Domaine de sécurité', accessor: 'securityDomain' },
+    { header: 'Statut', accessor: 'status' },
+    { header: 'Priorité', accessor: 'priority' },
+    { header: 'Type', accessor: 'activityType' },
+    { header: 'Processus fonctionnel', accessor: (a) => processMap.get(a.functionalProcessId) || 'N/A' },
+    { header: 'Responsable', accessor: (a) => resourceMap.get(a.owner || '') || 'N/A' },
+    { header: 'Mesures ISO', accessor: (a) => a.isoMeasures, formatter: arrayFormatter },
+    { header: 'Orientations stratégiques', accessor: (a) => a.strategicOrientations, formatter: arrayFormatter },
+    { header: 'Date de début', accessor: 'startDate', formatter: dateFormatters.french },
+    { header: 'Date de fin prévue', accessor: 'endDatePlanned', formatter: dateFormatters.french },
+    { header: 'Charge prévue (j/h)', accessor: 'workloadInPersonDays', formatter: (v) => v ? String(v) : '' },
+    { header: 'Charge consommée (j/h)', accessor: 'consumedWorkload', formatter: (v) => v ? String(v) : '' },
+    { header: 'Service externe', accessor: (a) => a.isExternalService ? 'Oui' : 'Non' },
+    { header: 'Budget demandé', accessor: 'budgetRequested', formatter: (v) => v ? numberFormatters.currency(v) : '' },
+    { header: 'Budget approuvé', accessor: 'budgetApproved', formatter: (v) => v ? numberFormatters.currency(v) : '' },
+    { header: 'Budget engagé', accessor: 'budgetCommitted', formatter: (v) => v ? numberFormatters.currency(v) : '' },
+    { header: 'Créé le', accessor: 'createdAt', formatter: dateFormatters.frenchWithTime },
+    { header: 'Modifié le', accessor: 'updatedAt', formatter: dateFormatters.frenchWithTime },
+  ], [processMap, resourceMap]);
 
   return (
     <div className="space-y-6 h-full flex flex-col">
       <div className="flex justify-between items-center flex-wrap gap-4">
         <h1 className="text-3xl font-bold text-slate-800">Activités</h1>
-        {!isReadOnly && ( <div className="flex items-center gap-2"><button onClick={() => setIsWizardOpen(true)} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"><Sparkles size={20} /><span>Création guidée</span></button></div> )}
+        <div className="flex items-center gap-2">
+          <SavedFiltersMenu
+            savedFilters={savedFilters}
+            onSave={handleSaveFilters}
+            onLoad={handleLoadFilters}
+            onDelete={deleteFilter}
+            hasActiveFilters={hasActiveFilters}
+          />
+          <ExportButton
+            data={sortedActivities}
+            columns={csvColumns}
+            filename={`activites-${new Date().toISOString().split('T')[0]}.csv`}
+            label="Exporter"
+          />
+          {!isReadOnly && (
+            <button
+              onClick={() => setIsWizardOpen(true)}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              <Sparkles size={20} />
+              <span>Création guidée</span>
+            </button>
+          )}
+        </div>
       </div>
       <Card className="flex-grow flex flex-col min-h-0">
         <CardHeader>

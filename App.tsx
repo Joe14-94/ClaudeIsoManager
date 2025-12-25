@@ -18,6 +18,7 @@ import { DataProvider } from './contexts/DataContext';
 import { AuthProvider } from './contexts/AuthContext';
 import { ToastProvider } from './contexts/ToastContext';
 import { AuditProvider } from './contexts/AuditContext';
+import { ThemeProvider } from './contexts/ThemeContext';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import DataModelView from './pages/DataModelView';
 import DataModelView2 from './pages/DataModelView2';
@@ -93,26 +94,28 @@ const AppLayout: React.FC = () => {
 const App: React.FC = () => {
   return (
     <HashRouter>
-      <AuthProvider>
-        <ToastProvider>
-          <DataProvider>
-            <AuditProvider>
-              <NotificationProvider>
-                <SidebarProvider>
-                  <Routes>
-                    <Route path="/login" element={<LoginPage />} />
-                    <Route path="/*" element={
-                      <ProtectedRoute>
-                        <AppLayout />
-                      </ProtectedRoute>
-                    } />
-                  </Routes>
-                </SidebarProvider>
-              </NotificationProvider>
-            </AuditProvider>
-          </DataProvider>
-        </ToastProvider>
-      </AuthProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <ToastProvider>
+            <DataProvider>
+              <AuditProvider>
+                <NotificationProvider>
+                  <SidebarProvider>
+                    <Routes>
+                      <Route path="/login" element={<LoginPage />} />
+                      <Route path="/*" element={
+                        <ProtectedRoute>
+                          <AppLayout />
+                        </ProtectedRoute>
+                      } />
+                    </Routes>
+                  </SidebarProvider>
+                </NotificationProvider>
+              </AuditProvider>
+            </DataProvider>
+          </ToastProvider>
+        </AuthProvider>
+      </ThemeProvider>
     </HashRouter>
   );
 };

@@ -12,6 +12,8 @@ import Tooltip from '../components/ui/Tooltip';
 import ProjectForm from '../components/projects/ProjectForm';
 import { useTableSort } from '../hooks/useTableSort';
 import { analyzeCriticalPath } from '../utils/projectAnalysis';
+import ExportButton from '../components/ui/ExportButton';
+import { CsvColumn, dateFormatters, arrayFormatter, numberFormatters } from '../utils/csvExport';
 
 const WEATHER_ICONS = {
     [ProjectWeather.SUNNY]: <Sun className="text-yellow-500" size={20} />,
@@ -201,11 +203,70 @@ const Projects: React.FC = () => {
     const handleRemoveFilter = (key: string) => { if (key === 'Statut') setStatusFilter(''); if (key === 'Top 30') setTop30Filter(''); if (key === 'Catégorie') setCategoriesFilter([]); };
     const handleClearAll = () => { setStatusFilter(''); setTop30Filter(''); setCategoriesFilter([]); setSearchTerm(''); };
 
+    // Configuration des colonnes pour l'export CSV
+    const csvColumns: CsvColumn<Project>[] = useMemo(() => [
+        { header: 'ID', accessor: 'projectId' },
+        { header: 'Titre', accessor: 'title' },
+        { header: 'Description', accessor: 'description' },
+        { header: 'Statut', accessor: 'status' },
+        { header: 'Catégorie', accessor: 'category' },
+        { header: 'Taille', accessor: 'tShirtSize' },
+        { header: 'Top 30', accessor: (p) => p.isTop30 ? 'Oui' : 'Non' },
+        { header: 'Initiative', accessor: (p) => initiativeMap.get(p.initiativeId || '') || 'N/A' },
+        { header: 'Météo', accessor: 'weather' },
+        { header: 'Description météo', accessor: 'weatherDescription' },
+        { header: 'Chef de projet MOA', accessor: 'projectManagerMOA' },
+        { header: 'Chef de projet MOE', accessor: 'projectManagerMOE' },
+        { header: 'Date début', accessor: 'projectStartDate', formatter: dateFormatters.french },
+        { header: 'Date fin', accessor: 'projectEndDate', formatter: dateFormatters.french },
+        { header: 'Go Live', accessor: 'goLiveDate', formatter: dateFormatters.french },
+        { header: 'Avancement (%)', accessor: (p) => getProjectProgress(p) },
+        { header: 'Sur chemin critique', accessor: (p) => criticalPath.has(p.id) ? 'Oui' : 'Non' },
+        { header: 'Mesures ISO', accessor: (p) => p.isoMeasures, formatter: arrayFormatter },
+        { header: 'Impact stratégique (1-5)', accessor: 'strategicImpact' },
+        { header: 'Couverture risque (1-5)', accessor: 'riskCoverage' },
+        { header: 'Effort (1-5)', accessor: 'effort' },
+        { header: 'Score priorité', accessor: 'priorityScore', formatter: (v) => v ? numberFormatters.decimal(v, 1) : '' },
+        { header: 'Charge interne demandée', accessor: 'internalWorkloadRequested', formatter: (v) => v ? String(v) : '' },
+        { header: 'Charge interne engagée', accessor: 'internalWorkloadEngaged', formatter: (v) => v ? String(v) : '' },
+        { header: 'Charge interne consommée', accessor: 'internalWorkloadConsumed', formatter: (v) => v ? String(v) : '' },
+        { header: 'Charge externe demandée', accessor: 'externalWorkloadRequested', formatter: (v) => v ? String(v) : '' },
+        { header: 'Charge externe engagée', accessor: 'externalWorkloadEngaged', formatter: (v) => v ? String(v) : '' },
+        { header: 'Charge externe consommée', accessor: 'externalWorkloadConsumed', formatter: (v) => v ? String(v) : '' },
+        { header: 'Budget demandé', accessor: 'budgetRequested', formatter: (v) => v ? numberFormatters.currency(v) : '' },
+        { header: 'Budget approuvé', accessor: 'budgetApproved', formatter: (v) => v ? numberFormatters.currency(v) : '' },
+        { header: 'Budget engagé', accessor: 'budgetCommitted', formatter: (v) => v ? numberFormatters.currency(v) : '' },
+        { header: 'Bons de commande validés', accessor: 'validatedPurchaseOrders', formatter: (v) => v ? numberFormatters.currency(v) : '' },
+        { header: 'PV complétés', accessor: 'completedPV', formatter: (v) => v ? numberFormatters.currency(v) : '' },
+        { header: 'Bons de commande prévisionnels', accessor: 'forecastedPurchaseOrders', formatter: (v) => v ? numberFormatters.currency(v) : '' },
+        { header: 'Créé le', accessor: 'createdAt', formatter: dateFormatters.frenchWithTime },
+        { header: 'Modifié le', accessor: 'updatedAt', formatter: dateFormatters.frenchWithTime },
+    ], [initiativeMap, criticalPath]);
+
     return (
         <div className="space-y-6 h-full flex flex-col">
             {!isModalOnly && (
                 <>
-                    <div className="flex justify-between items-center flex-wrap gap-4"><h1 className="text-3xl font-bold text-slate-800">Projets</h1>{!isReadOnly && (<button onClick={() => handleOpenFormModal()} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"><PlusCircle size={20} /><span>Nouveau projet</span></button>)}</div>
+                    <div className="flex justify-between items-center flex-wrap gap-4">
+                        <h1 className="text-3xl font-bold text-slate-800">Projets</h1>
+                        <div className="flex items-center gap-2">
+                            <ExportButton
+                                data={sortedProjects}
+                                columns={csvColumns}
+                                filename={`projets-${new Date().toISOString().split('T')[0]}.csv`}
+                                label="Exporter"
+                            />
+                            {!isReadOnly && (
+                                <button
+                                    onClick={() => handleOpenFormModal()}
+                                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                                >
+                                    <PlusCircle size={20} />
+                                    <span>Nouveau projet</span>
+                                </button>
+                            )}
+                        </div>
+                    </div>
                     <Card className="flex-grow flex flex-col min-h-0">
                         <CardHeader>
                             <div className="flex flex-col md:flex-row flex-wrap gap-4 mb-4">
