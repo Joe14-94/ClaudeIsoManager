@@ -511,17 +511,17 @@ const DataExplorer: React.FC = () => {
         <div className="flex flex-col h-full space-y-4">
         <div className="flex justify-between items-center">
             <h1 className="text-3xl font-bold text-slate-800">Explorateur de données activités</h1>
-            <div className="flex gap-2">
-                <button onClick={handleExport} disabled={columns.length === 0} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-slate-400 transition-colors">
-                    <FileDown size={18} /><span>CSV</span>
+            <div className="flex gap-1.5">
+                <button onClick={handleExport} disabled={columns.length === 0} className="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-slate-50 text-slate-700 border border-slate-200 rounded-md hover:bg-slate-100 disabled:bg-slate-100 disabled:text-slate-400 transition-colors">
+                    <FileDown size={16} /><span>CSV</span>
                 </button>
-                <button onClick={handleExportExcel} disabled={columns.length === 0} className="relative flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-slate-400 transition-colors">
-                    <span className="absolute -top-2 -right-2 bg-yellow-400 text-green-900 text-xs font-bold px-1.5 py-0.5 rounded-full shadow-sm animate-pulse">NEW</span>
-                    <FileSpreadsheet size={18} /><span>Excel</span>
+                <button onClick={handleExportExcel} disabled={columns.length === 0} className="relative flex items-center gap-1.5 px-3 py-1.5 text-sm bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-md hover:bg-emerald-100 disabled:bg-slate-100 disabled:text-slate-400 transition-colors">
+                    <span className="absolute -top-1 -right-1 bg-yellow-400 text-emerald-900 text-[10px] font-bold px-1 py-0.5 rounded-full shadow-sm animate-pulse">NEW</span>
+                    <FileSpreadsheet size={16} /><span>Excel</span>
                 </button>
-                <button onClick={handleExportPDF} disabled={columns.length === 0} className="relative flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:bg-slate-400 transition-colors">
-                    <span className="absolute -top-2 -right-2 bg-yellow-400 text-orange-900 text-xs font-bold px-1.5 py-0.5 rounded-full shadow-sm animate-pulse">NEW</span>
-                    <FileText size={18} /><span>PDF</span>
+                <button onClick={handleExportPDF} disabled={columns.length === 0} className="relative flex items-center gap-1.5 px-3 py-1.5 text-sm bg-rose-50 text-rose-700 border border-rose-200 rounded-md hover:bg-rose-100 disabled:bg-slate-100 disabled:text-slate-400 transition-colors">
+                    <span className="absolute -top-1 -right-1 bg-yellow-400 text-rose-900 text-[10px] font-bold px-1 py-0.5 rounded-full shadow-sm animate-pulse">NEW</span>
+                    <FileText size={16} /><span>PDF</span>
                 </button>
             </div>
         </div>
