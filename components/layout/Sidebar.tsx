@@ -90,7 +90,7 @@ const Sidebar: React.FC = () => {
   return (
     <>
       {isMobileOpen && <div className="fixed inset-0 bg-black/50 z-30 md:hidden" onClick={closeMobileSidebar} aria-hidden="true" />}
-      <aside className={`fixed inset-y-0 left-0 z-40 bg-white border-r border-slate-200 flex flex-col p-3 transform transition-all duration-300 ease-in-out md:relative md:translate-x-0 ${isMobileOpen ? 'translate-x-0' : '-translate-x-full'} ${isCollapsed ? 'md:w-20' : 'md:w-56'} w-56`}>
+      <aside className={`fixed inset-y-0 left-0 z-40 bg-slate-50 border-r-4 border-r-blue-500 flex flex-col p-3 transform transition-all duration-300 ease-in-out md:relative md:translate-x-0 ${isMobileOpen ? 'translate-x-0' : '-translate-x-full'} ${isCollapsed ? 'md:w-20' : 'md:w-56'} w-56`}>
         <div className={`flex items-center gap-2 px-3 pb-3 border-b border-slate-200 ${isCollapsed ? 'md:justify-center' : ''}`}>
           <div className="p-2 bg-slate-800 text-white rounded-lg"><ShieldCheck size={24} /></div>
           <span className={`${isCollapsed ? 'md:hidden' : ''}`}><h1 className="text-xl font-bold text-slate-800">ISO Manager</h1></span>
