@@ -19,7 +19,9 @@ import { AuthProvider } from './contexts/AuthContext';
 import { ToastProvider } from './contexts/ToastContext';
 import { AuditProvider } from './contexts/AuditContext';
 import { ThemeProvider } from './contexts/ThemeContext';
+import { UndoRedoProvider } from './contexts/UndoRedoContext';
 import ProtectedRoute from './components/auth/ProtectedRoute';
+import UndoRedoIndicator from './components/ui/UndoRedoIndicator';
 import DataModelView from './pages/DataModelView';
 import DataModelView2 from './pages/DataModelView2';
 import TimelinePage from './pages/TimelinePage';
@@ -41,8 +43,13 @@ import GraphCreatorPage from './pages/GraphCreatorPage';
 import GanttDiagramPage from './pages/GanttDiagramPage';
 import CalendarImportPage from './pages/CalendarImportPage';
 import AuditLogPage from './pages/AuditLogPage';
+import { useNavigationShortcuts, useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
+import KeyboardShortcutsHelp from './components/ui/KeyboardShortcutsHelp';
 
 const AppLayout: React.FC = () => {
+  const navigationShortcuts = useNavigationShortcuts();
+  useKeyboardShortcuts(navigationShortcuts);
+
   return (
      <div className="relative h-screen bg-slate-100 font-sans md:flex overflow-hidden">
       <Sidebar />
@@ -87,6 +94,8 @@ const AppLayout: React.FC = () => {
           </Routes>
         </main>
       </div>
+      <KeyboardShortcutsHelp shortcuts={navigationShortcuts} />
+      <UndoRedoIndicator />
     </div>
   )
 }
@@ -97,22 +106,24 @@ const App: React.FC = () => {
       <ThemeProvider>
         <AuthProvider>
           <ToastProvider>
-            <DataProvider>
-              <AuditProvider>
-                <NotificationProvider>
-                  <SidebarProvider>
-                    <Routes>
-                      <Route path="/login" element={<LoginPage />} />
-                      <Route path="/*" element={
-                        <ProtectedRoute>
-                          <AppLayout />
-                        </ProtectedRoute>
-                      } />
-                    </Routes>
-                  </SidebarProvider>
-                </NotificationProvider>
-              </AuditProvider>
-            </DataProvider>
+            <UndoRedoProvider>
+              <DataProvider>
+                <AuditProvider>
+                  <NotificationProvider>
+                    <SidebarProvider>
+                      <Routes>
+                        <Route path="/login" element={<LoginPage />} />
+                        <Route path="/*" element={
+                          <ProtectedRoute>
+                            <AppLayout />
+                          </ProtectedRoute>
+                        } />
+                      </Routes>
+                    </SidebarProvider>
+                  </NotificationProvider>
+                </AuditProvider>
+              </DataProvider>
+            </UndoRedoProvider>
           </ToastProvider>
         </AuthProvider>
       </ThemeProvider>
