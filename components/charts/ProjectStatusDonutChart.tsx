@@ -114,7 +114,7 @@ const ProjectStatusDonutChart: React.FC<ProjectStatusDonutChartProps> = ({ data,
   }
 
   return (
-    <div className="flex flex-col md:flex-row items-center h-[350px] w-full gap-6">
+    <div className="flex flex-col md:flex-row items-center h-[350px] w-full gap-3">
         <div ref={containerRef} className="flex-1 h-full w-full min-h-0 relative">
             <svg ref={svgRef} width="100%" height="100%"></svg>
         </div>

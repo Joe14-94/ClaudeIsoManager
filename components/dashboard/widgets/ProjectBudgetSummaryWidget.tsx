@@ -71,7 +71,7 @@ const ProjectBudgetSummaryWidget: React.FC = () => {
                     )}
                 </div>
             </CardHeader>
-            <CardContent className="flex-grow flex flex-col justify-center gap-6 py-2">
+            <CardContent className="flex-grow flex flex-col justify-center gap-3 py-2">
                 
                 <ProgressBar 
                     label="Consommation (Engagé vs Accordé)" 

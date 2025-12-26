@@ -22,8 +22,8 @@ const NavItem: React.FC<NavItemProps> = ({ to, icon, label, isCollapsed, end }) 
     const navItemClasses = "flex items-center py-2.5 text-sm font-medium rounded-lg transition-colors";
     const activeClasses = "bg-slate-200 text-slate-900";
     const inactiveClasses = "text-slate-600 hover:bg-slate-200 hover:text-slate-900";
-    const getNavLinkClass = ({ isActive }: { isActive: boolean }) => 
-        `${navItemClasses} ${isActive ? activeClasses : inactiveClasses} ${isCollapsed ? 'justify-center px-2' : 'px-4'}`;
+    const getNavLinkClass = ({ isActive }: { isActive: boolean }) =>
+        `${navItemClasses} ${isActive ? activeClasses : inactiveClasses} ${isCollapsed ? 'justify-center px-2' : 'px-3'}`;
 
     const navLinkContent = (
         <NavLink to={to as any} className={getNavLinkClass} onClick={closeMobileSidebar} end={end}>
@@ -90,8 +90,8 @@ const Sidebar: React.FC = () => {
   return (
     <>
       {isMobileOpen && <div className="fixed inset-0 bg-black/50 z-30 md:hidden" onClick={closeMobileSidebar} aria-hidden="true" />}
-      <aside className={`fixed inset-y-0 left-0 z-40 bg-white border-r border-slate-200 flex flex-col p-4 transform transition-all duration-300 ease-in-out md:relative md:translate-x-0 ${isMobileOpen ? 'translate-x-0' : '-translate-x-full'} ${isCollapsed ? 'md:w-20' : 'md:w-64'} w-64`}>
-        <div className={`flex items-center gap-2 px-4 pb-4 border-b border-slate-200 ${isCollapsed ? 'md:justify-center' : ''}`}>
+      <aside className={`fixed inset-y-0 left-0 z-40 bg-white border-r border-slate-200 flex flex-col p-3 transform transition-all duration-300 ease-in-out md:relative md:translate-x-0 ${isMobileOpen ? 'translate-x-0' : '-translate-x-full'} ${isCollapsed ? 'md:w-20' : 'md:w-56'} w-56`}>
+        <div className={`flex items-center gap-2 px-3 pb-3 border-b border-slate-200 ${isCollapsed ? 'md:justify-center' : ''}`}>
           <div className="p-2 bg-slate-800 text-white rounded-lg"><ShieldCheck size={24} /></div>
           <span className={`${isCollapsed ? 'md:hidden' : ''}`}><h1 className="text-xl font-bold text-slate-800">ISO Manager</h1></span>
         </div>
@@ -101,7 +101,7 @@ const Sidebar: React.FC = () => {
             
             {(userRole === 'admin' || userRole === 'pmo') && (
             <div className="py-2">
-              <div className={`flex justify-between items-center px-4 mb-2 ${isCollapsed ? 'md:hidden' : ''}`}>
+              <div className={`flex justify-between items-center px-3 mb-2 ${isCollapsed ? 'md:hidden' : ''}`}>
                     <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">PROJETS</h2>
                     <button onClick={() => setIsProjetsOpen(!isProjetsOpen)} className="text-slate-400 hover:text-slate-600">{isProjetsOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}</button>
               </div>
@@ -122,7 +122,7 @@ const Sidebar: React.FC = () => {
 
             {(userRole === 'admin' || userRole === 'pmo') && (
             <div className="py-2">
-              <div className={`flex justify-between items-center px-4 mb-2 ${isCollapsed ? 'md:hidden' : ''}`}>
+              <div className={`flex justify-between items-center px-3 mb-2 ${isCollapsed ? 'md:hidden' : ''}`}>
                   <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">ACTIVITÉS</h2>
                   <button onClick={() => setIsActivitesOpen(!isActivitesOpen)} className="text-slate-400 hover:text-slate-600">{isActivitesOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}</button>
                 </div>
@@ -139,7 +139,7 @@ const Sidebar: React.FC = () => {
             )}
 
             <div className="py-2">
-              <div className={`flex justify-between items-center px-4 mb-2 ${isCollapsed ? 'md:hidden' : ''}`}>
+              <div className={`flex justify-between items-center px-3 mb-2 ${isCollapsed ? 'md:hidden' : ''}`}>
                     <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">RÉFÉRENTIELS</h2>
                     <button onClick={() => setIsReferentielsOpen(!isReferentielsOpen)} className="text-slate-400 hover:text-slate-600">{isReferentielsOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}</button>
                   </div>
@@ -152,7 +152,7 @@ const Sidebar: React.FC = () => {
             </div>
 
             <div className="py-2">
-              <div className={`flex justify-between items-center px-4 mb-2 ${isCollapsed ? 'md:hidden' : ''}`}>
+              <div className={`flex justify-between items-center px-3 mb-2 ${isCollapsed ? 'md:hidden' : ''}`}>
                     <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">DONNÉES</h2>
                     <button onClick={() => setIsDonneesOpen(!isDonneesOpen)} className="text-slate-400 hover:text-slate-600">{isDonneesOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}</button>
                   </div>
@@ -168,7 +168,7 @@ const Sidebar: React.FC = () => {
 
             {userRole === 'admin' && (
                 <div className="py-2">
-                <div className={`flex justify-between items-center px-4 mb-2 ${isCollapsed ? 'md:hidden' : ''}`}>
+                <div className={`flex justify-between items-center px-3 mb-2 ${isCollapsed ? 'md:hidden' : ''}`}>
                         <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">DROITS D'ACCÈS</h2>
                         <button onClick={() => setIsDroitsAccesOpen(!isDroitsAccesOpen)} className="text-slate-400 hover:text-slate-600">{isDroitsAccesOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}</button>
                     </div>
@@ -182,7 +182,7 @@ const Sidebar: React.FC = () => {
             )}
             
             <div className="py-2">
-              <div className={`flex justify-between items-center px-4 mb-2 ${isCollapsed ? 'md:hidden' : ''}`}>
+              <div className={`flex justify-between items-center px-3 mb-2 ${isCollapsed ? 'md:hidden' : ''}`}>
                 <h2 className="text-xs font-semibold text-slate-400 uppercase tracking-wider">AIDE ET INFORMATIONS</h2>
                 <button onClick={() => setIsAideOpen(!isAideOpen)} className="text-slate-400 hover:text-slate-600">{isAideOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}</button>
               </div>
@@ -198,10 +198,10 @@ const Sidebar: React.FC = () => {
             <div className="hidden md:block">
               <button onClick={toggleSidebar} className="w-full flex items-center justify-center p-2.5 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors" title={isCollapsed ? "Développer le menu" : "Réduire le menu"}>{isCollapsed ? <ChevronsRight size={20} /> : <ChevronsLeft size={20} />}</button>
             </div>
-           {(userRole === 'admin' || userRole === 'pmo') && (<Tooltip text="Sauvegarder les données"><button onClick={handleExport} className={`${navItemClasses} ${inactiveClasses} ${isCollapsed ? 'justify-center px-2' : 'px-4'}`}><FileDown size={18} className={isCollapsed ? '' : 'mr-3'} />{!isCollapsed && <span className="flex-1 truncate">Sauvegarder</span>}</button></Tooltip>)}
-           {userRole === 'admin' && (<Tooltip text="Changer le mot de passe"><button onClick={() => { setIsChangePasswordModalOpen(true); closeMobileSidebar(); }} className={`${navItemClasses} ${inactiveClasses} ${isCollapsed ? 'justify-center px-2' : 'px-4'}`}><KeyRound size={18} className={isCollapsed ? '' : 'mr-3'} />{!isCollapsed && <span className="flex-1 truncate">Changer le mot de passe</span>}</button></Tooltip>)}
-           <Tooltip text="Se déconnecter"><button onClick={handleLogout} className={`${navItemClasses} ${inactiveClasses} ${isCollapsed ? 'justify-center px-2' : 'px-4'}`}><LogOut size={18} className={isCollapsed ? '' : 'mr-3'} />{!isCollapsed && <span className="flex-1 truncate">Se déconnecter</span>}</button></Tooltip>
-          <div className={`${isCollapsed ? 'md:hidden' : ''}`}><div className="px-4 text-xs text-slate-400"><p>&copy; 2025 ISO Manager</p><p>Version {APP_VERSION}</p></div></div>
+           {(userRole === 'admin' || userRole === 'pmo') && (<Tooltip text="Sauvegarder les données"><button onClick={handleExport} className={`${navItemClasses} ${inactiveClasses} ${isCollapsed ? 'justify-center px-2' : 'px-3'}`}><FileDown size={18} className={isCollapsed ? '' : 'mr-3'} />{!isCollapsed && <span className="flex-1 truncate">Sauvegarder</span>}</button></Tooltip>)}
+           {userRole === 'admin' && (<Tooltip text="Changer le mot de passe"><button onClick={() => { setIsChangePasswordModalOpen(true); closeMobileSidebar(); }} className={`${navItemClasses} ${inactiveClasses} ${isCollapsed ? 'justify-center px-2' : 'px-3'}`}><KeyRound size={18} className={isCollapsed ? '' : 'mr-3'} />{!isCollapsed && <span className="flex-1 truncate">Changer le mot de passe</span>}</button></Tooltip>)}
+           <Tooltip text="Se déconnecter"><button onClick={handleLogout} className={`${navItemClasses} ${inactiveClasses} ${isCollapsed ? 'justify-center px-2' : 'px-3'}`}><LogOut size={18} className={isCollapsed ? '' : 'mr-3'} />{!isCollapsed && <span className="flex-1 truncate">Se déconnecter</span>}</button></Tooltip>
+          <div className={`${isCollapsed ? 'md:hidden' : ''}`}><div className="px-3 text-xs text-slate-400"><p>&copy; 2025 ISO Manager</p><p>Version {APP_VERSION}</p></div></div>
         </div>
       </aside>
       {userRole === 'admin' && <ChangePasswordModal isOpen={isChangePasswordModalOpen} onClose={() => setIsChangePasswordModalOpen(false)} />}

@@ -121,9 +121,9 @@ const Processes: React.FC = () => {
 
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-slate-800">Processus fonctionnels de sécurité</h1>
+        <h1 className="text-2xl font-bold text-slate-800">Processus fonctionnels de sécurité</h1>
         {!isReadOnly && (
           <button onClick={() => handleOpenModal()} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
             <PlusCircle size={20} />
@@ -136,7 +136,7 @@ const Processes: React.FC = () => {
         {securityProcesses.length > 0 && " Cliquez sur une carte pour la modifier."}
       </p>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
         {securityProcesses.map((process) => {
             const linkedIsoMeasuresCount = process.isoMeasureIds?.length || 0;
             return (

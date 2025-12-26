@@ -5,7 +5,7 @@ import { ISO_MEASURES_DATA } from '../constants';
 import Card, { CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import Modal from '../components/ui/Modal';
 import { FileDown, Filter, X, GripVertical, Info, ArrowUp, ArrowDown, ZoomIn, ZoomOut, RotateCw, Search, FileSpreadsheet, FileText } from 'lucide-react';
-import { Initiative, Resource, IsoMeasure } from '../types';
+import { Initiative, Resource, IsoMeasure, Project } from '../types';
 import ActiveFiltersDisplay from '../components/ui/ActiveFiltersDisplay';
 import Tooltip from '../components/ui/Tooltip';
 import * as XLSX from 'xlsx';
@@ -536,7 +536,7 @@ const ProjectsExplorer: React.FC = () => {
     return (
         <div className="flex flex-col h-full space-y-4">
         <div className="flex justify-between items-center">
-            <h1 className="text-3xl font-bold text-slate-800">Explorateur de données projets</h1>
+            <h1 className="text-2xl font-bold text-slate-800">Explorateur de données projets</h1>
             <div className="flex gap-1.5">
                 <button onClick={handleExport} disabled={columns.length === 0} className="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-slate-50 text-slate-700 border border-slate-200 rounded-md hover:bg-slate-100 disabled:bg-slate-100 disabled:text-slate-400 transition-colors">
                     <FileDown size={16} /><span>CSV</span>

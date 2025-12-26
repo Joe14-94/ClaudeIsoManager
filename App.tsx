@@ -47,7 +47,7 @@ const AppLayout: React.FC = () => {
       <Sidebar />
       <div className={`flex-1 flex flex-col min-w-0`}>
         <Header />
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto">
+        <main className="flex-1 p-4 sm:p-4 lg:p-8 overflow-y-auto">
           {/* FIX: Replaced v5 Switch with v6 Routes */}
           <Routes>
             {/* FIX: Replaced v5 Redirect and `exact` prop with v6 Navigate element. In v6, routes are exact by default. */}

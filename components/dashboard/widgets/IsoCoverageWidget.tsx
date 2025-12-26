@@ -107,7 +107,7 @@ const IsoCoverageWidget: React.FC<IsoCoverageWidgetProps> = ({ isEditMode, width
             
             {selectedIsoMeasure && (
                  <Modal isOpen={!!selectedIsoMeasure} onClose={() => setSelectedIsoMeasure(null)} title={`${selectedIsoMeasure.code} - ${selectedIsoMeasure.title}`}>
-                    <div className="space-y-6">
+                    <div className="space-y-3">
                         <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
                             <h3 className="text-sm font-bold text-slate-800 mb-1 uppercase tracking-wider">Mesure de sécurité</h3>
                             <p className="text-sm text-slate-600 mb-4">{selectedIsoMeasure.details?.measure}</p>

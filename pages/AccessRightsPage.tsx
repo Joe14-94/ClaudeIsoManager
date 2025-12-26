@@ -29,11 +29,11 @@ const AccessRightsPage: React.FC = () => {
   ];
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-3xl font-bold text-slate-800">Gestion des droits d'accès</h1>
+    <div className="space-y-3">
+      <h1 className="text-2xl font-bold text-slate-800">Gestion des droits d'accès</h1>
       <p className="text-slate-600">Visualisez les permissions associées à chaque profil d'utilisateur. Cliquez sur un profil pour voir le détail des autorisations.</p>
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         {roles.map(({ role, name, description, icon }) => (
           <Card key={role} className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => handleOpenModal(role)}>
             <CardHeader>

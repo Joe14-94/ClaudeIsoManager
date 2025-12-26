@@ -259,8 +259,8 @@ const DataModelView2: React.FC = () => {
     }, [nodes, links]);
 
     return (
-        <div className="space-y-6 h-[calc(100vh-6rem)] flex flex-col">
-            <h1 className="text-3xl font-bold text-slate-800">Modèle de données 2 (D3.js)</h1>
+        <div className="space-y-3 h-[calc(100vh-6rem)] flex flex-col">
+            <h1 className="text-2xl font-bold text-slate-800">Modèle de données 2 (D3.js)</h1>
             <p className="text-slate-600">
                 Visualisation dynamique avec positionnement optimisé des liens et gestion des superpositions. Déplacez les objets pour voir les liens s'adapter.
             </p>

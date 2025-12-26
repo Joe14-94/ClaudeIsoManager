@@ -70,7 +70,7 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({ isOpen, onClo
 
   return (
     <Modal isOpen={isOpen} onClose={handleClose} title="Changer un mot de passe">
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-3">
         <div>
           <label className="block text-sm font-medium text-slate-700">Compte à modifier</label>
           <div className="mt-2 flex flex-wrap gap-x-6 gap-y-2">

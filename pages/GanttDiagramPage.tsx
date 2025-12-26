@@ -20,10 +20,10 @@ const GanttDiagramPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 h-full flex flex-col">
+    <div className="space-y-3 h-full flex flex-col">
       <div className="flex justify-between items-center flex-wrap gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-slate-800">Diagramme de Gantt</h1>
+          <h1 className="text-2xl font-bold text-slate-800">Diagramme de Gantt</h1>
           <p className="text-slate-600 mt-1">
             Visualisation détaillée du planning des projets, tâches et dépendances.
           </p>

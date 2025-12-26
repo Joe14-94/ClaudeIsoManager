@@ -73,7 +73,7 @@ const CustomDashboardPage: React.FC = () => {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-slate-800">Tableau de bord</h1>
+        <h1 className="text-2xl font-bold text-slate-800">Tableau de bord</h1>
         <div className="flex items-center gap-2">
           {isEditMode ? (
             <>

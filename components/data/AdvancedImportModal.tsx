@@ -257,7 +257,7 @@ const AdvancedImportModal: React.FC<AdvancedImportModalProps> = ({ isOpen, onClo
         <Modal isOpen={isOpen} onClose={onClose} title="Restauration avancée de sauvegarde">
             <div className="min-h-[400px] flex flex-col">
                 {step === 'upload' && (
-                    <div className="flex-grow flex flex-col items-center justify-center space-y-6 p-8">
+                    <div className="flex-grow flex flex-col items-center justify-center space-y-3 p-8">
                         <div className="w-20 h-20 bg-blue-50 rounded-full flex items-center justify-center">
                             <FileJson size={40} className="text-blue-600" />
                         </div>

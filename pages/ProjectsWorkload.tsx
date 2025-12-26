@@ -92,9 +92,9 @@ const ProjectsWorkload: React.FC = () => {
     );
 
     return (
-        <div className="space-y-6 h-full flex flex-col">
+        <div className="space-y-3 h-full flex flex-col">
             <div className="flex items-center justify-between flex-wrap gap-2">
-                <h1 className="text-3xl font-bold text-slate-800">Vue des charges projets (J/H)</h1>
+                <h1 className="text-2xl font-bold text-slate-800">Vue des charges projets (J/H)</h1>
                  {lastCsvImportDate && (
                     <div className="flex items-center gap-2 text-xs text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
                         <Info size={14} />

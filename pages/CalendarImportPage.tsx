@@ -368,7 +368,7 @@ const CalendarImportPage: React.FC = () => {
     <div className="h-full flex flex-col space-y-4">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-slate-800">Import calendrier</h1>
+          <h1 className="text-2xl font-bold text-slate-800">Import calendrier</h1>
           <p className="text-slate-600">Transformez vos réunions Outlook en temps consommé.</p>
         </div>
         <div className="flex items-center gap-2">
@@ -399,7 +399,7 @@ const CalendarImportPage: React.FC = () => {
           </div>
         </Card>
       ) : (
-        <div className="flex-grow grid grid-cols-12 gap-6 min-h-0">
+        <div className="flex-grow grid grid-cols-12 gap-3 min-h-0">
           
           {/* Colonne Gauche : Liste des événements */}
           <div className="col-span-8 flex flex-col min-h-0">

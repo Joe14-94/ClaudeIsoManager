@@ -140,7 +140,7 @@ const ProjectSCurveWidget: React.FC = () => {
             <CardContent className="flex-grow flex flex-col" ref={containerRef}>
                 {selectedProjectId ? (
                     <>
-                        <div className="flex justify-center gap-6 mb-2 text-xs">
+                        <div className="flex justify-center gap-3 mb-2 text-xs">
                             <div className="flex items-center gap-1"><div className="w-3 h-0.5 bg-slate-300 border-t-2 border-dashed"></div><span className="text-slate-500">Budget Planifié</span></div>
                             <div className="flex items-center gap-1"><div className="w-3 h-3 bg-blue-300 rounded-full border border-white shadow-sm"></div><span className="text-slate-600">Engagé (Commandé)</span></div>
                              <div className="flex items-center gap-1"><div className="w-3 h-3 bg-emerald-300 rounded-full border border-white shadow-sm"></div><span className="text-slate-600">Réalisé (Facturé/PV)</span></div>

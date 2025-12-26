@@ -320,8 +320,8 @@ const DataModelView: React.FC = () => {
     }, [nodes, setEdges]);
 
     return (
-        <div className="space-y-6 h-[calc(100vh-6rem)] flex flex-col">
-            <h1 className="text-3xl font-bold text-slate-800">Modèle de données</h1>
+        <div className="space-y-3 h-[calc(100vh-6rem)] flex flex-col">
+            <h1 className="text-2xl font-bold text-slate-800">Modèle de données</h1>
             <p className="text-slate-600">
                 Visualisation des objets principaux de l'application, de leurs attributs et de leurs relations.
             </p>

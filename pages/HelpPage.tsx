@@ -12,8 +12,8 @@ const NewBadge = () => (
 
 const HelpPage: React.FC = () => {
   return (
-    <div className="space-y-6">
-      <h1 className="text-3xl font-bold text-slate-800">Aide et informations</h1>
+    <div className="space-y-3">
+      <h1 className="text-2xl font-bold text-slate-800">Aide et informations</h1>
 
       {/* Section Nouveautés */}
       <Card className="border-l-4 border-l-indigo-500">
@@ -23,7 +23,7 @@ const HelpPage: React.FC = () => {
             Nouveautés de la version {APP_VERSION}
           </CardTitle>
         </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6 text-slate-600">
+        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-3 text-slate-600">
           <div>
             <h4 className="font-semibold text-slate-800 flex items-center gap-2">
               <CalendarDays size={18} /> Diagramme de Gantt Avancé
@@ -108,7 +108,7 @@ const HelpPage: React.FC = () => {
             Fonctionnalités Détaillées
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-6 text-slate-600">
+        <CardContent className="space-y-3 text-slate-600">
             <div>
                 <h4 className="font-semibold text-slate-700 text-lg mb-2">1. Planification & Diagramme de Gantt</h4>
                 <div className="pl-4 border-l-2 border-slate-200 space-y-2">
@@ -151,7 +151,7 @@ const HelpPage: React.FC = () => {
         </CardContent>
       </Card>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">

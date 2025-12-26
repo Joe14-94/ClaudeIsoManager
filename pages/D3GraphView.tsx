@@ -550,7 +550,7 @@ const D3GraphView: React.FC = () => {
     return (
         <div className="h-full flex flex-col">
             <div className="flex-shrink-0 mb-4">
-                <h1 className="text-3xl font-bold text-slate-800">Vue arborescente (D3.js)</h1>
+                <h1 className="text-2xl font-bold text-slate-800">Vue arborescente (D3.js)</h1>
                 <p className="text-slate-600">Explorez les relations hiérarchiques de la stratégie. Cliquez sur un cercle pour déplier/replier, et sur un texte pour voir les détails.</p>
             </div>
             

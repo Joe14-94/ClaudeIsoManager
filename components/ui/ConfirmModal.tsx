@@ -123,7 +123,7 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
     >
       <div
         ref={modalRef}
-        className="bg-white rounded-lg shadow-xl max-w-md w-full p-6 transform transition-all"
+        className="bg-white rounded-lg shadow-xl max-w-md w-full p-4 transform transition-all"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start gap-4">

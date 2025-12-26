@@ -20,17 +20,17 @@ type FormActivity = Partial<Activity> & { chantierIds?: string[] };
 
 const StartStep = ({ onSelect }: { onSelect: (path: 'iso' | 'orientation' | 'manual') => void }) => (
   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-    <Card onClick={() => onSelect('iso')} className="text-center p-6 cursor-pointer hover:shadow-lg hover:border-blue-500 transition-all">
+    <Card onClick={() => onSelect('iso')} className="text-center p-4 cursor-pointer hover:shadow-lg hover:border-blue-500 transition-all">
       <ShieldCheck className="mx-auto h-12 w-12 text-blue-600" />
       <h3 className="mt-2 text-lg font-semibold">Exigence normative</h3>
       <p className="mt-1 text-sm text-slate-500">Créer une activité pour répondre à une ou plusieurs mesures ISO 27002.</p>
     </Card>
-    <Card onClick={() => onSelect('orientation')} className="text-center p-6 cursor-pointer hover:shadow-lg hover:border-blue-500 transition-all">
+    <Card onClick={() => onSelect('orientation')} className="text-center p-4 cursor-pointer hover:shadow-lg hover:border-blue-500 transition-all">
       <TrendingUp className="mx-auto h-12 w-12 text-blue-600" />
       <h3 className="mt-2 text-lg font-semibold">Orientation stratégique</h3>
       <p className="mt-1 text-sm text-slate-500">Créer une activité pour contribuer à une orientation de la stratégie cybersécurité.</p>
     </Card>
-    <Card onClick={() => onSelect('manual')} className="text-center p-6 cursor-pointer hover:shadow-lg hover:border-blue-500 transition-all">
+    <Card onClick={() => onSelect('manual')} className="text-center p-4 cursor-pointer hover:shadow-lg hover:border-blue-500 transition-all">
       <FileText className="mx-auto h-12 w-12 text-blue-600" />
       <h3 className="mt-2 text-lg font-semibold">Création manuelle</h3>
       <p className="mt-1 text-sm text-slate-500">Remplir tous les champs manuellement sans assistance au pré-remplissage.</p>
@@ -383,7 +383,7 @@ const SummaryStep = ({ activityData, objectives, orientations, chantiers }: { ac
     );
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-3">
             <p className="text-sm text-slate-600">Veuillez vérifier les informations de l'activité qui va être créée. Vous pouvez revenir en arrière pour modifier les sélections ou les détails.</p>
             
              <div className="pt-4 border-t">

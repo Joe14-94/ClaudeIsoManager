@@ -202,10 +202,10 @@ const Projects: React.FC = () => {
     const handleClearAll = () => { setStatusFilter(''); setTop30Filter(''); setCategoriesFilter([]); setSearchTerm(''); };
 
     return (
-        <div className="space-y-6 h-full flex flex-col">
+        <div className="space-y-3 h-full flex flex-col">
             {!isModalOnly && (
                 <>
-                    <div className="flex justify-between items-center flex-wrap gap-4"><h1 className="text-3xl font-bold text-slate-800">Projets</h1>{!isReadOnly && (<button onClick={() => handleOpenFormModal()} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"><PlusCircle size={20} /><span>Nouveau projet</span></button>)}</div>
+                    <div className="flex justify-between items-center flex-wrap gap-4"><h1 className="text-2xl font-bold text-slate-800">Projets</h1>{!isReadOnly && (<button onClick={() => handleOpenFormModal()} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"><PlusCircle size={20} /><span>Nouveau projet</span></button>)}</div>
                     <Card className="flex-grow flex flex-col min-h-0">
                         <CardHeader>
                             <div className="flex flex-col md:flex-row flex-wrap gap-4 mb-4">

@@ -95,9 +95,9 @@ const ProjectsDashboardPage: React.FC = () => {
 
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       <div className="flex items-center justify-between flex-wrap gap-2">
-        <h1 className="text-3xl font-bold text-slate-800">Tableau de bord des projets</h1>
+        <h1 className="text-2xl font-bold text-slate-800">Tableau de bord des projets</h1>
         {lastCsvImportDate && (
             <div className="flex items-center gap-2 text-xs text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
                 <Info size={14} />
@@ -110,7 +110,7 @@ const ProjectsDashboardPage: React.FC = () => {
         )}
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
         <StatCard 
           title="Projets totaux" 
           value={stats.total} 
@@ -137,7 +137,7 @@ const ProjectsDashboardPage: React.FC = () => {
         />
       </div>
 
-      <div className="grid grid-cols-1 gap-6">
+      <div className="grid grid-cols-1 gap-3">
         <Card>
           <CardHeader><CardTitle>Répartition par statut</CardTitle></CardHeader>
           <CardContent>

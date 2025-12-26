@@ -154,9 +154,9 @@ const Activities: React.FC = () => {
   const renderSortArrow = (key: string) => { if (sortConfig?.key === key) return sortConfig.direction === 'ascending' ? <ArrowUp size={14} /> : <ArrowDown size={14} />; return null; }
 
   return (
-    <div className="space-y-6 h-full flex flex-col">
+    <div className="space-y-3 h-full flex flex-col">
       <div className="flex justify-between items-center flex-wrap gap-4">
-        <h1 className="text-3xl font-bold text-slate-800">Activités</h1>
+        <h1 className="text-2xl font-bold text-slate-800">Activités</h1>
         {!isReadOnly && ( <div className="flex items-center gap-2"><button onClick={() => setIsWizardOpen(true)} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"><Sparkles size={20} /><span>Création guidée</span></button></div> )}
       </div>
       <Card className="flex-grow flex flex-col min-h-0">

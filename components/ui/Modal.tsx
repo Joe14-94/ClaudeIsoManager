@@ -124,7 +124,7 @@ const Modal: React.FC<ModalProps> = ({
             </button>
           </div>
         </header>
-        <main className="p-6 overflow-y-auto">
+        <main className="p-4 overflow-y-auto">
           {children}
         </main>
       </div>

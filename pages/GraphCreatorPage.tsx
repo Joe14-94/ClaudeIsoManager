@@ -477,7 +477,7 @@ const GraphCreatorPage: React.FC = () => {
 
     return (
         <div className="flex flex-col h-full space-y-4">
-            <h1 className="text-3xl font-bold text-slate-800">Créateur de graphiques</h1>
+            <h1 className="text-2xl font-bold text-slate-800">Créateur de graphiques</h1>
             <div className="flex flex-grow min-h-0">
                 <div style={{ width: `${panelSize}px` }} className="flex-shrink-0 h-full overflow-y-auto pr-4">
                      <Card className="h-full">

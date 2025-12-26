@@ -425,7 +425,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ currentProject, setCurrentPro
     if (!currentProject) return null;
 
     return (
-        <form onSubmit={handleSave} className="space-y-6">
+        <form onSubmit={handleSave} className="space-y-3">
             <div className="flex flex-col md:flex-row gap-4 items-start">
                 <div className="flex-grow grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
                     <div><label htmlFor="projectId" className="block text-sm font-medium text-slate-700 mb-1">ID projet</label><input type="text" name="projectId" value={currentProject.projectId || ''} onChange={handleChange} required readOnly={isReadOnly} className={inputClassName} /></div>
@@ -457,7 +457,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ currentProject, setCurrentPro
                     <h3 className="text-lg font-semibold text-indigo-900 flex items-center gap-2"><Calculator size={20} /> Score de priorité & arbitrage</h3>
                     <div className="text-2xl font-bold text-indigo-600 bg-white px-4 py-1 rounded shadow-sm border border-indigo-100">Score: {currentProject.priorityScore}</div>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                     <div><label className="flex justify-between text-sm font-medium text-indigo-900 mb-1">Impact stratégique <span className="font-bold">{currentProject.strategicImpact}</span></label><input type="range" name="strategicImpact" min="1" max="5" step="0.5" value={currentProject.strategicImpact || 3} onChange={handleChange} disabled={isReadOnly} className="w-full accent-indigo-600 cursor-pointer"/><div className="flex justify-between text-xs text-indigo-500 mt-1"><span>Faible</span><span>Fort</span></div></div>
                     <div><label className="flex justify-between text-sm font-medium text-indigo-900 mb-1">Couverture du risque <span className="font-bold">{currentProject.riskCoverage}</span></label><input type="range" name="riskCoverage" min="1" max="5" step="0.5" value={currentProject.riskCoverage || 3} onChange={handleChange} disabled={isReadOnly} className="w-full accent-indigo-600 cursor-pointer"/><div className="flex justify-between text-xs text-indigo-500 mt-1"><span>Faible</span><span>Forte</span></div></div>
                     <div><label className="flex justify-between text-sm font-medium text-indigo-900 mb-1">Effort de mise en œuvre <span className="font-bold">{currentProject.effort}</span></label><input type="range" name="effort" min="1" max="5" step="0.5" value={currentProject.effort || 3} onChange={handleChange} disabled={isReadOnly} className="w-full accent-indigo-600 cursor-pointer"/><div className="flex justify-between text-xs text-indigo-500 mt-1"><span>Faible</span><span>Conséquent</span></div></div>

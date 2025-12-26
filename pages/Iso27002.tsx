@@ -337,10 +337,10 @@ const Iso27002: React.FC = () => {
   const totalFilteredMeasures = filteredMeasures.length;
 
   return (
-    <div className="space-y-6 h-full flex flex-col">
+    <div className="space-y-3 h-full flex flex-col">
       <div className="flex-shrink-0">
         <div className="flex justify-between items-center flex-wrap gap-4">
-          <h1 className="text-3xl font-bold text-slate-800">Référentiel ISO 27002:2022</h1>
+          <h1 className="text-2xl font-bold text-slate-800">Référentiel ISO 27002:2022</h1>
           <div className="flex items-center gap-2">
               <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
@@ -424,7 +424,7 @@ const Iso27002: React.FC = () => {
         </div>
       </div>
       
-      <div className="flex-grow overflow-y-auto space-y-6 pr-2">
+      <div className="flex-grow overflow-y-auto space-y-3 pr-2">
         {totalFilteredMeasures > 0 ? (
           Object.entries(measuresByChapter).map(([chapter, measures]) => (
               (measures as IsoMeasure[]).length > 0 && (

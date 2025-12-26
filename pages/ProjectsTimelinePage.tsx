@@ -51,8 +51,8 @@ const ProjectsTimelinePage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 h-full flex flex-col">
-      <h1 className="text-3xl font-bold text-slate-800">Timeline des projets</h1>
+    <div className="space-y-3 h-full flex flex-col">
+      <h1 className="text-2xl font-bold text-slate-800">Timeline des projets</h1>
       <p className="text-slate-600">
         Vue chronologique des projets planifiés. Filtrez, zoomez et cliquez sur un projet pour voir ses détails.
       </p>

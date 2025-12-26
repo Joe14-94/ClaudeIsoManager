@@ -127,9 +127,9 @@ const Chantiers: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       <div className="flex justify-between items-center flex-wrap gap-4">
-        <h1 className="text-3xl font-bold text-slate-800">Chantiers</h1>
+        <h1 className="text-2xl font-bold text-slate-800">Chantiers</h1>
         <div className="flex items-center gap-2">
            <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />

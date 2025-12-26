@@ -33,7 +33,7 @@ const LoginPage: React.FC = () => {
   return (
     <div className="flex items-center justify-center min-h-screen bg-slate-100 p-4">
       <div className="w-full max-w-sm">
-        <div className="bg-white rounded-2xl shadow-xl p-8 space-y-6 border border-slate-200">
+        <div className="bg-white rounded-2xl shadow-xl p-8 space-y-3 border border-slate-200">
             <div className="text-center">
                 <div className="inline-flex items-center justify-center p-3 bg-slate-800 text-white rounded-full mb-4 ring-4 ring-slate-200">
                     <ShieldCheck size={32} />
@@ -41,7 +41,7 @@ const LoginPage: React.FC = () => {
                 <h1 className="text-2xl font-bold text-slate-800">ISO Manager</h1>
                 <p className="mt-2 text-sm text-slate-600">Veuillez vous authentifier pour continuer</p>
             </div>
-            <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+            <form className="mt-8 space-y-3" onSubmit={handleSubmit}>
               <div>
                 <label htmlFor="password-input" className="sr-only">
                   Mot de passe
