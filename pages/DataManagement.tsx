@@ -670,7 +670,8 @@ const DataManagement: React.FC = () => {
                 </Card>
 
                 {/* Card Export Excel */}
-                <Card className="cursor-pointer hover:shadow-md transition-all border-l-4 border-l-green-500" onClick={handleExportExcel}>
+                <Card className="cursor-pointer hover:shadow-md transition-all border-l-4 border-l-green-500 relative" onClick={handleExportExcel}>
+                    <span className="absolute top-2 right-2 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-sm animate-pulse">NEW</span>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-green-700">
                             <FileSpreadsheet size={20} />
@@ -685,7 +686,8 @@ const DataManagement: React.FC = () => {
                 </Card>
 
                 {/* Card Export PDF */}
-                <Card className="cursor-pointer hover:shadow-md transition-all border-l-4 border-l-orange-500" onClick={handleExportPDF}>
+                <Card className="cursor-pointer hover:shadow-md transition-all border-l-4 border-l-orange-500 relative" onClick={handleExportPDF}>
+                    <span className="absolute top-2 right-2 bg-orange-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-sm animate-pulse">NEW</span>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-orange-700">
                             <FileText size={20} />
