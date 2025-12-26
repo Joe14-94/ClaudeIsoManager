@@ -5,11 +5,9 @@ import { ISO_MEASURES_DATA } from '../constants';
 import Card, { CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import Modal from '../components/ui/Modal';
 import { FileDown, Filter, X, GripVertical, Info, ArrowUp, ArrowDown, ZoomIn, ZoomOut, RotateCw, Search, FileSpreadsheet, FileText } from 'lucide-react';
-import { Project, Initiative, Resource, IsoMeasure } from '../types';
+import { Initiative, Resource, IsoMeasure } from '../types';
 import ActiveFiltersDisplay from '../components/ui/ActiveFiltersDisplay';
 import Tooltip from '../components/ui/Tooltip';
-import { exportProjectsToExcel } from '../utils/excelExport';
-import { exportProjectsToPDF } from '../utils/pdfExport';
 
 type FieldKey = 
   | 'projectId' | 'projectTitle' | 'description' | 'projectStatus' | 'tShirtSize' | 'projectCategory' | 'isTop30' 
@@ -391,13 +389,93 @@ const ProjectsExplorer: React.FC = () => {
     };
 
     const handleExportExcel = () => {
-        const projectsToExport = finalTableData.map(row => row.project);
-        exportProjectsToExcel(projectsToExport, 'export_donnees_projets.xlsx');
+        if (columns.length === 0 || finalTableData.length === 0) return;
+
+        // Create Excel export with only selected columns
+        const XLSX = (window as any).XLSX || require('xlsx');
+
+        // Create headers from selected columns
+        const headers = columns.map(col => col.label);
+
+        // Create rows with data from selected columns
+        const rows = finalTableData.map(row =>
+            columns.map(col => {
+                const value = col.getValue(row);
+                // Remove currency/percentage formatting for Excel
+                if (value === undefined) return '';
+                const strValue = String(value);
+                // Remove euro symbol, J/H suffix, and spaces for numeric columns
+                if (col.isNumeric) {
+                    return strValue.replace(/[€\s]/g, '').replace(' J/H', '').replace(/\u202f/g, '');
+                }
+                return strValue;
+            })
+        );
+
+        // Combine headers and data
+        const wsData = [headers, ...rows];
+
+        // Create worksheet and workbook
+        const worksheet = XLSX.utils.aoa_to_sheet(wsData);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Projets');
+
+        // Generate filename with date
+        const filename = `export_donnees_projets_${new Date().toISOString().split('T')[0]}.xlsx`;
+        XLSX.writeFile(workbook, filename);
     };
 
     const handleExportPDF = () => {
-        const projectsToExport = finalTableData.map(row => row.project);
-        exportProjectsToPDF(projectsToExport, 'export_donnees_projets.pdf');
+        if (columns.length === 0 || finalTableData.length === 0) return;
+
+        const jsPDF = (window as any).jsPDF || require('jspdf');
+        const autoTable = (window as any).autoTable || require('jspdf-autotable');
+
+        const doc = new jsPDF({ orientation: 'landscape' });
+
+        // Add title
+        doc.setFontSize(18);
+        doc.text('Rapport des Projets', 14, 20);
+
+        // Add export date
+        doc.setFontSize(10);
+        doc.text(`Date d'export: ${new Date().toLocaleDateString('fr-FR')}`, 14, 28);
+
+        // Create table with selected columns
+        const headers = columns.map(col => col.label);
+        const rows = finalTableData.map(row =>
+            columns.map(col => {
+                const value = col.getValue(row);
+                return value !== undefined ? String(value) : '-';
+            })
+        );
+
+        autoTable(doc, {
+            head: [headers],
+            body: rows,
+            startY: 35,
+            theme: 'striped',
+            headStyles: { fillColor: [66, 139, 202], fontSize: 8 },
+            bodyStyles: { fontSize: 7 },
+            styles: { cellPadding: 1.5 },
+            margin: { top: 35 },
+        });
+
+        // Add footer
+        const pageCount = doc.getNumberOfPages();
+        for (let i = 1; i <= pageCount; i++) {
+            doc.setPage(i);
+            doc.setFontSize(9);
+            doc.text(
+                `Page ${i} sur ${pageCount} | Total: ${finalTableData.length} projets`,
+                doc.internal.pageSize.getWidth() / 2,
+                doc.internal.pageSize.getHeight() - 10,
+                { align: 'center' }
+            );
+        }
+
+        const filename = `export_donnees_projets_${new Date().toISOString().split('T')[0]}.pdf`;
+        doc.save(filename);
     };
   
     const handleMouseDownForResize = useCallback((e: React.MouseEvent, key: string) => {

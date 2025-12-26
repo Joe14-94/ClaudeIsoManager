@@ -7,8 +7,6 @@ import { LayoutGrid, FileDown, Filter, X, GripVertical, Info, ArrowUp, ArrowDown
 import { Activity, Chantier, IsoMeasure, Objective, StrategicOrientation, SecurityProcess } from '../types';
 import ActiveFiltersDisplay from '../components/ui/ActiveFiltersDisplay';
 import Tooltip from '../components/ui/Tooltip';
-import { exportActivitiesToExcel } from '../utils/excelExport';
-import { exportActivitiesToPDF } from '../utils/pdfExport';
 
 type FieldKey = 'orientation' | 'chantier' | 'objectif' | 'activite' | 'mesure_iso' | 'statut_activite' | 'priorite_activite' | 'domaine_activite' | 'processus';
 
@@ -371,13 +369,86 @@ const DataExplorer: React.FC = () => {
     };
 
     const handleExportExcel = () => {
-        const activitiesToExport = finalTableData.map(row => row.activite).filter((a): a is Activity => a !== undefined);
-        exportActivitiesToExcel(activitiesToExport, 'export_donnees_activites.xlsx');
+        if (columns.length === 0 || finalTableData.length === 0) return;
+
+        // Create Excel export with only selected columns
+        const XLSX = (window as any).XLSX || require('xlsx');
+
+        // Create headers from selected columns
+        const headers = columns.map(col => col.label);
+
+        // Create rows with data from selected columns
+        const rows = finalTableData.map(row =>
+            columns.map(col => {
+                const value = col.getValue(row);
+                return value !== undefined ? String(value) : '';
+            })
+        );
+
+        // Combine headers and data
+        const wsData = [headers, ...rows];
+
+        // Create worksheet and workbook
+        const worksheet = XLSX.utils.aoa_to_sheet(wsData);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Activités');
+
+        // Generate filename with date
+        const filename = `export_donnees_activites_${new Date().toISOString().split('T')[0]}.xlsx`;
+        XLSX.writeFile(workbook, filename);
     };
 
     const handleExportPDF = () => {
-        const activitiesToExport = finalTableData.map(row => row.activite).filter((a): a is Activity => a !== undefined);
-        exportActivitiesToPDF(activitiesToExport, 'export_donnees_activites.pdf');
+        if (columns.length === 0 || finalTableData.length === 0) return;
+
+        const jsPDF = (window as any).jsPDF || require('jspdf');
+        const autoTable = (window as any).autoTable || require('jspdf-autotable');
+
+        const doc = new jsPDF({ orientation: 'landscape' });
+
+        // Add title
+        doc.setFontSize(18);
+        doc.text('Rapport des Activités', 14, 20);
+
+        // Add export date
+        doc.setFontSize(10);
+        doc.text(`Date d'export: ${new Date().toLocaleDateString('fr-FR')}`, 14, 28);
+
+        // Create table with selected columns
+        const headers = columns.map(col => col.label);
+        const rows = finalTableData.map(row =>
+            columns.map(col => {
+                const value = col.getValue(row);
+                return value !== undefined ? String(value) : '-';
+            })
+        );
+
+        autoTable(doc, {
+            head: [headers],
+            body: rows,
+            startY: 35,
+            theme: 'striped',
+            headStyles: { fillColor: [66, 139, 202], fontSize: 8 },
+            bodyStyles: { fontSize: 7 },
+            styles: { cellPadding: 1.5 },
+            margin: { top: 35 },
+        });
+
+        // Add footer
+        const pageCount = doc.getNumberOfPages();
+        for (let i = 1; i <= pageCount; i++) {
+            doc.setPage(i);
+            doc.setFontSize(9);
+            doc.text(
+                `Page ${i} sur ${pageCount} | Total: ${finalTableData.length} activités`,
+                doc.internal.pageSize.getWidth() / 2,
+                doc.internal.pageSize.getHeight() - 10,
+                { align: 'center' }
+            );
+        }
+
+        const filename = `export_donnees_activites_${new Date().toISOString().split('T')[0]}.pdf`;
+        doc.save(filename);
     };
   
     const handleMouseDownForResize = useCallback((e: React.MouseEvent, key: string) => {
