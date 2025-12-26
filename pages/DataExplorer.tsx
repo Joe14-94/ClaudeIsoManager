@@ -3,10 +3,12 @@ import { useData } from '../contexts/DataContext';
 import { ISO_MEASURES_DATA } from '../constants';
 import Card, { CardContent, CardHeader, CardTitle } from '../components/ui/Card';
 import Modal from '../components/ui/Modal';
-import { LayoutGrid, FileDown, Filter, X, GripVertical, Info, ArrowUp, ArrowDown, ZoomIn, ZoomOut, RotateCw, Search } from 'lucide-react';
+import { LayoutGrid, FileDown, Filter, X, GripVertical, Info, ArrowUp, ArrowDown, ZoomIn, ZoomOut, RotateCw, Search, FileSpreadsheet, FileText } from 'lucide-react';
 import { Activity, Chantier, IsoMeasure, Objective, StrategicOrientation, SecurityProcess } from '../types';
 import ActiveFiltersDisplay from '../components/ui/ActiveFiltersDisplay';
 import Tooltip from '../components/ui/Tooltip';
+import { exportActivitiesToExcel } from '../utils/excelExport';
+import { exportActivitiesToPDF } from '../utils/pdfExport';
 
 type FieldKey = 'orientation' | 'chantier' | 'objectif' | 'activite' | 'mesure_iso' | 'statut_activite' | 'priorite_activite' | 'domaine_activite' | 'processus';
 
@@ -352,7 +354,7 @@ const DataExplorer: React.FC = () => {
     const handleExport = () => {
         if (columns.length === 0) return;
         const headers = columns.map(c => c.label).join(',');
-        const rows = finalTableData.map(row => 
+        const rows = finalTableData.map(row =>
             columns.map(col => {
                 const value = col.getValue(row) || '';
                 return `"${String(value).replace(/"/g, '""')}"`;
@@ -366,6 +368,16 @@ const DataExplorer: React.FC = () => {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+    };
+
+    const handleExportExcel = () => {
+        const activitiesToExport = finalTableData.map(row => row.activite).filter((a): a is Activity => a !== undefined);
+        exportActivitiesToExcel(activitiesToExport, 'export_donnees_activites.xlsx');
+    };
+
+    const handleExportPDF = () => {
+        const activitiesToExport = finalTableData.map(row => row.activite).filter((a): a is Activity => a !== undefined);
+        exportActivitiesToPDF(activitiesToExport, 'export_donnees_activites.pdf');
     };
   
     const handleMouseDownForResize = useCallback((e: React.MouseEvent, key: string) => {
@@ -431,9 +443,17 @@ const DataExplorer: React.FC = () => {
         <div className="flex flex-col h-full space-y-4">
         <div className="flex justify-between items-center">
             <h1 className="text-3xl font-bold text-slate-800">Explorateur de données activités</h1>
-            <button onClick={handleExport} disabled={columns.length === 0} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-slate-400">
-            <FileDown size={18} /><span>Exporter en CSV</span>
-            </button>
+            <div className="flex gap-2">
+                <button onClick={handleExport} disabled={columns.length === 0} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-slate-400 transition-colors">
+                    <FileDown size={18} /><span>CSV</span>
+                </button>
+                <button onClick={handleExportExcel} disabled={columns.length === 0} className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-slate-400 transition-colors">
+                    <FileSpreadsheet size={18} /><span>Excel</span>
+                </button>
+                <button onClick={handleExportPDF} disabled={columns.length === 0} className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:bg-slate-400 transition-colors">
+                    <FileText size={18} /><span>PDF</span>
+                </button>
+            </div>
         </div>
 
         <div className="grid grid-cols-12 gap-4 flex-grow min-h-0">

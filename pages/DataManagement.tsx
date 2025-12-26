@@ -2,12 +2,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Card, { CardContent, CardHeader, CardTitle } from '../components/ui/Card';
-import { Timer, Coins, Table, Info, AlertTriangle, CheckCircle, Upload, Download, FileJson, Trash2, Database, Calendar, RefreshCw, FileCog, Wand2 } from 'lucide-react';
+import { Timer, Coins, Table, Info, AlertTriangle, CheckCircle, Upload, Download, FileJson, Trash2, Database, Calendar, RefreshCw, FileCog, Wand2, FileSpreadsheet, FileText } from 'lucide-react';
 import { useData } from '../contexts/DataContext';
 import { Project, ProjectCategory, ProjectStatus, Initiative, FdrHistoryEntry, TShirtSize } from '../types';
 import Modal from '../components/ui/Modal';
 import AdvancedImportModal from '../components/data/AdvancedImportModal';
 import { demoData } from '../utils/demoData';
+import { exportAllDataToExcel } from '../utils/excelExport';
+import { exportDashboardReportToPDF } from '../utils/pdfExport';
 
 // --- Interfaces & Constants ---
 
@@ -577,6 +579,25 @@ const DataManagement: React.FC = () => {
         alert("Toutes les données ont été effacées.");
     };
 
+    const handleExportExcel = () => {
+        exportAllDataToExcel(
+            projects,
+            activities,
+            objectives,
+            chantiers,
+            initiatives,
+            resources
+        );
+    };
+
+    const handleExportPDF = () => {
+        exportDashboardReportToPDF(
+            projects,
+            activities,
+            objectives
+        );
+    };
+
     return (
         <div className="space-y-6">
             <h1 className="text-3xl font-bold text-slate-800">Gestion des données</h1>
@@ -644,6 +665,36 @@ const DataManagement: React.FC = () => {
                     <CardContent>
                         <p className="text-sm text-slate-500">
                             Télécharger une copie complète de toutes les données actuelles au format JSON.
+                        </p>
+                    </CardContent>
+                </Card>
+
+                {/* Card Export Excel */}
+                <Card className="cursor-pointer hover:shadow-md transition-all border-l-4 border-l-green-500" onClick={handleExportExcel}>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2 text-green-700">
+                            <FileSpreadsheet size={20} />
+                            Export Excel
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-sm text-slate-500">
+                            Exporter toutes les données au format Excel (fichier multi-feuilles avec projets, activités, objectifs...).
+                        </p>
+                    </CardContent>
+                </Card>
+
+                {/* Card Export PDF */}
+                <Card className="cursor-pointer hover:shadow-md transition-all border-l-4 border-l-orange-500" onClick={handleExportPDF}>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2 text-orange-700">
+                            <FileText size={20} />
+                            Export PDF
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-sm text-slate-500">
+                            Générer un rapport PDF complet avec statistiques et tableaux récapitulatifs.
                         </p>
                     </CardContent>
                 </Card>
