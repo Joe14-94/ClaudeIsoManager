@@ -7,6 +7,9 @@ import { LayoutGrid, FileDown, Filter, X, GripVertical, Info, ArrowUp, ArrowDown
 import { Activity, Chantier, IsoMeasure, Objective, StrategicOrientation, SecurityProcess } from '../types';
 import ActiveFiltersDisplay from '../components/ui/ActiveFiltersDisplay';
 import Tooltip from '../components/ui/Tooltip';
+import * as XLSX from 'xlsx';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 type FieldKey = 'orientation' | 'chantier' | 'objectif' | 'activite' | 'mesure_iso' | 'statut_activite' | 'priorite_activite' | 'domaine_activite' | 'processus';
 
@@ -371,9 +374,6 @@ const DataExplorer: React.FC = () => {
     const handleExportExcel = () => {
         if (columns.length === 0 || finalTableData.length === 0) return;
 
-        // Create Excel export with only selected columns
-        const XLSX = (window as any).XLSX || require('xlsx');
-
         // Create headers from selected columns
         const headers = columns.map(col => col.label);
 
@@ -400,9 +400,6 @@ const DataExplorer: React.FC = () => {
 
     const handleExportPDF = () => {
         if (columns.length === 0 || finalTableData.length === 0) return;
-
-        const jsPDF = (window as any).jsPDF || require('jspdf');
-        const autoTable = (window as any).autoTable || require('jspdf-autotable');
 
         const doc = new jsPDF({ orientation: 'landscape' });
 
