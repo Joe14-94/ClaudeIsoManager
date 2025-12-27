@@ -3,6 +3,7 @@ import React from 'react';
 import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Sidebar from './components/layout/Sidebar';
 import Activities from './pages/Activities';
+import ActivitiesDemo from './pages/ActivitiesDemo';
 import GraphView from './pages/GraphView';
 import Iso27002 from './pages/Iso27002';
 import Initiatives from './pages/Initiatives';
@@ -76,6 +77,7 @@ const AppLayout: React.FC = () => {
             <Route path="/projects-workload" element={<ProjectsWorkload />} />
             <Route path="/activities-dashboard" element={<ActivitiesDashboard />} />
             <Route path="/activities" element={<Activities />} />
+            <Route path="/activities-demo" element={<ActivitiesDemo />} />
             <Route path="/explorer" element={<DataExplorer />} />
             <Route path="/timeline" element={<TimelinePage />} />
             <Route path="/graph" element={<GraphView />} />
