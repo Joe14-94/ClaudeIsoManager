@@ -16,6 +16,7 @@ import ProjectWeatherWidget from './ProjectWeatherWidget';
 import TopPriorityProjectsWidget from './TopPriorityProjectsWidget';
 import ProjectSCurveWidget from './ProjectSCurveWidget';
 import RiskCoverageMatrixWidget from './RiskCoverageMatrixWidget';
+import EVMWidgetForDashboard from './EVMWidgetForDashboard';
 
 export interface WidgetConfig {
   id: string;
@@ -182,6 +183,14 @@ export const WIDGET_REGISTRY: WidgetConfig[] = [
     description: 'Synthèse simplifiée des charges (J/H).',
     component: ProjectWorkloadSummaryWidget,
     defaultLayout: { w: 12, h: 3, minW: 6, minH: 3 },
+    props: {},
+  },
+  {
+    id: 'evmDashboard',
+    name: 'Earned Value Management (EVM)',
+    description: 'Tableau de bord complet des métriques de valeur acquise avec sélection de projet.',
+    component: EVMWidgetForDashboard,
+    defaultLayout: { w: 6, h: 7, minW: 5, minH: 6 },
     props: {},
   },
 ];

@@ -6,7 +6,7 @@ import { Activity, ActivityStatus, Priority, SecurityDomain, ActivityType, Secur
 import { DOMAIN_COLORS, STATUS_COLORS, PRIORITY_COLORS } from '../constants';
 import Card, { CardContent, CardHeader } from '../components/ui/Card';
 import Modal from '../components/ui/Modal';
-import { Search, Edit, Sparkles, ArrowUp, ArrowDown, Trash2 } from 'lucide-react';
+import { Search, Edit, Sparkles, ArrowUp, ArrowDown, Trash2, Copy } from 'lucide-react';
 import GuidedActivityWizard from '../components/wizards/GuidedActivityWizard';
 import ActiveFiltersDisplay from '../components/ui/ActiveFiltersDisplay';
 import ActivityForm from '../components/activities/ActivityForm';
@@ -15,6 +15,8 @@ import ExportButton from '../components/ui/ExportButton';
 import { CsvColumn, dateFormatters, arrayFormatter, numberFormatters } from '../utils/csvExport';
 import { useSavedFilters } from '../hooks/useSavedFilters';
 import SavedFiltersMenu from '../components/ui/SavedFiltersMenu';
+import BulkDuplicateModal from '../components/ui/BulkDuplicateModal';
+import { duplicateActivities } from '../utils/duplication';
 
 type FormActivity = Partial<Activity> & { chantierIds?: string[] };
 
@@ -55,6 +57,7 @@ const Activities: React.FC = () => {
   const [currentActivity, setCurrentActivity] = useState<FormActivity | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [activityToDelete, setActivityToDelete] = useState<Activity | null>(null);
+  const [isBulkDuplicateModalOpen, setIsBulkDuplicateModalOpen] = useState(false);
 
   const processMap = useMemo(() => new Map(securityProcesses.map(p => [p.id, p.name])), [securityProcesses]);
   const resourceMap = useMemo(() => new Map(resources.map(r => [r.id, r.name])), [resources]);
@@ -159,6 +162,12 @@ const Activities: React.FC = () => {
 
   const handleClearAll = () => { setDomainFilter(''); setStatusFilter(''); setPriorityFilter(''); setResourceFilter(''); setProcessFilter(''); setSearchTerm(''); };
 
+  const handleBulkDuplicate = (selectedIds: string[], options: any) => {
+    const duplicated = duplicateActivities(activities, selectedIds, options);
+    setActivities(prev => [...duplicated, ...prev]);
+    setIsBulkDuplicateModalOpen(false);
+  };
+
   // Gestion des filtres sauvegardés
   const handleSaveFilters = (name: string) => {
     const currentFilters = {
@@ -233,13 +242,22 @@ const Activities: React.FC = () => {
             label="Exporter"
           />
           {!isReadOnly && (
-            <button
-              onClick={() => setIsWizardOpen(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              <Sparkles size={20} />
-              <span>Création guidée</span>
-            </button>
+            <>
+              <button
+                onClick={() => setIsBulkDuplicateModalOpen(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+              >
+                <Copy size={20} />
+                <span>Duplication en masse</span>
+              </button>
+              <button
+                onClick={() => setIsWizardOpen(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                <Sparkles size={20} />
+                <span>Création guidée</span>
+              </button>
+            </>
           )}
         </div>
       </div>
@@ -288,6 +306,17 @@ const Activities: React.FC = () => {
       {isFormModalOpen && currentActivity && ( <Modal isOpen={isFormModalOpen} onClose={handleCloseModals} title={isEditMode ? "Détails de l'activité" : "Nouvelle activité"}><ActivityForm currentActivity={currentActivity} setCurrentActivity={setCurrentActivity} isReadOnly={isReadOnly} handleSave={handleSave} handleCloseModals={handleCloseModals}/></Modal> )}
       {isWizardOpen && ( <GuidedActivityWizard isOpen={isWizardOpen} onClose={handleCloseModals} onSave={handleSaveFromWizard} onSwitchToManual={() => { handleCloseModals(); handleOpenFormModal(); }}/> )}
       {isDeleteModalOpen && activityToDelete && ( <Modal isOpen={isDeleteModalOpen} onClose={handleCloseDeleteModal} title="Confirmer la suppression"><p>Êtes-vous sûr de vouloir supprimer l'activité "{activityToDelete.title}" ? Cette action est irréversible.</p><div className="flex justify-end gap-2 pt-4 mt-4 border-t"><button type="button" onClick={handleCloseDeleteModal} className="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 rounded-md hover:bg-slate-200">Annuler</button><button type="button" onClick={confirmDelete} className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700">Supprimer</button></div></Modal> )}
+      {isBulkDuplicateModalOpen && (
+        <BulkDuplicateModal
+          isOpen={isBulkDuplicateModalOpen}
+          onClose={() => setIsBulkDuplicateModalOpen(false)}
+          items={sortedActivities}
+          getItemId={(a) => a.id}
+          getItemLabel={(a) => `${a.activityId} - ${a.title}`}
+          onDuplicate={handleBulkDuplicate}
+          entityName="activités"
+        />
+      )}
     </div>
   );
 };

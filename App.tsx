@@ -43,6 +43,8 @@ import GraphCreatorPage from './pages/GraphCreatorPage';
 import GanttDiagramPage from './pages/GanttDiagramPage';
 import CalendarImportPage from './pages/CalendarImportPage';
 import AuditLogPage from './pages/AuditLogPage';
+import ProjectBurndownPage from './pages/ProjectBurndownPage';
+import VelocityTrackingPage from './pages/VelocityTrackingPage';
 import { useNavigationShortcuts, useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import KeyboardShortcutsHelp from './components/ui/KeyboardShortcutsHelp';
 
@@ -68,6 +70,8 @@ const AppLayout: React.FC = () => {
             <Route path="/projets/createur-graphiques" element={<GraphCreatorPage />} />
             <Route path="/projects-timeline" element={<ProjectsTimelinePage />} />
             <Route path="/projects-gantt" element={<GanttDiagramPage />} />
+            <Route path="/projects-burndown" element={<ProjectBurndownPage />} />
+            <Route path="/velocity-tracking" element={<VelocityTrackingPage />} />
             <Route path="/projects-budget" element={<ProjectsBudget />} />
             <Route path="/projects-workload" element={<ProjectsWorkload />} />
             <Route path="/activities-dashboard" element={<ActivitiesDashboard />} />

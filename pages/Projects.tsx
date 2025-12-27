@@ -6,7 +6,7 @@ import { Project, ProjectStatus, TShirtSize, ProjectCategory, ProjectWeather } f
 import { PROJECT_STATUS_COLORS } from '../constants';
 import Card, { CardContent, CardHeader } from '../components/ui/Card';
 import Modal from '../components/ui/Modal';
-import { Search, PlusCircle, Edit, ArrowUp, ArrowDown, Trash2, Sun, Cloud, CloudRain, CloudLightning, ChevronDown, FilterX, Flag, Link } from 'lucide-react';
+import { Search, PlusCircle, Edit, ArrowUp, ArrowDown, Trash2, Sun, Cloud, CloudRain, CloudLightning, ChevronDown, FilterX, Flag, Link, Copy } from 'lucide-react';
 import ActiveFiltersDisplay from '../components/ui/ActiveFiltersDisplay';
 import Tooltip from '../components/ui/Tooltip';
 import ProjectForm from '../components/projects/ProjectForm';
@@ -14,6 +14,8 @@ import { useTableSort } from '../hooks/useTableSort';
 import { analyzeCriticalPath } from '../utils/projectAnalysis';
 import ExportButton from '../components/ui/ExportButton';
 import { CsvColumn, dateFormatters, arrayFormatter, numberFormatters } from '../utils/csvExport';
+import BulkDuplicateModal from '../components/ui/BulkDuplicateModal';
+import { duplicateProjects } from '../utils/duplication';
 
 const WEATHER_ICONS = {
     [ProjectWeather.SUNNY]: <Sun className="text-yellow-500" size={20} />,
@@ -81,7 +83,8 @@ const Projects: React.FC = () => {
     const [currentProject, setCurrentProject] = useState<Partial<Project> | null>(null);
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
-    
+    const [isBulkDuplicateModalOpen, setIsBulkDuplicateModalOpen] = useState(false);
+
     const criticalPath = useMemo(() => analyzeCriticalPath(projects), [projects]);
 
     const handleOpenFormModal = useCallback((projectData?: Partial<Project>) => {
@@ -203,6 +206,12 @@ const Projects: React.FC = () => {
     const handleRemoveFilter = (key: string) => { if (key === 'Statut') setStatusFilter(''); if (key === 'Top 30') setTop30Filter(''); if (key === 'Catégorie') setCategoriesFilter([]); };
     const handleClearAll = () => { setStatusFilter(''); setTop30Filter(''); setCategoriesFilter([]); setSearchTerm(''); };
 
+    const handleBulkDuplicate = (selectedIds: string[], options: any) => {
+        const duplicated = duplicateProjects(projects, selectedIds, options);
+        setProjects(prev => [...duplicated, ...prev]);
+        setIsBulkDuplicateModalOpen(false);
+    };
+
     // Configuration des colonnes pour l'export CSV
     const csvColumns: CsvColumn<Project>[] = useMemo(() => [
         { header: 'ID', accessor: 'projectId' },
@@ -257,13 +266,22 @@ const Projects: React.FC = () => {
                                 label="Exporter"
                             />
                             {!isReadOnly && (
-                                <button
-                                    onClick={() => handleOpenFormModal()}
-                                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                                >
-                                    <PlusCircle size={20} />
-                                    <span>Nouveau projet</span>
-                                </button>
+                                <>
+                                    <button
+                                        onClick={() => setIsBulkDuplicateModalOpen(true)}
+                                        className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                                    >
+                                        <Copy size={20} />
+                                        <span>Duplication en masse</span>
+                                    </button>
+                                    <button
+                                        onClick={() => handleOpenFormModal()}
+                                        className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                                    >
+                                        <PlusCircle size={20} />
+                                        <span>Nouveau projet</span>
+                                    </button>
+                                </>
                             )}
                         </div>
                     </div>
@@ -334,6 +352,18 @@ const Projects: React.FC = () => {
                         <button type="button" onClick={confirmDelete} className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700">Supprimer</button>
                     </div>
                 </Modal>
+            )}
+
+            {isBulkDuplicateModalOpen && (
+                <BulkDuplicateModal
+                    isOpen={isBulkDuplicateModalOpen}
+                    onClose={() => setIsBulkDuplicateModalOpen(false)}
+                    items={sortedProjects}
+                    getItemId={(p) => p.id}
+                    getItemLabel={(p) => `${p.projectId} - ${p.title}`}
+                    onDuplicate={handleBulkDuplicate}
+                    entityName="projets"
+                />
             )}
         </div>
     );
