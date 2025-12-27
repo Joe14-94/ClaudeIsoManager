@@ -76,20 +76,20 @@ const AVAILABLE_FIELDS: Field[] = [
   { key: 'nfDate', label: 'Date de fin réelle (NF)', getValue: row => formatDate(row.project.endDate) },
 
   // Budget
-  { key: 'budgetRequested', label: 'Budget Demandé', getValue: row => formatCurrency(row.project.budgetRequested), isNumeric: true },
-  { key: 'budgetApproved', label: 'Budget Accordé', getValue: row => formatCurrency(row.project.budgetApproved), isNumeric: true },
-  { key: 'budgetCommitted', label: 'Budget Engagé', getValue: row => formatCurrency(row.project.budgetCommitted), isNumeric: true },
+  { key: 'budgetRequested', label: 'Budget demandé', getValue: row => formatCurrency(row.project.budgetRequested), isNumeric: true },
+  { key: 'budgetApproved', label: 'Budget accordé', getValue: row => formatCurrency(row.project.budgetApproved), isNumeric: true },
+  { key: 'budgetCommitted', label: 'Budget engagé', getValue: row => formatCurrency(row.project.budgetCommitted), isNumeric: true },
   { key: 'validatedPurchaseOrders', label: 'DA Validées', getValue: row => formatCurrency(row.project.validatedPurchaseOrders), isNumeric: true },
   { key: 'completedPV', label: 'Réalisé (PV)', getValue: row => formatCurrency(row.project.completedPV), isNumeric: true },
-  { key: 'forecastedPurchaseOrders', label: 'DA Prévues', getValue: row => formatCurrency(row.project.forecastedPurchaseOrders), isNumeric: true },
+  { key: 'forecastedPurchaseOrders', label: 'DA prévues', getValue: row => formatCurrency(row.project.forecastedPurchaseOrders), isNumeric: true },
 
   // Charges
-  { key: 'intReq', label: 'Charge Interne Demandée', getValue: row => formatJH(row.project.internalWorkloadRequested), isNumeric: true },
-  { key: 'intEng', label: 'Charge Interne Engagée', getValue: row => formatJH(row.project.internalWorkloadEngaged), isNumeric: true },
-  { key: 'intCon', label: 'Charge Interne Consommée', getValue: row => formatJH(row.project.internalWorkloadConsumed), isNumeric: true },
-  { key: 'extReq', label: 'Charge Externe Demandée', getValue: row => formatJH(row.project.externalWorkloadRequested), isNumeric: true },
-  { key: 'extEng', label: 'Charge Externe Engagée', getValue: row => formatJH(row.project.externalWorkloadEngaged), isNumeric: true },
-  { key: 'extCon', label: 'Charge Externe Consommée', getValue: row => formatJH(row.project.externalWorkloadConsumed), isNumeric: true },
+  { key: 'intReq', label: 'Charge interne demandée', getValue: row => formatJH(row.project.internalWorkloadRequested), isNumeric: true },
+  { key: 'intEng', label: 'Charge interne engagée', getValue: row => formatJH(row.project.internalWorkloadEngaged), isNumeric: true },
+  { key: 'intCon', label: 'Charge interne consommée', getValue: row => formatJH(row.project.internalWorkloadConsumed), isNumeric: true },
+  { key: 'extReq', label: 'Charge externe demandée', getValue: row => formatJH(row.project.externalWorkloadRequested), isNumeric: true },
+  { key: 'extEng', label: 'Charge externe engagée', getValue: row => formatJH(row.project.externalWorkloadEngaged), isNumeric: true },
+  { key: 'extCon', label: 'Charge externe consommée', getValue: row => formatJH(row.project.externalWorkloadConsumed), isNumeric: true },
 ];
 
 const PROJECTS_EXPLORER_STATE_KEY = 'projectsExplorerState';

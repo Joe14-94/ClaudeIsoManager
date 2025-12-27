@@ -37,7 +37,7 @@ const RiskCoverageMatrixWidget: React.FC = () => {
         <div className="h-full w-full flex flex-col">
             <CardHeader className="non-draggable pb-2">
                 <div className="flex justify-between items-center">
-                    <CardTitle className="flex items-center gap-2"><ShieldAlert size={20} className="text-orange-600" /> Matrice de Couverture des Risques</CardTitle>
+                    <CardTitle className="flex items-center gap-2"><ShieldAlert size={20} className="text-orange-600" /> Matrice de couverture des risques</CardTitle>
                     <div className="flex gap-2">
                         <button onClick={() => setFilterStatus('active')} className={`px-2 py-1 text-xs rounded ${filterStatus === 'active' ? 'bg-blue-100 text-blue-700 font-bold' : 'bg-slate-100 text-slate-600'}`}>Actifs</button>
                         <button onClick={() => setFilterStatus('all')} className={`px-2 py-1 text-xs rounded ${filterStatus === 'all' ? 'bg-blue-100 text-blue-700 font-bold' : 'bg-slate-100 text-slate-600'}`}>Tous</button>

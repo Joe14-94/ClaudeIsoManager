@@ -110,7 +110,7 @@ const ProjectWorkloadSummaryWidget: React.FC = () => {
                 {/* Global Progress Bar */}
                 <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
                     <div className="flex justify-between items-baseline mb-1">
-                        <span className="text-sm font-semibold text-slate-700">Avancement Global</span>
+                        <span className="text-sm font-semibold text-slate-700">Avancement global</span>
                         <span className="text-lg font-bold text-blue-400">{Math.round(totalProgress)}%</span>
                     </div>
                     <div className="w-full bg-slate-200 rounded-full h-2.5 mb-1">
@@ -124,16 +124,16 @@ const ProjectWorkloadSummaryWidget: React.FC = () => {
 
                 {/* Circular Breakdown */}
                 <div className="flex justify-around items-center pt-2">
-                    <CircularProgress 
-                        value={intProgress} 
-                        label="Avancement Interne" 
+                    <CircularProgress
+                        value={intProgress}
+                        label="Avancement interne"
                         subLabel={`${formatJH(stats.intConsumed)} / ${formatJH(stats.intEngaged)} JH`}
                         color="#c4b5fd" // Violet 300 (Pastel)
                     />
                     <div className="h-12 w-px bg-slate-200"></div>
-                    <CircularProgress 
-                        value={extProgress} 
-                        label="Avancement Externe" 
+                    <CircularProgress
+                        value={extProgress}
+                        label="Avancement externe"
                         subLabel={`${formatJH(stats.extConsumed)} / ${formatJH(stats.extEngaged)} JH`}
                         color="#7dd3fc" // Sky 300 (Pastel)
                     />

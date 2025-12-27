@@ -364,14 +364,14 @@ export const AdvancedGanttChart: React.FC<AdvancedGanttChartProps> = ({ projects
             
             <div className="flex items-center gap-2">
                  <div className="flex items-center gap-3 text-xs text-slate-500 mr-4">
-                     <div className="flex items-center gap-1"><div className="w-3 h-3 bg-indigo-600 rounded-sm"></div> Projet</div>
-                     <div className="flex items-center gap-1"><div className="w-3 h-3 bg-blue-500 rounded-sm"></div> Phase/Tâche</div>
-                     <div className="flex items-center gap-1"><div className="w-3 h-3 bg-red-500 rounded-sm"></div> Critique</div>
-                     <div className="flex items-center gap-1"><div className="w-3 h-3 rotate-45 bg-yellow-500 rounded-[1px]"></div> Jalon</div>
+                     <div className="flex items-center gap-1"><div className="w-3 h-3 bg-indigo-300 rounded-sm"></div> Projet</div>
+                     <div className="flex items-center gap-1"><div className="w-3 h-3 bg-blue-300 rounded-sm"></div> Phase/Tâche</div>
+                     <div className="flex items-center gap-1"><div className="w-3 h-3 bg-red-300 rounded-sm"></div> Critique</div>
+                     <div className="flex items-center gap-1"><div className="w-3 h-3 rotate-45 bg-amber-200 border border-amber-400 rounded-[1px]"></div> Jalon</div>
                      <div className="flex items-center gap-1"><div className="w-3 h-1 bg-slate-400"></div> Baseline</div>
                      {/* Légende Retard */}
                      <div className="flex items-center gap-1">
-                        <div className="w-3 h-3 border border-red-500 bg-white" style={{ backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(239, 68, 68, 0.5) 2px, rgba(239, 68, 68, 0.5) 4px)' }}></div>
+                        <div className="w-3 h-3 border border-rose-300 bg-white" style={{ backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 2px, rgba(252, 165, 165, 0.5) 2px, rgba(252, 165, 165, 0.5) 4px)' }}></div>
                         Retard
                      </div>
                  </div>
@@ -449,9 +449,9 @@ export const AdvancedGanttChart: React.FC<AdvancedGanttChartProps> = ({ projects
                                         )}
                                         <span className="truncate cursor-pointer flex items-center gap-1" title={row.name}>
                                             {row.name}
-                                            {isOverdue && <AlertCircle size={12} className="text-red-500 flex-shrink-0" />}
+                                            {isOverdue && <AlertCircle size={12} className="text-rose-400 flex-shrink-0" />}
                                         </span>
-                                        {row.isCritical && <span className="w-2 h-2 rounded-full bg-red-500 ml-2" title="Tâche critique"></span>}
+                                        {row.isCritical && <span className="w-2 h-2 rounded-full bg-red-300 ml-2" title="Tâche critique"></span>}
                                     </div>
                                     {/* Editable Inputs */}
                                     <div className="w-24 px-1" onClick={e => e.stopPropagation()}>
@@ -545,11 +545,11 @@ export const AdvancedGanttChart: React.FC<AdvancedGanttChartProps> = ({ projects
                         ))}
 
                         {/* Today Line */}
-                        <div 
-                            className="absolute top-0 h-full border-l-2 border-red-400 z-10 pointer-events-none"
+                        <div
+                            className="absolute top-0 h-full border-l-2 border-rose-300 z-10 pointer-events-none"
                             style={{ left: getXPosition(new Date()) }}
                         >
-                            <div className="absolute -top-1 -left-[3px] w-[6px] h-[6px] rounded-full bg-red-500"></div>
+                            <div className="absolute -top-1 -left-[3px] w-[6px] h-[6px] rounded-full bg-rose-400"></div>
                         </div>
 
                         {/* Rows */}
@@ -584,8 +584,8 @@ export const AdvancedGanttChart: React.FC<AdvancedGanttChartProps> = ({ projects
                             
                             // Indicateur de dépassement (Overdue) : Pas fini et date de fin passée
                             const isOverdue = row.progress < 100 && new Date() > row.endDate;
-                            const overdueClass = isOverdue ? 'ring-2 ring-red-500 ring-offset-1' : '';
-                            const criticalBorderClass = row.isCritical ? 'border-2 border-red-400' : '';
+                            const overdueClass = isOverdue ? 'ring-2 ring-rose-300 ring-offset-1' : '';
+                            const criticalBorderClass = row.isCritical ? 'border-2 border-red-300' : '';
 
                             return (
                                 <div 
@@ -607,7 +607,7 @@ export const AdvancedGanttChart: React.FC<AdvancedGanttChartProps> = ({ projects
 
                                     {isMilestone ? (
                                         <div
-                                            className={`absolute w-4 h-4 rotate-45 bg-yellow-400 border border-yellow-600 z-10 group ${criticalBorderClass}`}
+                                            className={`absolute w-4 h-4 rotate-45 bg-amber-200 border border-amber-400 z-10 group ${criticalBorderClass}`}
                                             style={{ left: xStart - 8, top: 12 }}
                                             onMouseEnter={(e) => setTooltip({ visible: true, x: e.clientX, y: e.clientY, content: <div className="text-xs font-bold">{row.name}<br/>{formatDateFR(row.startDate)}</div> })}
                                             onMouseLeave={() => setTooltip(null)}
@@ -632,12 +632,12 @@ export const AdvancedGanttChart: React.FC<AdvancedGanttChartProps> = ({ projects
 
                                             {/* Partie Retard (Slippage) */}
                                             {slippageWidth > 0 && (
-                                                <div 
-                                                    className={`absolute top-0 h-full border-t border-b border-r border-red-500 ${normalWidth <= 0 ? 'rounded-sm border-l' : 'rounded-r-sm'}`}
-                                                    style={{ 
-                                                        left: normalWidth, 
+                                                <div
+                                                    className={`absolute top-0 h-full border-t border-b border-r border-rose-300 ${normalWidth <= 0 ? 'rounded-sm border-l' : 'rounded-r-sm'}`}
+                                                    style={{
+                                                        left: normalWidth,
                                                         width: slippageWidth,
-                                                        backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(239, 68, 68, 0.5) 5px, rgba(239, 68, 68, 0.5) 10px)',
+                                                        backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(252, 165, 165, 0.5) 5px, rgba(252, 165, 165, 0.5) 10px)',
                                                         backgroundColor: 'rgba(255, 255, 255, 0.5)'
                                                     }}
                                                 >

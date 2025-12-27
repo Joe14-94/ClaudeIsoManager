@@ -184,7 +184,7 @@ const ProjectInitiativeAlignmentWidget: React.FC = () => {
       xAxisBudget.selectAll("line").remove();
       xAxisBudget.selectAll('.tick text').attr('class', 'text-xs fill-slate-500');
 
-      svg.append('text').attr('x', margin.left + innerWidth / 2).attr('y', 15).attr('text-anchor', 'middle').attr('class', 'text-xs fill-slate-500 font-medium').text('Budget Consommé (€)');
+      svg.append('text').attr('x', margin.left + innerWidth / 2).attr('y', 15).attr('text-anchor', 'middle').attr('class', 'text-xs fill-slate-500 font-medium').text('Budget consommé (€)');
       svg.append('text').attr('x', margin.left + innerWidth / 2).attr('y', height - 30).attr('text-anchor', 'middle').attr('class', 'text-xs fill-slate-500 font-medium').text('Charge de travail (J/H)');
 
       const legend = svg.append('g').attr('transform', `translate(${margin.left}, ${height - 15})`);
@@ -194,7 +194,7 @@ const ProjectInitiativeAlignmentWidget: React.FC = () => {
       
       const legendBudget = legend.append('g').attr('transform', `translate(120, 0)`);
       legendBudget.append('rect').attr('width', 12).attr('height', 12).attr('fill', budgetColor).attr('rx', 2);
-      legendBudget.append('text').attr('x', 16).attr('y', 10).text('Budget Consommé (€)').attr('class', 'text-xs fill-slate-600');
+      legendBudget.append('text').attr('x', 16).attr('y', 10).text('Budget consommé (€)').attr('class', 'text-xs fill-slate-600');
     };
 
     const resizeObserver = new ResizeObserver(drawChart);
@@ -206,7 +206,7 @@ const ProjectInitiativeAlignmentWidget: React.FC = () => {
   return (
     <div className="h-full w-full flex flex-col">
       <CardHeader className="non-draggable">
-        <CardTitle>Alignement Projets / Initiatives</CardTitle>
+        <CardTitle>Alignement projets / initiatives</CardTitle>
         <p className="text-sm text-slate-500 mt-1">Charges engagées et budgets consommés par initiative.</p>
       </CardHeader>
       <CardContent className="flex-grow min-h-0" ref={containerRef}>

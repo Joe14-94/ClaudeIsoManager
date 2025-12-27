@@ -118,7 +118,7 @@ const ProjectsDashboardPage: React.FC = () => {
           onClick={() => navigate('/projets')} 
         />
         <StatCard 
-          title="Projets Top 30" 
+          title="Projets top 30" 
           value={stats.top30} 
           icon={<Star size={24} />}
           onClick={() => navigate('/projets', { state: { top30Filter: 'true' }})}

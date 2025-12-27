@@ -110,8 +110,8 @@ const ProjectsWorkload: React.FC = () => {
             <Card>
                 <CardContent className="p-4">
                     <div className="flex flex-col md:flex-row items-center justify-center gap-y-6 overflow-x-auto py-2">
-                         <StatGroup title="Charge Interne" engaged={totalStats.intEng} consumed={totalStats.intCon} colorClass="text-indigo-600" />
-                         <StatGroup title="Charge Externe" engaged={totalStats.extEng} consumed={totalStats.extCon} colorClass="text-sky-600" />
+                         <StatGroup title="Charge interne" engaged={totalStats.intEng} consumed={totalStats.intCon} colorClass="text-indigo-600" />
+                         <StatGroup title="Charge externe" engaged={totalStats.extEng} consumed={totalStats.extCon} colorClass="text-sky-600" />
                          <div className="flex flex-col items-center px-8">
                             <span className="text-xs font-bold text-slate-700 uppercase tracking-wide mb-1 flex items-center gap-1"><Timer size={14}/> Total Global</span>
                              <div className="flex items-baseline gap-4">

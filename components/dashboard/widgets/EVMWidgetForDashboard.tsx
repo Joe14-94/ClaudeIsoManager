@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { TrendingUp, TrendingDown, DollarSign, Calendar, AlertTriangle, CheckCircle } from 'lucide-react';
+import { TrendingUp, TrendingDown, Coins, Calendar, AlertTriangle, CheckCircle } from 'lucide-react';
 import { useData } from '../../../contexts/DataContext';
 import { calculateEVM } from '../../../utils/evmCalculations';
 
@@ -118,7 +118,7 @@ export function EVMWidgetForDashboard() {
 
         <div className={`p-3 rounded-lg ${getStatusColor(evmMetrics.costStatus, 'cost')}`}>
           <div className="flex items-center gap-2 mb-1">
-            <DollarSign size={16} />
+            <Coins size={16} />
             <span className="text-xs font-medium">Budget</span>
           </div>
           <div className="flex items-center justify-between">

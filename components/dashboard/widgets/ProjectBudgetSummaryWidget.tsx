@@ -62,7 +62,7 @@ const ProjectBudgetSummaryWidget: React.FC = () => {
                 <div className="flex justify-between items-start">
                     <CardTitle className="flex items-center gap-2">
                         <TrendingUp className="text-emerald-400" size={20} />
-                        Synthèse Budgétaire
+                        Synthèse budgétaire
                     </CardTitle>
                     {lastCsvImportDate && (
                         <Tooltip text={`Données mises à jour le ${new Date(lastCsvImportDate).toLocaleDateString('fr-FR')}`}>
@@ -91,11 +91,11 @@ const ProjectBudgetSummaryWidget: React.FC = () => {
 
                 <div className="grid grid-cols-2 gap-4 pt-2 border-t border-slate-100">
                     <div className="bg-slate-50 p-2 rounded-lg text-center">
-                         <p className="text-xs text-slate-500 mb-1">Budget Total Demandé</p>
+                         <p className="text-xs text-slate-500 mb-1">Budget total demandé</p>
                          <p className="font-bold text-slate-700">{formatCurrency(stats.requested)}</p>
                     </div>
                     <div className="bg-slate-50 p-2 rounded-lg text-center">
-                         <p className="text-xs text-slate-500 mb-1">Budget Total Accordé</p>
+                         <p className="text-xs text-slate-500 mb-1">Budget total accordé</p>
                          <p className="font-bold text-slate-800 text-lg">{formatCurrency(stats.approved)}</p>
                     </div>
                 </div>

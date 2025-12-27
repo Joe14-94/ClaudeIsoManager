@@ -61,7 +61,7 @@ const ConsolidatedBudgetWidget: React.FC<{ isEditMode?: boolean }> = ({ isEditMo
         <div className={`h-full w-full flex flex-col ${!isEditMode ? 'cursor-pointer' : ''}`} onClick={handleCardClick}>
             <CardHeader className="non-draggable">
                 <div className="flex justify-between items-start">
-                    <CardTitle className="flex items-center gap-2"><Euro size={20} /> Synthèse Budgétaire (€)</CardTitle>
+                    <CardTitle className="flex items-center gap-2"><Euro size={20} /> Synthèse budgétaire (€)</CardTitle>
                     <div className="flex items-center gap-3">
                         <div className="flex items-center gap-1 bg-emerald-100 text-emerald-800 px-2 py-1 rounded-md text-xs font-bold border border-emerald-200"><PieChart size={14} /><span>Conso : {consumptionRate.toFixed(1)}%</span></div>
                         {lastCsvImportDate && (<Tooltip text={`Données FDR mises à jour le ${new Date(lastCsvImportDate).toLocaleDateString('fr-FR')}`}><div className="flex items-center gap-1 text-xs text-slate-500"><Info size={14} /></div></Tooltip>)}
@@ -73,9 +73,9 @@ const ConsolidatedBudgetWidget: React.FC<{ isEditMode?: boolean }> = ({ isEditMo
                     <div className="grid grid-cols-6 gap-2 font-bold text-slate-700 mb-2 text-xs uppercase tracking-wide"><div className="col-span-1">Demandé</div><div className="col-span-1">Accordé</div><div className="col-span-1">Engagé</div><div className="col-span-1">DA Validées</div><div className="col-span-1">Réalisé (PV)</div><div className="col-span-1">Disponible</div></div>
                     
                     <div className="grid grid-cols-6 gap-2 items-center mb-4">
-                        <div className="bg-slate-100 p-2 rounded font-medium text-slate-600" title="Budget Demandé">{formatCurrency(totals.requested)}</div>
-                        <div className="bg-blue-100 p-2 rounded font-bold text-blue-800" title="Budget Accordé">{formatCurrency(totals.approved)}</div>
-                        <div className="bg-indigo-50 p-2 rounded font-semibold text-indigo-700" title="Budget Engagé">{formatCurrency(totals.committed)}</div>
+                        <div className="bg-slate-100 p-2 rounded font-medium text-slate-600" title="Budget demandé">{formatCurrency(totals.requested)}</div>
+                        <div className="bg-blue-100 p-2 rounded font-bold text-blue-800" title="Budget accordé">{formatCurrency(totals.approved)}</div>
+                        <div className="bg-indigo-50 p-2 rounded font-semibold text-indigo-700" title="Budget engagé">{formatCurrency(totals.committed)}</div>
                         <div className="bg-slate-50 p-2 rounded text-slate-600" title="DA Validées">{formatCurrency(totals.validatedPO)}</div>
                         <div className="bg-green-100 p-2 rounded font-bold text-green-800" title="Réalisé (PV)">{formatCurrency(totals.completedPV)}</div>
                         <div className={`p-2 rounded font-bold border ${availableBudget >= 0 ? 'bg-white text-green-600 border-green-200' : 'bg-red-50 text-red-600 border-red-200'}`} title="Accordé - Engagé">{formatCurrency(availableBudget)}</div>

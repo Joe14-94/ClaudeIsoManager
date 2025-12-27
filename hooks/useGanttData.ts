@@ -28,9 +28,9 @@ export interface GanttRow {
 }
 
 const getPhaseColor = (index: number, type: string, isCritical: boolean): string => {
-    if (isCritical) return 'bg-red-500';
-    if (type === 'project') return 'bg-indigo-600'; 
-    const colors = ['bg-blue-500', 'bg-blue-500', 'bg-blue-500', 'bg-blue-500'];
+    if (isCritical) return 'bg-red-300';
+    if (type === 'project') return 'bg-indigo-300';
+    const colors = ['bg-blue-300', 'bg-sky-300', 'bg-cyan-300', 'bg-teal-300'];
     return colors[index % colors.length];
 };
 
@@ -142,7 +142,7 @@ export const useGanttData = (
             data: project,
             visible: true,
             hasChildren: !!(project.tasks && project.tasks.length > 0),
-            colorClass: 'bg-indigo-600',
+            colorClass: 'bg-indigo-300',
             isCritical: false // Project level criticality handled separately if needed
         });
 

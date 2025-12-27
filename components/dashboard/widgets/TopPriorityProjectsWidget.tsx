@@ -22,7 +22,7 @@ const TopPriorityProjectsWidget: React.FC = () => {
     <div className="h-full w-full flex flex-col">
         <CardHeader className="non-draggable">
             <div className="flex justify-between items-center">
-                <CardTitle className="flex items-center gap-2"><TrendingUp size={18} className="text-red-600" /> Top 5 Priorités</CardTitle>
+                <CardTitle className="flex items-center gap-2"><TrendingUp size={18} className="text-red-600" /> Top 5 priorités</CardTitle>
                 <Tooltip text="Projets en cours ou identifiés avec le score de priorité le plus élevé."><AlertCircle size={16} className="text-slate-400 cursor-help" /></Tooltip>
             </div>
         </CardHeader>

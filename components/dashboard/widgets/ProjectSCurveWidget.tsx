@@ -130,7 +130,7 @@ const ProjectSCurveWidget: React.FC = () => {
         <div className="h-full w-full flex flex-col">
             <CardHeader className="non-draggable pb-2">
                 <div className="flex justify-between items-center">
-                    <CardTitle className="flex items-center gap-2"><TrendingUp size={20} className="text-blue-400" /> Courbe en S (Financier)</CardTitle>
+                    <CardTitle className="flex items-center gap-2"><TrendingUp size={20} className="text-blue-400" /> Courbe en S (financier)</CardTitle>
                     <select value={selectedProjectId} onChange={(e) => setSelectedProjectId(e.target.value)} className="text-sm border border-slate-200 rounded px-2 py-1 max-w-[200px] truncate bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-200">
                         <option value="" disabled>Sélectionner un projet</option>
                         {eligibleProjects.map(p => (<option key={p.id} value={p.id}>{p.projectId} - {p.title}</option>))}
@@ -141,9 +141,9 @@ const ProjectSCurveWidget: React.FC = () => {
                 {selectedProjectId ? (
                     <>
                         <div className="flex justify-center gap-6 mb-2 text-xs">
-                            <div className="flex items-center gap-1"><div className="w-3 h-0.5 bg-slate-300 border-t-2 border-dashed"></div><span className="text-slate-500">Budget Planifié</span></div>
-                            <div className="flex items-center gap-1"><div className="w-3 h-3 bg-blue-300 rounded-full border border-white shadow-sm"></div><span className="text-slate-600">Engagé (Commandé)</span></div>
-                             <div className="flex items-center gap-1"><div className="w-3 h-3 bg-emerald-300 rounded-full border border-white shadow-sm"></div><span className="text-slate-600">Réalisé (Facturé/PV)</span></div>
+                            <div className="flex items-center gap-1"><div className="w-3 h-0.5 bg-slate-300 border-t-2 border-dashed"></div><span className="text-slate-500">Budget planifié</span></div>
+                            <div className="flex items-center gap-1"><div className="w-3 h-3 bg-blue-300 rounded-full border border-white shadow-sm"></div><span className="text-slate-600">Engagé (commandé)</span></div>
+                             <div className="flex items-center gap-1"><div className="w-3 h-3 bg-emerald-300 rounded-full border border-white shadow-sm"></div><span className="text-slate-600">Réalisé (facturé/PV)</span></div>
                         </div>
                         <div className="flex-grow relative min-h-[150px]"><svg ref={svgRef} width="100%" height="100%"></svg></div>
                     </>
