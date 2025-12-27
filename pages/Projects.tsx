@@ -253,7 +253,7 @@ const Projects: React.FC = () => {
     ], [initiativeMap, criticalPath]);
 
     return (
-        <div className="space-y-6 h-full flex flex-col">
+        <div className="space-y-4 h-full flex flex-col">
             {!isModalOnly && (
                 <>
                     <div className="flex justify-between items-center flex-wrap gap-4">
@@ -300,15 +300,15 @@ const Projects: React.FC = () => {
                                 <table className="w-full text-sm text-left text-slate-500">
                                 <thead className="text-xs text-slate-700 uppercase bg-slate-100 sticky top-0 z-10">
                                     <tr>
-                                        <th scope="col" className="px-6 py-3 cursor-pointer" onClick={() => requestSort('projectId')}>ID {renderSortArrow('projectId')}</th>
-                                        <th scope="col" className="px-6 py-3 cursor-pointer" onClick={() => requestSort('title')}>Titre {renderSortArrow('title')}</th>
-                                        <th scope="col" className="px-6 py-3">Météo</th>
-                                        <th scope="col" className="px-6 py-3 cursor-pointer" onClick={() => requestSort('initiative')}>Initiative {renderSortArrow('initiative')}</th>
-                                        <th scope="col" className="px-6 py-3 cursor-pointer" onClick={() => requestSort('status')}>Statut {renderSortArrow('status')}</th>
-                                        <th scope="col" className="px-6 py-3 cursor-pointer" onClick={() => requestSort('priorityScore')}>Score {renderSortArrow('priorityScore')}</th>
-                                        <th scope="col" className="px-6 py-3 cursor-pointer" onClick={() => requestSort('totalProgress')}>Avancement {renderSortArrow('totalProgress')}</th>
-                                        <th scope="col" className="px-6 py-3">Top 30</th>
-                                        <th scope="col" className="px-6 py-3"><span className="sr-only">Actions</span></th>
+                                        <th scope="col" className="px-3 py-2 cursor-pointer" onClick={() => requestSort('projectId')}>ID {renderSortArrow('projectId')}</th>
+                                        <th scope="col" className="px-3 py-2 cursor-pointer" onClick={() => requestSort('title')}>Titre {renderSortArrow('title')}</th>
+                                        <th scope="col" className="px-3 py-2">Météo</th>
+                                        <th scope="col" className="px-3 py-2 cursor-pointer" onClick={() => requestSort('initiative')}>Initiative {renderSortArrow('initiative')}</th>
+                                        <th scope="col" className="px-3 py-2 cursor-pointer" onClick={() => requestSort('status')}>Statut {renderSortArrow('status')}</th>
+                                        <th scope="col" className="px-3 py-2 cursor-pointer" onClick={() => requestSort('priorityScore')}>Score {renderSortArrow('priorityScore')}</th>
+                                        <th scope="col" className="px-3 py-2 cursor-pointer" onClick={() => requestSort('totalProgress')}>Avancement {renderSortArrow('totalProgress')}</th>
+                                        <th scope="col" className="px-3 py-2">Top 30</th>
+                                        <th scope="col" className="px-3 py-2"><span className="sr-only">Actions</span></th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -318,13 +318,13 @@ const Projects: React.FC = () => {
                                         return (
                                         <tr key={project.id} className={`border-b hover:bg-slate-50 ${isCritical ? 'bg-red-50/30' : 'bg-white'}`}>
                                             <th scope="row" className="px-6 py-4 font-medium text-slate-900 whitespace-nowrap flex items-center gap-2">{project.projectId}<div className="flex gap-1">{hasDependencies && (<Tooltip text="Ce projet a des dépendances"><Link size={14} className="text-slate-400" /></Tooltip>)}{isCritical && (<Tooltip text="Chemin Critique : Tout retard sur ce projet impactera la date de fin globale"><Flag size={14} className="text-red-500 fill-red-500" /></Tooltip>)}</div></th>
-                                            <td className="px-6 py-4">{project.title}</td>
-                                            <td className="px-6 py-4">{project.weather ? (<Tooltip text={project.weatherDescription || project.weather}>{WEATHER_ICONS[project.weather]}</Tooltip>) : (<span className="text-slate-400">-</span>)}</td>
-                                            <td className="px-6 py-4">{initiativeMap.get(project.initiativeId || '') || '-'}</td>
-                                            <td className="px-6 py-4"><span className={`px-2 py-1 text-xs font-medium rounded-full ${PROJECT_STATUS_COLORS[project.status]}`}>{project.status}</span></td>
-                                            <td className="px-6 py-4">{project.priorityScore ? (<span className={`font-bold ${project.priorityScore >= 15 ? 'text-red-600' : project.priorityScore >= 8 ? 'text-orange-500' : 'text-blue-600'}`}>{project.priorityScore.toFixed(1)}</span>) : '-'}</td>
-                                            <td className="px-6 py-4">{getProjectProgress(project)}%</td>
-                                            <td className="px-6 py-4">{project.isTop30 ? 'Oui' : 'Non'}</td>
+                                            <td className="px-3 py-2">{project.title}</td>
+                                            <td className="px-3 py-2">{project.weather ? (<Tooltip text={project.weatherDescription || project.weather}>{WEATHER_ICONS[project.weather]}</Tooltip>) : (<span className="text-slate-400">-</span>)}</td>
+                                            <td className="px-3 py-2">{initiativeMap.get(project.initiativeId || '') || '-'}</td>
+                                            <td className="px-3 py-2"><span className={`px-2 py-1 text-xs font-medium rounded-full ${PROJECT_STATUS_COLORS[project.status]}`}>{project.status}</span></td>
+                                            <td className="px-3 py-2">{project.priorityScore ? (<span className={`font-bold ${project.priorityScore >= 15 ? 'text-red-600' : project.priorityScore >= 8 ? 'text-orange-500' : 'text-blue-600'}`}>{project.priorityScore.toFixed(1)}</span>) : '-'}</td>
+                                            <td className="px-3 py-2">{getProjectProgress(project)}%</td>
+                                            <td className="px-3 py-2">{project.isTop30 ? 'Oui' : 'Non'}</td>
                                             <td className="px-6 py-4 text-right space-x-1">
                                                 <button onClick={() => handleOpenFormModal(project)} className="p-1 text-slate-500 rounded-md hover:bg-slate-100 hover:text-blue-600" title="Modifier le projet"><Edit size={18} /></button>
                                                 {!isReadOnly && (<button onClick={() => handleOpenDeleteModal(project)} className="p-1 text-slate-500 rounded-md hover:bg-slate-100 hover:text-red-600" title="Supprimer le projet"><Trash2 size={18} /></button>)}

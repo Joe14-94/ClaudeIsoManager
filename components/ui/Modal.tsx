@@ -115,8 +115,8 @@ const Modal: React.FC<ModalProps> = ({
           <h2 id="modal-title" className="text-xl font-bold text-slate-800">{title}</h2>
           <div className="flex items-center gap-2 ml-4 flex-shrink-0">
             {headerActions}
-            <button 
-              onClick={onClose} 
+            <button
+              onClick={onClose}
               className="p-1 rounded-md hover:bg-slate-200 text-slate-600 hover:text-slate-900 transition-colors"
               aria-label="Fermer"
             >
@@ -124,7 +124,7 @@ const Modal: React.FC<ModalProps> = ({
             </button>
           </div>
         </header>
-        <main className="p-6 overflow-y-auto">
+        <main className="p-4 overflow-y-auto">
           {children}
         </main>
       </div>

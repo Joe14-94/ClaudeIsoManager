@@ -83,7 +83,7 @@ const ActivitiesDashboard: React.FC = () => {
 
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <h1 className="text-3xl font-bold text-slate-800">Tableau de bord des activités</h1>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -141,19 +141,19 @@ const ActivitiesDashboard: React.FC = () => {
                 <table className="w-full text-sm text-left text-slate-500">
                     <thead className="text-xs text-slate-700 uppercase bg-slate-50 sticky top-0">
                         <tr>
-                            <th scope="col" className="px-4 py-3">ID</th>
-                            <th scope="col" className="px-4 py-3">Titre</th>
-                            <th scope="col" className="px-4 py-3">Statut</th>
-                            <th scope="col" className="px-4 py-3">Priorité</th>
+                            <th scope="col" className="px-3 py-2">ID</th>
+                            <th scope="col" className="px-3 py-2">Titre</th>
+                            <th scope="col" className="px-3 py-2">Statut</th>
+                            <th scope="col" className="px-3 py-2">Priorité</th>
                         </tr>
                     </thead>
                     <tbody>
                         {filteredActivities.map(activity => (
                             <tr key={activity.id} className="bg-white border-b hover:bg-slate-50 cursor-pointer" onClick={() => navigate('/activities', { state: { openActivity: activity.id } })}>
                                 <th scope="row" className="px-4 py-3 font-medium text-slate-900 whitespace-nowrap">{activity.activityId}</th>
-                                <td className="px-4 py-3">{activity.title}</td>
-                                <td className="px-4 py-3"><span className={`px-2 py-1 text-xs font-medium rounded-full ${STATUS_COLORS[activity.status]}`}>{activity.status}</span></td>
-                                <td className="px-4 py-3"><span className={`px-2 py-1 text-xs font-medium rounded-full ${PRIORITY_COLORS[activity.priority]}`}>{activity.priority}</span></td>
+                                <td className="px-3 py-2">{activity.title}</td>
+                                <td className="px-3 py-2"><span className={`px-2 py-1 text-xs font-medium rounded-full ${STATUS_COLORS[activity.status]}`}>{activity.status}</span></td>
+                                <td className="px-3 py-2"><span className={`px-2 py-1 text-xs font-medium rounded-full ${PRIORITY_COLORS[activity.priority]}`}>{activity.priority}</span></td>
                             </tr>
                         ))}
                     </tbody>

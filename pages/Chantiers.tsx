@@ -127,7 +127,7 @@ const Chantiers: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="flex justify-between items-center flex-wrap gap-4">
         <h1 className="text-3xl font-bold text-slate-800">Chantiers</h1>
         <div className="flex items-center gap-2">
@@ -223,7 +223,7 @@ const Chantiers: React.FC = () => {
           })
         ) : (
              <Card>
-                <CardContent className="text-center text-slate-500 py-16">
+                <CardContent className="text-center text-slate-500 py-8">
                     <p className="font-semibold">Aucun chantier ne correspond à vos critères de recherche.</p>
                 </CardContent>
             </Card>

@@ -261,7 +261,7 @@ const Objectives: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="flex justify-between items-center flex-wrap gap-4">
         <h1 className="text-3xl font-bold text-slate-800">Objectifs</h1>
         <div className="flex items-center gap-2">
@@ -325,7 +325,7 @@ const Objectives: React.FC = () => {
                   onClick={() => handleOpenModal(objective)}
                 >
                   <CardContent className="p-4">
-                    <div className="flex flex-col md:flex-row md:justify-between gap-4">
+                    <div className="flex flex-col md:flex-row md:justify-between gap-3">
                         <div className="flex-grow">
                           <div className="flex items-center">
                             <Target size={20} className="text-green-600 mr-3 flex-shrink-0" />
@@ -336,7 +336,7 @@ const Objectives: React.FC = () => {
                           <p className="text-sm text-slate-600 mt-2 md:pl-8 line-clamp-2">{objective.description || 'Aucune description fournie.'}</p>
                         </div>
                         
-                        <div className="flex-shrink-0 md:ml-6 flex flex-col md:items-end gap-4">
+                        <div className="flex-shrink-0 md:ml-6 flex flex-col md:items-end gap-3">
                           {chantier && (
                             <div>
                               <h4 className="text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider">Chantier</h4>
@@ -372,7 +372,7 @@ const Objectives: React.FC = () => {
             )})
         ) : (
           <Card>
-              <CardContent className="text-center text-slate-500 py-16">
+              <CardContent className="text-center text-slate-500 py-8">
                   <p className="font-semibold">Aucun objectif ne correspond à vos critères de recherche.</p>
               </CardContent>
           </Card>

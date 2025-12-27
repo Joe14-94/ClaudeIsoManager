@@ -22,7 +22,7 @@ type FormActivity = Partial<Activity> & { chantierIds?: string[] };
 
 const ActivityFilter: React.FC<{ searchTerm: string; domainFilter: string; statusFilter: string; priorityFilter: string; processFilter: string; resourceFilter: string; setDomainFilter: (domain: string) => void; setStatusFilter: (status: string) => void; setPriorityFilter: (priority: string) => void; setProcessFilter: (process: string) => void; setResourceFilter: (resourceId: string) => void; setSearchTerm: (term: string) => void; securityProcesses: SecurityProcess[]; resources: Resource[]; }> = ({ searchTerm, domainFilter, statusFilter, priorityFilter, processFilter, resourceFilter, setDomainFilter, setStatusFilter, setPriorityFilter, setProcessFilter, setResourceFilter, setSearchTerm, securityProcesses, resources }) => {
   return (
-    <div className="flex flex-col md:flex-row flex-wrap gap-4 mb-4">
+    <div className="flex flex-col md:flex-row flex-wrap gap-3 mb-3">
       <div className="relative flex-1 min-w-[200px]"><Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={20} /><input type="text" placeholder="Rechercher une activité..." className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} /></div>
       <select value={domainFilter} onChange={(e) => setDomainFilter(e.target.value)} className="px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"><option value="">Tous les domaines</option>{Object.values(SecurityDomain).map(d => <option key={d} value={d}>{d}</option>)}</select>
       <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"><option value="">Tous les statuts</option>{Object.values(ActivityStatus).map(s => <option key={s} value={s}>{s}</option>)}</select>
@@ -224,15 +224,15 @@ const Activities: React.FC = () => {
   ], [processMap, resourceMap]);
 
   return (
-    <div className="space-y-6 h-full flex flex-col">
+    <div className="space-y-4 h-full flex flex-col">
       {/* Badge de comparaison avec design optimisé */}
       <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-3">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <Zap className="text-blue-600" size={20} />
             <div>
-              <p className="text-sm font-semibold text-blue-900">Version actuelle - Design standard</p>
-              <p className="text-xs text-blue-700">Espaces actuels : space-y-6 (24px), tables px-6 py-3/4</p>
+              <p className="text-sm font-semibold text-blue-900">Version actuelle - Design optimisé</p>
+              <p className="text-xs text-blue-700">Espaces optimisés : space-y-4 (16px), tables px-3 py-2</p>
             </div>
           </div>
           <Link
@@ -240,7 +240,7 @@ const Activities: React.FC = () => {
             className="flex items-center gap-2 px-3 py-1.5 bg-white border border-blue-300 text-blue-700 rounded-lg hover:bg-blue-50 transition-colors text-sm font-medium"
           >
             <Zap size={16} />
-            <span>Voir la version optimisée</span>
+            <span>Comparer avec version démo</span>
           </Link>
         </div>
       </div>
@@ -291,26 +291,26 @@ const Activities: React.FC = () => {
             <table className="w-full text-sm text-left text-slate-500">
               <thead className="text-xs text-slate-700 uppercase bg-slate-100 sticky top-0">
                 <tr>
-                  <th scope="col" className="px-6 py-3 cursor-pointer hover:bg-slate-200 transition-colors" onClick={() => requestSort('activityId')}><div className="flex items-center gap-1.5">ID {renderSortArrow('activityId')}</div></th>
-                  <th scope="col" className="px-6 py-3 cursor-pointer hover:bg-slate-200 transition-colors" onClick={() => requestSort('title')}><div className="flex items-center gap-1.5">Titre {renderSortArrow('title')}</div></th>
-                  <th scope="col" className="px-6 py-3 cursor-pointer hover:bg-slate-200 transition-colors" onClick={() => requestSort('securityDomain')}><div className="flex items-center gap-1.5">Domaine {renderSortArrow('securityDomain')}</div></th>
-                  <th scope="col" className="px-6 py-3 cursor-pointer hover:bg-slate-200 transition-colors" onClick={() => requestSort('status')}><div className="flex items-center gap-1.5">Statut {renderSortArrow('status')}</div></th>
-                  <th scope="col" className="px-6 py-3 cursor-pointer hover:bg-slate-200 transition-colors" onClick={() => requestSort('priority')}><div className="flex items-center gap-1.5">Priorité {renderSortArrow('priority')}</div></th>
-                  <th scope="col" className="px-6 py-3 cursor-pointer hover:bg-slate-200 transition-colors" onClick={() => requestSort('processName')}><div className="flex items-center gap-1.5">Processus {renderSortArrow('processName')}</div></th>
-                  <th scope="col" className="px-6 py-3">Mesures ISO</th>
-                  <th scope="col" className="px-6 py-3"><span className="sr-only">Actions</span></th>
+                  <th scope="col" className="px-3 py-2 cursor-pointer hover:bg-slate-200 transition-colors" onClick={() => requestSort('activityId')}><div className="flex items-center gap-1.5">ID {renderSortArrow('activityId')}</div></th>
+                  <th scope="col" className="px-3 py-2 cursor-pointer hover:bg-slate-200 transition-colors" onClick={() => requestSort('title')}><div className="flex items-center gap-1.5">Titre {renderSortArrow('title')}</div></th>
+                  <th scope="col" className="px-3 py-2 cursor-pointer hover:bg-slate-200 transition-colors" onClick={() => requestSort('securityDomain')}><div className="flex items-center gap-1.5">Domaine {renderSortArrow('securityDomain')}</div></th>
+                  <th scope="col" className="px-3 py-2 cursor-pointer hover:bg-slate-200 transition-colors" onClick={() => requestSort('status')}><div className="flex items-center gap-1.5">Statut {renderSortArrow('status')}</div></th>
+                  <th scope="col" className="px-3 py-2 cursor-pointer hover:bg-slate-200 transition-colors" onClick={() => requestSort('priority')}><div className="flex items-center gap-1.5">Priorité {renderSortArrow('priority')}</div></th>
+                  <th scope="col" className="px-3 py-2 cursor-pointer hover:bg-slate-200 transition-colors" onClick={() => requestSort('processName')}><div className="flex items-center gap-1.5">Processus {renderSortArrow('processName')}</div></th>
+                  <th scope="col" className="px-3 py-2">Mesures ISO</th>
+                  <th scope="col" className="px-3 py-2"><span className="sr-only">Actions</span></th>
                 </tr>
               </thead>
               <tbody>
                 {sortedActivities.map(activity => (
                   <tr key={activity.id} className="bg-white border-b hover:bg-slate-50">
                     <th scope="row" className="px-6 py-4 font-medium text-slate-900 whitespace-nowrap">{activity.activityId}</th>
-                    <td className="px-6 py-4">{activity.title}</td>
-                    <td className="px-6 py-4"><span className={`px-2 py-1 text-xs font-medium rounded-full border ${DOMAIN_COLORS[activity.securityDomain]}`}>{activity.securityDomain}</span></td>
-                    <td className="px-6 py-4"><span className={`px-2 py-1 text-xs font-medium rounded-full ${STATUS_COLORS[activity.status]}`}>{activity.status}</span></td>
-                    <td className="px-6 py-4"><span className={`px-2 py-1 text-xs font-medium rounded-full ${PRIORITY_COLORS[activity.priority]}`}>{activity.priority}</span></td>
+                    <td className="px-3 py-2">{activity.title}</td>
+                    <td className="px-3 py-2"><span className={`px-2 py-1 text-xs font-medium rounded-full border ${DOMAIN_COLORS[activity.securityDomain]}`}>{activity.securityDomain}</span></td>
+                    <td className="px-3 py-2"><span className={`px-2 py-1 text-xs font-medium rounded-full ${STATUS_COLORS[activity.status]}`}>{activity.status}</span></td>
+                    <td className="px-3 py-2"><span className={`px-2 py-1 text-xs font-medium rounded-full ${PRIORITY_COLORS[activity.priority]}`}>{activity.priority}</span></td>
                      <td className="px-6 py-4 max-w-xs"><span className="text-xs truncate">{processMap.get(activity.functionalProcessId) || 'N/A'}</span></td>
-                    <td className="px-6 py-4"><div className="flex flex-wrap gap-1">{activity.isoMeasures.map(code => (<span key={code} className="px-2 py-0.5 text-xs font-mono bg-slate-200 text-slate-700 rounded">{code}</span>))}</div></td>
+                    <td className="px-3 py-2"><div className="flex flex-wrap gap-1">{activity.isoMeasures.map(code => (<span key={code} className="px-2 py-0.5 text-xs font-mono bg-slate-200 text-slate-700 rounded">{code}</span>))}</div></td>
                     <td className="px-6 py-4 text-right space-x-1">
                       <button onClick={() => handleOpenFormModal(activity)} className="p-1 text-slate-500 rounded-md hover:bg-slate-100 hover:text-blue-600" title="Modifier l'activité"><Edit size={18} /></button>
                       {!isReadOnly && ( <button onClick={() => handleOpenDeleteModal(activity)} className="p-1 text-slate-500 rounded-md hover:bg-slate-100 hover:text-red-600" title="Supprimer l'activité"><Trash2 size={18} /></button> )}

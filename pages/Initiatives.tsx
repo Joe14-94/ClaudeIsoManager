@@ -119,7 +119,7 @@ const Initiatives: React.FC = () => {
 
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="flex justify-between items-center flex-wrap gap-4">
         <h1 className="text-3xl font-bold text-slate-800">Initiatives</h1>
         <div className="flex items-center gap-2">
@@ -157,7 +157,7 @@ const Initiatives: React.FC = () => {
                         onClick={() => handleOpenModal(initiative)}
                     >
                         <CardContent className="p-4">
-                            <div className="flex flex-col md:flex-row md:justify-between gap-4">
+                            <div className="flex flex-col md:flex-row md:justify-between gap-3">
                                 <div className="flex-grow">
                                     <div className="flex items-center">
                                         <Flag size={20} className="text-blue-600 mr-3 flex-shrink-0" />
@@ -168,7 +168,7 @@ const Initiatives: React.FC = () => {
                                     <p className="text-sm text-slate-600 mt-2 md:pl-8 line-clamp-2">{initiative.description || 'Aucune description fournie.'}</p>
                                 </div>
                                 
-                                <div className="flex-shrink-0 md:ml-6 flex flex-col md:items-end gap-4">
+                                <div className="flex-shrink-0 md:ml-6 flex flex-col md:items-end gap-3">
                                     {linkedIsoMeasuresCount > 0 && (
                                         <div>
                                             <h4 className="text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wider">Mesures ISO liées</h4>
@@ -189,7 +189,7 @@ const Initiatives: React.FC = () => {
                 );
         })) : (
             <Card>
-                <CardContent className="text-center text-slate-500 py-16">
+                <CardContent className="text-center text-slate-500 py-8">
                     <p className="font-semibold">Aucune initiative ne correspond à votre recherche.</p>
                 </CardContent>
             </Card>

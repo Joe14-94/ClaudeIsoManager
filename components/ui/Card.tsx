@@ -20,7 +20,7 @@ Card.displayName = "Card";
 
 // FIX: Use React.forwardRef to allow passing refs to the underlying div element.
 export const CardHeader = React.forwardRef<HTMLDivElement, CardProps>(({ children, className = '', ...props }, ref) => {
-  return <div ref={ref} className={`p-4 border-b border-slate-200 ${className}`} {...props}>{children}</div>;
+  return <div ref={ref} className={`p-3 border-b border-slate-200 ${className}`} {...props}>{children}</div>;
 });
 CardHeader.displayName = "CardHeader";
 

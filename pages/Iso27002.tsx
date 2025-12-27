@@ -449,7 +449,7 @@ const Iso27002: React.FC = () => {
           ))
         ) : (
           <Card>
-              <CardContent className="text-center text-slate-500 py-16">
+              <CardContent className="text-center text-slate-500 py-8">
                   <p className="font-semibold">
                     {searchTerm 
                       ? `Aucune mesure ne correspond à votre recherche "${searchTerm}".`

@@ -116,7 +116,7 @@ const Orientations: React.FC = () => {
 
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="flex justify-between items-center flex-wrap gap-4">
         <h1 className="text-3xl font-bold text-slate-800">Orientations stratégiques</h1>
         <div className="flex items-center gap-2">
@@ -155,7 +155,7 @@ const Orientations: React.FC = () => {
                         onClick={() => handleOpenModal(orientation)}
                     >
                         <CardContent className="p-4">
-                            <div className="flex flex-col md:flex-row md:justify-between gap-4">
+                            <div className="flex flex-col md:flex-row md:justify-between gap-3">
                                 <div className="flex-grow">
                                     <div className="flex items-center">
                                         <TrendingUp size={20} className="text-purple-600 mr-3 flex-shrink-0" />
@@ -200,7 +200,7 @@ const Orientations: React.FC = () => {
                 );
         })) : (
             <Card>
-                <CardContent className="text-center text-slate-500 py-16">
+                <CardContent className="text-center text-slate-500 py-8">
                     <p className="font-semibold">Aucune orientation ne correspond à votre recherche.</p>
                 </CardContent>
             </Card>

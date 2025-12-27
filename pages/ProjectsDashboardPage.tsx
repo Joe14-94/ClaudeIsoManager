@@ -95,7 +95,7 @@ const ProjectsDashboardPage: React.FC = () => {
 
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-2">
         <h1 className="text-3xl font-bold text-slate-800">Tableau de bord des projets</h1>
         {lastCsvImportDate && (
@@ -159,19 +159,19 @@ const ProjectsDashboardPage: React.FC = () => {
                 <table className="w-full text-sm text-left text-slate-500">
                     <thead className="text-xs text-slate-700 uppercase bg-slate-50 sticky top-0">
                         <tr>
-                            <th scope="col" className="px-4 py-3">ID</th>
-                            <th scope="col" className="px-4 py-3">Titre</th>
-                            <th scope="col" className="px-4 py-3">Statut</th>
-                            <th scope="col" className="px-4 py-3">Top 30</th>
+                            <th scope="col" className="px-3 py-2">ID</th>
+                            <th scope="col" className="px-3 py-2">Titre</th>
+                            <th scope="col" className="px-3 py-2">Statut</th>
+                            <th scope="col" className="px-3 py-2">Top 30</th>
                         </tr>
                     </thead>
                     <tbody>
                         {filteredProjects.map(project => (
                             <tr key={project.id} className="bg-white border-b hover:bg-slate-50 cursor-pointer" onClick={() => navigate('/projets', { state: { openProject: project.id } })}>
                                 <th scope="row" className="px-4 py-3 font-medium text-slate-900 whitespace-nowrap">{project.projectId}</th>
-                                <td className="px-4 py-3">{project.title}</td>
-                                <td className="px-4 py-3"><span className={`px-2 py-1 text-xs font-medium rounded-full ${PROJECT_STATUS_COLORS[project.status]}`}>{project.status}</span></td>
-                                <td className="px-4 py-3">{project.isTop30 ? 'Oui' : 'Non'}</td>
+                                <td className="px-3 py-2">{project.title}</td>
+                                <td className="px-3 py-2"><span className={`px-2 py-1 text-xs font-medium rounded-full ${PROJECT_STATUS_COLORS[project.status]}`}>{project.status}</span></td>
+                                <td className="px-3 py-2">{project.isTop30 ? 'Oui' : 'Non'}</td>
                             </tr>
                         ))}
                     </tbody>
